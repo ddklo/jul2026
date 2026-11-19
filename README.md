@@ -96,8 +96,6 @@ Listene inneholder eksempelprodukter med illustrasjoner i stedet for ekte produk
 
 - Fire faner med antall ønsker per person. På mobil er fanene en bunnmeny, og du kan sveipe mellom personene.
 - Produktkort med bilde, beskrivelse og prisintervall, pluss knappene «Se i butikk» og «Prisjakt»
-- Søk på tvers av alle ønskelister
-- Filtrering på prisintervall
 - Lenke som går direkte til én persons liste
 - Tomtilstand når en person ikke har ønsker
 - Knapp til toppen og nedtelling til julaften

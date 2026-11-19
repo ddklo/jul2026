@@ -17,8 +17,6 @@
     people: [],
     wishes: [],
     current: null,
-    query: '',
-    price: 'all',
     rendered: false
   };
 
@@ -239,7 +237,6 @@
   }
 
   function goTo(id) {
-    if (state.query) clearSearch(true);
     if (id === state.current) {
       render(false);
       return;
@@ -317,62 +314,17 @@
     ind.style.opacity = '1';
   }
 
-  /* ---------------- Filtrering ---------------- */
-  function matchesQuery(w, terms) {
-    if (!terms.length) return true;
-    var p = personById(w.person);
-    var hay = [w.title, w.description, p ? p.name : '']
-      .join(' ')
-      .toLowerCase();
-    return terms.every(function (t) { return hay.indexOf(t) !== -1; });
-  }
-
-  function matchesPrice(w) {
-    if (state.price === 'all') return true;
-    var parts = state.price.split('-');
-    var lo = +parts[0] || 0;
-    var hi = parts[1] ? +parts[1] : Infinity;
-    var a = +w.priceMin || +w.priceMax || 0;
-    var b = +w.priceMax || +w.priceMin || 0;
-    if (!a && !b) return false;
-    if (a > b) { var t = a; a = b; b = t; }
-    return a < hi && b >= lo;
-  }
-
   /* ---------------- Visning ---------------- */
   function render(animate) {
-    var terms = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    var searching = terms.length > 0;
-    document.body.classList.toggle('is-searching', searching);
-
-    var scope = state.wishes.filter(function (w) {
-      return searching ? matchesQuery(w, terms) : w.person === state.current;
-    });
-    var list = scope.filter(matchesPrice);
-
-    renderHead(scope, searching);
-    renderGrid(list, scope, searching, animate);
+    var list = state.wishes.filter(function (w) { return w.person === state.current; });
+    renderHead(list);
+    renderGrid(list, animate);
     state.rendered = true;
   }
 
-  function renderHead(scope, searching) {
+  function renderHead(scope) {
     var head = $('#person-head');
     var e = Jul.escape;
-    if (searching) {
-      var people = {};
-      scope.forEach(function (w) { people[w.person] = 1; });
-      var np = Object.keys(people).length;
-      head.innerHTML =
-        '<div class="ph ph--search">' +
-        '<span class="ph__avatar ph__avatar--search">' + Jul.icon('search') + '</span>' +
-        '<div class="ph__text"><p class="eyebrow">Søk i alle ønskelister</p>' +
-        '<h2 class="ph__title">«' + e(state.query.trim()) + '»</h2>' +
-        '<p class="ph__stats">' + (scope.length ? plural(scope.length, 'treff', 'treff') + ' hos ' + plural(np, 'person', 'personer') : 'Ingen treff') + '</p></div>' +
-        '<button type="button" class="btn btn--ghost btn--sm ph__action" data-action="clear-search">' + Jul.icon('x') + 'Avslutt søk</button>' +
-        '</div>';
-      return;
-    }
-
     var p = personById(state.current);
     if (!p) { head.innerHTML = ''; return; }
     var min = 0, max = 0;
@@ -396,11 +348,11 @@
       '</div>';
   }
 
-  function renderGrid(list, scope, searching, animate) {
+  function renderGrid(list, animate) {
     var grid = $('#grid');
     grid.classList.toggle('grid--static', !animate);
 
-    if (!scope.length && !searching) {
+    if (!list.length) {
       var p = personById(state.current);
       grid.innerHTML =
         '<div class="empty">' + giftArt() +
@@ -409,27 +361,9 @@
         '</div>';
       return;
     }
-    if (!list.length) {
-      grid.innerHTML =
-        '<div class="empty empty--small">' +
-        '<span class="empty__icon">' + Jul.icon(searching ? 'search' : 'sliders') + '</span>' +
-        '<h3>' + (searching && !scope.length ? 'Fant ingen ønsker som passer søket' : 'Ingen ønsker i dette prisintervallet') + '</h3>' +
-        '<p>' + (searching && !scope.length ? 'Prøv et annet ord, for eksempel et produktnavn.' : 'Prøv et annet prisintervall.') + '</p>' +
-        (searching && !scope.length
-          ? '<button type="button" class="btn btn--ghost btn--sm" data-action="clear-search">Nullstill søk</button>'
-          : '<button type="button" class="btn btn--ghost btn--sm" data-action="reset">Vis alle priser</button>') +
-        '</div>';
-      return;
-    }
-
     var html = '';
     list.forEach(function (w, i) {
-      var p = searching ? personById(w.person) : null;
-      html += Jul.cardHTML(w, {
-        index: Math.min(i, 12),
-        personName: p ? p.name : '',
-        accent: p ? p.accent : ''
-      });
+      html += Jul.cardHTML(w, { index: Math.min(i, 12) });
     });
     grid.innerHTML = html;
   }
@@ -483,52 +417,12 @@
   }
 
   /* ---------------- Kontroller ---------------- */
-  function clearSearch(silent) {
-    state.query = '';
-    var s = $('#search');
-    s.value = '';
-    $('#search-clear').hidden = true;
-    if (!silent) render(true);
-  }
-
   function initControls() {
-    var search = $('#search');
-    var timer;
-    search.addEventListener('input', function () {
-      $('#search-clear').hidden = !search.value;
-      clearTimeout(timer);
-      timer = setTimeout(function () {
-        var was = !!state.query.trim();
-        state.query = search.value;
-        var now = !!state.query.trim();
-        render(was !== now);
-      }, 120);
-    });
-    search.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape') clearSearch();
-      if (ev.key === 'Enter') search.blur();
-    });
-    $('#search-clear').addEventListener('click', function () {
-      clearSearch();
-      search.focus();
-    });
-
-    $('#price-filter').addEventListener('change', function (ev) {
-      state.price = ev.target.value;
-      render(false);
-    });
-
     $('#main').addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-action]');
       if (!b) return;
       var a = b.getAttribute('data-action');
       if (a === 'share') shareCurrent();
-      if (a === 'clear-search') clearSearch();
-      if (a === 'reset') {
-        state.price = 'all';
-        $('#price-filter').value = 'all';
-        render(false);
-      }
     });
 
     $('#logout').addEventListener('click', logout);
@@ -563,7 +457,7 @@
     var main = $('#main');
     main.addEventListener('touchstart', function (ev) {
       var t = ev.target;
-      track = !state.query && !t.closest('.toolbar, input, select, button, a');
+      track = !t.closest('button, a');
       if (!track) return;
       sx = ev.touches[0].clientX; sy = ev.touches[0].clientY; st = Date.now();
     }, { passive: true });

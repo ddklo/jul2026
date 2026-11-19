@@ -98,6 +98,19 @@ body.ed { min-height: 100vh; }
 }
 .ed-person__n { margin-left: auto; font-size: 0.76rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .ed-side__head { display: flex; gap: 8px; margin: 12px 0 8px; }
+/* Filterfeltet i listen */
+.search { position: relative; display: flex; align-items: center; min-width: 0; }
+.search__icon { position: absolute; left: 14px; color: var(--muted); display: grid; pointer-events: none; }
+.search__icon .icon { width: 18px; height: 18px; }
+.search input {
+  width: 100%; height: 46px; padding: 0 44px 0 44px;
+  border-radius: 14px; border: 1px solid transparent; background: rgba(0, 0, 0, 0.25);
+  outline: none; transition: border-color 0.2s, background-color 0.2s;
+  -webkit-appearance: none; appearance: none;
+}
+.search input::-webkit-search-cancel-button { display: none; }
+.search input::placeholder { color: #808799; }
+.search input:focus { border-color: rgba(242, 216, 155, 0.5); background: rgba(0, 0, 0, 0.35); }
 .search--sm { flex: 1; }
 .search--sm input { height: 38px; border-radius: 12px; padding-right: 10px; font-size: 0.9rem; }
 .ed-list { list-style: none; margin: 0; padding: 2px; overflow: auto; flex: 1; display: grid; gap: 4px; align-content: start; }
