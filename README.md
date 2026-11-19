@@ -73,7 +73,7 @@ Nettsiden oppdateres i løpet av et par minutter. Familien trenger ikke logge in
 | Bildetilpasning | «Vis hele bildet» passer for produktbilder med hvit bakgrunn. «Fyll rammen» passer for stemningsbilder. |
 | Lenke til nettbutikk | Vises som knappen «Se i butikk» |
 | Knappetekst | Valgfri. Standard er «Se i butikk», men du kan skrive for eksempel «Se oppskriften». |
-| Lenke til Prisjakt | La feltet stå tomt for å få et automatisk Prisjakt-søk på produktnavnet. Kryss av for «Skjul Prisjakt-knappen» for ting som ikke selges, for eksempel hjemmelagde ting. |
+| Lenke til Prisjakt | Lenke direkte til produktsiden, for eksempel `https://www.prisjakt.no/product.php?p=…`. Åpne produktet på prisjakt.no og kopier adressen. Står feltet tomt, vises ingen Prisjakt-knapp. Kryss av for «Skjul Prisjakt-knappen» for å skjule en lenke uten å slette den. |
 | Prisintervall | Fra–til i NOK. Hurtigknappene fyller inn vanlige intervaller. |
 | Prioritet | Ingen, «Hadde vært fint» eller «Ønsker meg veldig». Høy prioritet vises først. |
 
