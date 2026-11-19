@@ -127,7 +127,7 @@
       var btn = $('#open-btn');
       btn.classList.add('is-loading'); btn.disabled = true;
       err.textContent = '';
-      Jul.crypto.decryptWithPassword(state.payload, pw).then(function (res) {
+      Jul.crypto.unlockWithPassword(state.payload, pw).then(function (res) {
         state.key = res.key;
         state.salt = state.payload.salt;
         state.iter = state.payload.iter || Jul.crypto.ITERATIONS;

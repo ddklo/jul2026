@@ -121,18 +121,33 @@
       setLoginError('');
       setLoading(true);
       Jul.crypto
-        .decryptWithPassword(state.payload, value)
-        .then(function (res) {
-          return Jul.crypto.exportKey(res.key).then(function (raw) {
-            Jul.session.save(state.payload.salt, raw, $('#remember').checked);
-            unlock(res.data, true);
-          });
-        })
-        .catch(function () {
-          setLoading(false);
-          setLoginError('Feil passord – prøv igjen.');
-          pw.select();
-        });
+        .unlockWithPassword(state.payload, value)
+        .then(
+          function (res) {
+            // Husk innloggingen. Feiler det (f.eks. privat modus), går vi likevel videre.
+            Jul.crypto
+              .exportKey(res.key)
+              .then(function (raw) { Jul.session.save(state.payload.salt, raw, $('#remember').checked); })
+              .catch(function (err) { if (global.console) console.warn('Kunne ikke huske innloggingen', err); });
+            try {
+              unlock(res.data, true);
+            } catch (err) {
+              if (global.console) console.error(err);
+              setLoading(false);
+              setLoginError('Passordet er riktig, men siden kunne ikke vises: ' + (err && err.message ? err.message : err));
+            }
+          },
+          function (err) {
+            setLoading(false);
+            if (err && err.wrongPassword) {
+              setLoginError('Feil passord – prøv igjen.');
+              pw.select();
+            } else {
+              if (global.console) console.error(err);
+              setLoginError('Noe gikk galt under opplåsingen: ' + (err && err.message ? err.message : err));
+            }
+          }
+        );
     });
   }
 

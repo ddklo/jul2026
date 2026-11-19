@@ -105,6 +105,33 @@
     });
   }
 
+  /**
+   * Prøver passordet slik det er skrevet, så uten mellomrom foran/bak og til
+   * slutt med små bokstaver. Mobiltastaturer legger ofte til et mellomrom
+   * eller gjør første bokstav stor. Gir feil med wrongPassword = true hvis
+   * ingen av variantene passer; andre feil sendes videre uendret.
+   */
+  function unlockWithPassword(payload, password) {
+    var tries = [];
+    [password, password.trim(), password.trim().toLowerCase()].forEach(function (p) {
+      if (p && tries.indexOf(p) === -1) tries.push(p);
+    });
+    var i = 0;
+    function next() {
+      if (i >= tries.length) {
+        var err = new Error('Feil passord');
+        err.wrongPassword = true;
+        return Promise.reject(err);
+      }
+      return decryptWithPassword(payload, tries[i++]).catch(function (err) {
+        // Feil nøkkel gir OperationError fra AES-GCM; alt annet er en ekte feil
+        if (err && err.name === 'OperationError') return next();
+        throw err;
+      });
+    }
+    return next();
+  }
+
   function exportKey(key) {
     return global.crypto.subtle.exportKey('raw', key).then(function (raw) {
       return bytesToB64(new Uint8Array(raw));
@@ -125,6 +152,7 @@
     encryptWithPassword: encryptWithPassword,
     decryptWithKey: decryptWithKey,
     decryptWithPassword: decryptWithPassword,
+    unlockWithPassword: unlockWithPassword,
     exportKey: exportKey,
     importKey: importKey,
     randomSalt: function () {

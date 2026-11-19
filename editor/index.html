@@ -8,8 +8,8 @@
   <meta name="theme-color" content="#070b14">
   <title>Rediger ønskelister · Juleønsker 2026</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../assets/css/styles.css">
-  <link rel="stylesheet" href="editor.css">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=3">
+  <link rel="stylesheet" href="editor.css?v=3">
 </head>
 <body class="ed">
 
@@ -27,7 +27,7 @@
         <div class="field">
           <label for="ed-password" class="sr-only">Passord</label>
           <span class="field__icon" data-icon="lock"></span>
-          <input id="ed-password" type="password" placeholder="Passord" autocomplete="current-password" required>
+          <input id="ed-password" type="password" placeholder="Passord" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required>
         </div>
         <button class="btn btn--gold btn--block btn--lg" type="submit" id="open-btn">
           <span class="btn__label">Åpne ønskelistene</span><span class="spinner" aria-hidden="true"></span>
@@ -245,7 +245,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="../assets/js/shared.js"></script>
-  <script src="editor.js"></script>
+  <script src="../assets/js/shared.js?v=3"></script>
+  <script src="editor.js?v=3"></script>
 </body>
 </html>
