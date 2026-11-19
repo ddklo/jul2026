@@ -301,7 +301,7 @@
       : '<span>' + Jul.icon('image') + '<small>Slipp bilde her</small></span>';
     $('#image-clear').disabled = !w.image;
     var su = Jul.safeUrl(w.storeUrl);
-    var pj = Jul.safeUrl(w.prisjaktUrl) || (w.title ? Jul.prisjaktSearch(w.title) : '');
+    var pj = Jul.safeUrl(w.prisjaktUrl);
     toggleLink($('#test-store'), su);
     toggleLink($('#test-pj'), pj);
     $$('#price-presets button').forEach(function (b) {
@@ -579,15 +579,6 @@
       w.priceMax = +p[1] || null;
       form.elements.priceMin.value = w.priceMin || '';
       form.elements.priceMax.value = w.priceMax || '';
-      changed(w, { now: true });
-    });
-
-    $('#pj-make').addEventListener('click', function () {
-      var w = wishById(state.selected);
-      if (!w) return;
-      if (!w.title.trim()) { toast('Skriv inn produktnavnet først'); form.elements.title.focus(); return; }
-      w.prisjaktUrl = Jul.prisjaktSearch(w.title.trim());
-      form.elements.prisjaktUrl.value = w.prisjaktUrl;
       changed(w, { now: true });
     });
 

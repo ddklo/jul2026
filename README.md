@@ -72,7 +72,7 @@ Nettsiden oppdateres i løpet av et par minutter. Familien trenger ikke logge in
 | Produktbilde | Lim inn en bildeadresse, eller last opp, dra inn eller lim inn et bilde |
 | Bildetilpasning | «Vis hele bildet» passer for produktbilder med hvit bakgrunn. «Fyll rammen» passer for stemningsbilder. |
 | Lenke til nettbutikk | Vises som knappen «Se i butikk» |
-| Lenke til Prisjakt | La feltet stå tomt for å få et automatisk Prisjakt-søk på produktnavnet |
+| Lenke til Prisjakt | Lenke direkte til produktsiden, for eksempel `https://www.prisjakt.no/product.php?p=…`. Åpne produktet på prisjakt.no og kopier adressen. Står feltet tomt, vises ingen Prisjakt-knapp. |
 | Prisintervall | Fra–til i NOK. Hurtigknappene fyller inn vanlige intervaller. |
 | Prioritet | Ingen, «Hadde vært fint» eller «Ønsker meg veldig». Høy prioritet vises først. |
 
