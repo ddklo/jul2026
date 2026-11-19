@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#070b14">
+  <title>Rediger ønskelister · Juleønsker 2026</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body class="ed">
+
+  <!-- ============ Åpne / lås opp ============ -->
+  <section id="unlock" class="ed-unlock">
+    <div class="ed-unlock__card glass">
+      <span class="ed-unlock__icon" data-icon="pencil"></span>
+      <p class="eyebrow">Kun for administrator</p>
+      <h1 class="ed-unlock__title">Rediger ønskelistene</h1>
+      <p class="ed-unlock__lead">Alt skjer lokalt i nettleseren din. Ingenting lastes opp før du selv laster opp den nye datafilen til GitHub.</p>
+
+      <p class="ed-status" id="data-status">Leter etter datafil …</p>
+
+      <form id="open-form" class="ed-form-stack" novalidate>
+        <div class="field">
+          <label for="ed-password" class="sr-only">Passord</label>
+          <span class="field__icon" data-icon="lock"></span>
+          <input id="ed-password" type="password" placeholder="Passord" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn--gold btn--block btn--lg" type="submit" id="open-btn">
+          <span class="btn__label">Åpne ønskelistene</span><span class="spinner" aria-hidden="true"></span>
+        </button>
+        <p class="login__error" id="open-error" role="alert"></p>
+      </form>
+
+      <form id="new-form" class="ed-form-stack" novalidate hidden>
+        <p class="ed-note">Lag en helt ny, tom ønskeliste. Velg et passord familien skal bruke.</p>
+        <div class="field">
+          <label for="new-pw" class="sr-only">Nytt passord</label>
+          <span class="field__icon" data-icon="key"></span>
+          <input id="new-pw" type="password" placeholder="Nytt passord" autocomplete="new-password" minlength="6" required>
+        </div>
+        <div class="field">
+          <label for="new-pw2" class="sr-only">Gjenta passord</label>
+          <span class="field__icon" data-icon="key"></span>
+          <input id="new-pw2" type="password" placeholder="Gjenta passord" autocomplete="new-password" required>
+        </div>
+        <button class="btn btn--gold btn--block btn--lg" type="submit">Start med tom liste</button>
+        <p class="login__error" id="new-error" role="alert"></p>
+      </form>
+
+      <div class="ed-unlock__alt">
+        <label class="link-btn" for="open-file">Åpne en annen datafil</label>
+        <input type="file" id="open-file" accept=".js,.json,application/json,text/javascript" hidden>
+        <span aria-hidden="true">·</span>
+        <button type="button" class="link-btn" id="toggle-new">Start helt på nytt</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Arbeidsflate ============ -->
+  <div id="workspace" class="ed-work" hidden>
+    <header class="ed-top">
+      <div class="ed-top__brand">
+        <span class="brand__star" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 1.8l2.4 7.1 7.4.2-5.9 4.5 2.1 7.2L12 16.6l-6 4.2 2.1-7.2-5.9-4.5 7.4-.2z"/></svg></span>
+        <div>
+          <strong>Ønskeliste-redigering</strong>
+          <span class="ed-dirty" id="dirty" data-state="clean">Alt er lagret</span>
+        </div>
+      </div>
+      <div class="ed-top__actions">
+        <details class="ed-menu">
+          <summary class="btn btn--ghost btn--sm" aria-label="Flere valg"><span data-icon="menu"></span><span class="hide-sm">Mer</span></summary>
+          <div class="ed-menu__panel glass">
+            <button type="button" data-cmd="export"><span data-icon="download"></span>Eksporter backup (ukryptert JSON)</button>
+            <button type="button" data-cmd="import"><span data-icon="upload"></span>Importer backup (JSON)</button>
+            <button type="button" data-cmd="password"><span data-icon="key"></span>Bytt passord</button>
+            <button type="button" data-cmd="help"><span data-icon="file"></span>Slik publiserer du</button>
+            <hr>
+            <button type="button" data-cmd="lock"><span data-icon="lock"></span>Lås og lukk</button>
+          </div>
+        </details>
+        <input type="file" id="import-file" accept=".json,application/json" hidden>
+        <button type="button" class="btn btn--gold btn--sm" id="download-btn" title="Ctrl/Cmd + S">
+          <span data-icon="download"></span><span>Last ned datafil</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="ed-layout">
+      <!-- Venstre: personer og ønsker -->
+      <aside class="ed-side glass" aria-label="Ønsker">
+        <div class="ed-people" id="ed-people" role="tablist" aria-label="Personer"></div>
+        <div class="ed-side__head">
+          <div class="search search--sm">
+            <span class="search__icon" data-icon="search"></span>
+            <label for="ed-filter" class="sr-only">Filtrer ønsker</label>
+            <input id="ed-filter" type="search" placeholder="Filtrer …" autocomplete="off">
+          </div>
+          <button type="button" class="btn btn--primary btn--sm" id="add-btn"><span data-icon="plus"></span>Nytt ønske</button>
+        </div>
+        <ol class="ed-list" id="ed-list"></ol>
+        <p class="ed-side__hint">Rekkefølgen her er rekkefølgen familien ser (ved sortering «Anbefalt», etter prioritet).</p>
+      </aside>
+
+      <!-- Midten: skjema -->
+      <section class="ed-main" aria-label="Rediger ønske">
+        <div id="ed-empty" class="ed-empty glass" hidden></div>
+
+        <form id="wish-form" class="ed-card glass" novalidate autocomplete="off" hidden>
+          <div class="ed-card__head">
+            <h2 id="form-title">Rediger ønske</h2>
+            <div class="ed-card__tools">
+              <button type="button" class="icon-btn" id="dup-btn" title="Dupliser" aria-label="Dupliser ønsket"><span data-icon="copy"></span></button>
+              <button type="button" class="icon-btn icon-btn--danger" id="del-btn" title="Slett" aria-label="Slett ønsket"><span data-icon="trash"></span></button>
+            </div>
+          </div>
+
+          <div class="ed-grid">
+            <label class="ed-field ed-field--full">
+              <span class="ed-label">Produktnavn <em>*</em></span>
+              <input class="ed-input" name="title" type="text" maxlength="120" placeholder="F.eks. Sony WH-1000XM6 hodetelefoner" required>
+            </label>
+
+            <label class="ed-field">
+              <span class="ed-label">Person</span>
+              <select class="ed-input" name="person" id="person-select"></select>
+            </label>
+
+            <label class="ed-field">
+              <span class="ed-label">Kategori</span>
+              <select class="ed-input" name="category" id="category-select"></select>
+            </label>
+
+            <label class="ed-field ed-field--full">
+              <span class="ed-label">Kort beskrivelse <small>valgfritt</small><span class="ed-count" id="desc-count"></span></span>
+              <textarea class="ed-input" name="description" rows="3" maxlength="280" placeholder="Størrelse, farge, modell eller andre detaljer"></textarea>
+            </label>
+
+            <fieldset class="ed-field ed-field--full">
+              <legend class="ed-label">Produktbilde</legend>
+              <div class="ed-image">
+                <div class="ed-image__thumb" id="img-thumb" tabindex="0" aria-label="Slipp eller lim inn et bilde her"></div>
+                <div class="ed-image__controls">
+                  <input class="ed-input" name="image" id="image-url" type="url" inputmode="url" placeholder="Lim inn bildeadresse (https://…)">
+                  <div class="ed-image__row">
+                    <label class="btn btn--ghost btn--sm" for="image-file"><span data-icon="upload"></span>Last opp bilde</label>
+                    <input type="file" id="image-file" accept="image/*" hidden>
+                    <button type="button" class="btn btn--ghost btn--sm" id="image-clear"><span data-icon="x"></span>Fjern</button>
+                  </div>
+                  <div class="ed-seg" role="radiogroup" aria-label="Bildetilpasning">
+                    <label><input type="radio" name="imageFit" value="contain"><span>Vis hele bildet</span></label>
+                    <label><input type="radio" name="imageFit" value="cover"><span>Fyll rammen</span></label>
+                  </div>
+                  <p class="ed-hint">Tips: Høyreklikk på produktbildet i nettbutikken og velg «Kopier bildeadresse». Du kan også dra inn, lime inn (Ctrl/Cmd + V) eller laste opp et bilde – da krympes det og lagres kryptert sammen med listen.</p>
+                </div>
+              </div>
+            </fieldset>
+
+            <label class="ed-field ed-field--full">
+              <span class="ed-label">Lenke til nettbutikk</span>
+              <div class="ed-inline">
+                <input class="ed-input" name="storeUrl" type="url" inputmode="url" placeholder="https://www.nettbutikk.no/produkt">
+                <a class="icon-btn" id="test-store" target="_blank" rel="noopener noreferrer" title="Test lenken" aria-label="Test lenken"><span data-icon="external"></span></a>
+              </div>
+            </label>
+
+            <label class="ed-field ed-field--full">
+              <span class="ed-label">Lenke til Prisjakt <small>tomt felt = automatisk søk på produktnavnet</small></span>
+              <div class="ed-inline">
+                <input class="ed-input" name="prisjaktUrl" type="url" inputmode="url" placeholder="https://www.prisjakt.no/product.php?p=…">
+                <button type="button" class="btn btn--ghost btn--sm" id="pj-make" title="Lag søkelenke fra produktnavnet">Lag søk</button>
+                <a class="icon-btn" id="test-pj" target="_blank" rel="noopener noreferrer" title="Test lenken" aria-label="Test lenken"><span data-icon="external"></span></a>
+              </div>
+            </label>
+
+            <fieldset class="ed-field ed-field--full">
+              <legend class="ed-label">Prisintervall (NOK)</legend>
+              <div class="ed-price">
+                <label><span class="sr-only">Fra</span><input class="ed-input" name="priceMin" type="number" inputmode="numeric" min="0" step="50" placeholder="Fra"></label>
+                <span class="ed-price__dash" aria-hidden="true">–</span>
+                <label><span class="sr-only">Til</span><input class="ed-input" name="priceMax" type="number" inputmode="numeric" min="0" step="50" placeholder="Til"></label>
+                <span class="ed-price__kr">kr</span>
+              </div>
+              <div class="ed-presets" id="price-presets">
+                <button type="button" data-p="0-300">Under 300</button>
+                <button type="button" data-p="300-500">300–500</button>
+                <button type="button" data-p="500-1000">500–1 000</button>
+                <button type="button" data-p="1000-2000">1 000–2 000</button>
+                <button type="button" data-p="2000-3500">2 000–3 500</button>
+                <button type="button" data-p="3500-5000">3 500–5 000</button>
+              </div>
+            </fieldset>
+
+            <fieldset class="ed-field ed-field--full">
+              <legend class="ed-label">Prioritet <small>valgfritt</small></legend>
+              <div class="ed-seg ed-seg--wide" role="radiogroup" aria-label="Prioritet">
+                <label><input type="radio" name="priority" value="0"><span>Ingen</span></label>
+                <label><input type="radio" name="priority" value="1"><span data-icon="heart"></span><span>Hadde vært fint</span></label>
+                <label><input type="radio" name="priority" value="2"><span data-icon="star"></span><span>Ønsker meg veldig</span></label>
+              </div>
+            </fieldset>
+          </div>
+        </form>
+      </section>
+
+      <!-- Høyre: forhåndsvisning -->
+      <aside class="ed-preview" aria-label="Forhåndsvisning">
+        <p class="eyebrow">Forhåndsvisning</p>
+        <div id="preview" class="ed-preview__card"></div>
+        <p class="ed-hint">Slik ser kortet ut for familien. Endringer lagres automatisk her i verktøyet – husk å <strong>laste ned datafilen</strong> når du er ferdig.</p>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ============ Dialoger ============ -->
+  <dialog id="publish-dialog" class="ed-dialog">
+    <form method="dialog" class="ed-dialog__inner glass">
+      <span class="ed-dialog__icon" data-icon="check"></span>
+      <h2>Datafilen er lastet ned</h2>
+      <p>Filen <code>wishlist.enc.js</code> ligger i nedlastingsmappen din. Slik publiserer du den:</p>
+      <ol class="ed-steps">
+        <li>Gå til repoet ditt på <strong>github.com</strong> og åpne mappen <code>data</code>.</li>
+        <li>Klikk <strong>Add file → Upload files</strong> og dra inn <code>wishlist.enc.js</code>.</li>
+        <li>Klikk <strong>Commit changes</strong>. Nettsiden oppdateres i løpet av et par minutter.</li>
+      </ol>
+      <p class="ed-hint">Har nettleseren kalt filen <code>wishlist.enc (1).js</code>? Gi den nytt navn til <code>wishlist.enc.js</code> før du laster den opp.</p>
+      <div class="ed-dialog__actions"><button class="btn btn--gold" value="ok">Den er grei</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="password-dialog" class="ed-dialog">
+    <form method="dialog" class="ed-dialog__inner glass" id="password-form" novalidate>
+      <span class="ed-dialog__icon" data-icon="key"></span>
+      <h2>Bytt passord</h2>
+      <p>Etter at du har lastet opp den nye datafilen, må alle logge inn på nytt med det nye passordet.</p>
+      <div class="ed-form-stack">
+        <div class="field"><span class="field__icon" data-icon="key"></span><input id="chg-pw" type="password" placeholder="Nytt passord" autocomplete="new-password" aria-label="Nytt passord"></div>
+        <div class="field"><span class="field__icon" data-icon="key"></span><input id="chg-pw2" type="password" placeholder="Gjenta nytt passord" autocomplete="new-password" aria-label="Gjenta nytt passord"></div>
+        <p class="login__error" id="chg-error" role="alert"></p>
+      </div>
+      <div class="ed-dialog__actions">
+        <button class="btn btn--ghost" value="cancel" formnovalidate>Avbryt</button>
+        <button class="btn btn--gold" value="save" id="chg-save">Bytt passord</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../assets/js/shared.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

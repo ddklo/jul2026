@@ -1,0 +1,9 @@
+# Ukrypterte backup-/klartekstfiler skal aldri inn i repoet
+*.plain.json
+*backup*.json
+onskeliste-backup-*.json
+.env
+
+# Systemfiler
+.DS_Store
+Thumbs.db

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#070b14">
+  <meta name="description" content="Familiens juleønskelister 2026">
+  <title>Juleønsker 2026</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="is-locked">
+  <canvas id="snow" class="snow" aria-hidden="true"></canvas>
+  <div class="aurora" aria-hidden="true"></div>
+
+  <!-- ============ Innlogging ============ -->
+  <section id="login" class="login" aria-labelledby="login-title">
+    <div class="lights lights--login" aria-hidden="true"></div>
+
+    <div class="login__card glass">
+      <div class="ornament" aria-hidden="true">
+        <svg viewBox="0 0 80 120">
+          <defs>
+            <radialGradient id="orn" cx="38%" cy="38%" r="70%">
+              <stop offset="0" stop-color="#f7dfa6"/>
+              <stop offset=".45" stop-color="#c9973f"/>
+              <stop offset="1" stop-color="#5e3f12"/>
+            </radialGradient>
+          </defs>
+          <line x1="40" y1="0" x2="40" y2="34" stroke="#c9a35c" stroke-width="1.2"/>
+          <rect x="33" y="32" width="14" height="10" rx="2" fill="#b98d45"/>
+          <circle cx="40" cy="76" r="34" fill="url(#orn)"/>
+          <path d="M10 70c18 8 42 8 60 0" stroke="#7a1f2c" stroke-width="5" fill="none" opacity=".85"/>
+          <path d="M8 80c20 8 44 8 64 0" stroke="#f3e3bd" stroke-width="1.2" fill="none" opacity=".6"/>
+          <ellipse cx="28" cy="62" rx="8" ry="5" fill="#fff" opacity=".35" transform="rotate(-30 28 62)"/>
+        </svg>
+      </div>
+
+      <p class="eyebrow">Jul 2026</p>
+      <h1 id="login-title" class="login__title">Juleønskene&nbsp;våre</h1>
+      <p class="login__lead">Skriv inn passordet du har fått for å se ønskelistene til Dagfinn, Kristin, Ellie og Sidney.</p>
+
+      <form id="login-form" class="login__form" novalidate>
+        <div class="field">
+          <label for="password" class="sr-only">Passord</label>
+          <span class="field__icon" data-icon="lock"></span>
+          <input id="password" name="password" type="password" autocomplete="current-password"
+                 placeholder="Passord" required autocapitalize="off" spellcheck="false">
+          <button type="button" class="field__toggle" id="toggle-pw" aria-label="Vis passord" aria-pressed="false">
+            <span data-icon="eye"></span>
+          </button>
+        </div>
+
+        <label class="check">
+          <input type="checkbox" id="remember" checked>
+          <span class="check__box" aria-hidden="true"></span>
+          <span>Husk meg på denne enheten</span>
+        </label>
+
+        <button class="btn btn--gold btn--block btn--lg" type="submit" id="login-btn">
+          <span class="btn__label">Lås opp ønskelistene</span>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+        <p class="login__error" id="login-error" role="alert" aria-live="assertive"></p>
+      </form>
+    </div>
+
+    <p class="login__foot"><span data-icon="lock"></span> Innholdet er kryptert og kun for familien</p>
+  </section>
+
+  <!-- ============ Selve ønskelisten ============ -->
+  <div id="app" class="app" hidden>
+    <a class="skip" href="#main">Hopp til ønskene</a>
+    <div class="lights" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#" id="brand">
+        <span class="brand__star" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 1.8l2.4 7.1 7.4.2-5.9 4.5 2.1 7.2L12 16.6l-6 4.2 2.1-7.2-5.9-4.5 7.4-.2z"/></svg>
+        </span>
+        <span class="brand__text">Juleønsker <em>2026</em></span>
+      </a>
+      <div class="topbar__right">
+        <span class="countdown" id="countdown"></span>
+        <button class="icon-btn" id="logout" type="button" aria-label="Logg ut" title="Logg ut">
+          <span data-icon="logout"></span>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow"><span class="eyebrow__line"></span>Familiens ønskelister<span class="eyebrow__line"></span></p>
+      <h1 id="hero-title" class="hero__title">Hva ønsker vi oss <span class="gold">til jul?</span></h1>
+      <p class="hero__lead">Bla gjennom listene, sammenlign priser på Prisjakt og finn den perfekte gaven.</p>
+    </section>
+
+    <nav class="tabs" aria-label="Personer">
+      <div class="tabs__inner" role="tablist" id="tabs">
+        <span class="tabs__indicator" aria-hidden="true"></span>
+      </div>
+    </nav>
+
+    <main id="main" class="main" tabindex="-1">
+      <section class="person-head swap" id="person-head" aria-live="polite"></section>
+      <div class="toolbar glass" role="search">
+        <div class="search">
+          <span class="search__icon" data-icon="search"></span>
+          <label for="search" class="sr-only">Søk i alle ønsker</label>
+          <input id="search" type="search" placeholder="Søk i alle ønskelister …" autocomplete="off" enterkeyhint="search">
+          <button type="button" class="search__clear" id="search-clear" aria-label="Tøm søk" hidden><span data-icon="x"></span></button>
+        </div>
+        <div class="selects">
+          <label class="select">
+            <span class="select__label">Pris</span>
+            <select id="price-filter">
+              <option value="all">Alle priser</option>
+              <option value="0-500">Under 500</option>
+              <option value="500-1000">500–1 000</option>
+              <option value="1000-2500">1 000–2 500</option>
+              <option value="2500-5000">2 500–5 000</option>
+              <option value="5000-">Over 5 000</option>
+            </select>
+          </label>
+          <label class="select">
+            <span class="select__label">Sorter</span>
+            <select id="sort">
+              <option value="recommended">Anbefalt</option>
+              <option value="price-asc">Pris: lav til høy</option>
+              <option value="price-desc">Pris: høy til lav</option>
+              <option value="name">Navn A–Å</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="chips swap" id="chips" role="group" aria-label="Filtrer på kategori"></div>
+
+      <div class="grid swap" id="grid"></div>
+    </main>
+
+    <footer class="footer">
+      <p class="footer__love">Laget med omtanke til jul 2026 <span class="footer__tree" data-icon="tree"></span></p>
+      <div class="footer__links">
+        <button type="button" class="link-btn" id="footer-top">Til toppen</button>
+        <span aria-hidden="true">·</span>
+        <button type="button" class="link-btn" id="footer-logout">Logg ut</button>
+      </div>
+    </footer>
+
+    <button class="to-top" id="to-top" type="button" aria-label="Til toppen"><span data-icon="arrowUp"></span></button>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <noscript><p class="noscript">Denne siden trenger JavaScript for å vise de krypterte ønskelistene.</p></noscript>
+
+  <script src="assets/js/shared.js"></script>
+  <script src="assets/js/snow.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
