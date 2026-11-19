@@ -394,7 +394,7 @@
     var e = Jul.escape;
     var img = Jul.safeImage(w.image);
     var store = Jul.safeUrl(w.storeUrl);
-    var pj = Jul.safeUrl(w.prisjaktUrl);
+    var pj = w.hidePrisjakt ? '' : Jul.safeUrl(w.prisjaktUrl);
     var price = Jul.formatPrice(+w.priceMin, +w.priceMax);
     var prio = +w.priority || 0;
     var fit = w.imageFit === 'cover' ? ' card__media--cover' : '';
@@ -413,7 +413,7 @@
 
     var actions = '';
     if (store) {
-      actions += '<a class="btn btn--primary btn--sm" href="' + e(store) + '" target="_blank" rel="noopener noreferrer">Se i butikk' + Jul.icon('external') + '</a>';
+      actions += '<a class="btn btn--primary btn--sm" href="' + e(store) + '" target="_blank" rel="noopener noreferrer">' + e(w.linkLabel || 'Se i butikk') + Jul.icon('external') + '</a>';
     }
     if (pj) {
       actions += '<a class="btn btn--ghost btn--sm" href="' + e(pj) + '" target="_blank" rel="noopener noreferrer" title="Sammenlign priser på Prisjakt">' + Jul.icon('chart') + 'Prisjakt</a>';
@@ -427,7 +427,7 @@
       '<h3 class="card__title">' + e(w.title || 'Uten navn') + '</h3>' +
       (w.description ? '<p class="card__desc">' + e(w.description) + '</p>' : '') +
       '<div class="card__bottom">' +
-      (price ? '<p class="card__price"><span>Prisantydning</span><strong>' + price + '</strong></p>' : '<p class="card__price"><span>Prisantydning</span><strong class="muted">Ikke oppgitt</strong></p>') +
+      (price ? '<p class="card__price"><span>Prisantydning</span><strong>' + price + '</strong></p>' : '') +
       (actions ? '<div class="card__actions">' + actions + '</div>' : '') +
       '</div></div></article>'
     );

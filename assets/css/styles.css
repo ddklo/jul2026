@@ -586,7 +586,7 @@ a { color: inherit; }
 }
 .card__desc {
   margin: 0; color: var(--text-2); font-size: 0.93rem; line-height: 1.5;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
 }
 .card__bottom { margin-top: auto; padding-top: 10px; display: grid; gap: 14px; }
 .card__price {
