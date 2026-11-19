@@ -78,7 +78,7 @@ Nettsiden oppdateres i løpet av et par minutter. Familien trenger ikke logge in
 
 **Bildetips:** Høyreklikk på produktbildet i nettbutikken og velg **Kopier bildeadresse**, og lim adressen inn i bildefeltet. Opplastede bilder krympes automatisk (maks 900 px, WebP) og krypteres sammen med listen. Mange opplastede bilder gjør datafilen større, så bildeadresser holder filen liten.
 
-**Rekkefølge:** Bruk pilene i listen til venstre. Nettsiden sorterer på pris, og rekkefølgen din brukes når ønsker har samme pris eller mangler pris.
+**Rekkefølge:** Bruk pilene i listen til venstre. Ønskene vises på nettsiden i samme rekkefølge.
 
 ### Andre valg (menyen «Mer»)
 
@@ -97,7 +97,7 @@ Listene inneholder eksempelprodukter med illustrasjoner i stedet for ekte produk
 - Fire faner med antall ønsker per person. På mobil er fanene en bunnmeny, og du kan sveipe mellom personene.
 - Produktkort med bilde, beskrivelse og prisintervall, pluss knappene «Se i butikk» og «Prisjakt»
 - Søk på tvers av alle ønskelister
-- Filtrering på prisintervall og sortering på pris eller navn
+- Filtrering på prisintervall
 - Lenke som går direkte til én persons liste
 - Tomtilstand når en person ikke har ønsker
 - Knapp til toppen og nedtelling til julaften

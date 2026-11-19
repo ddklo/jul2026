@@ -326,14 +326,6 @@
     return '';
   };
 
-  /** Pris brukt til sortering (midtpunkt av intervallet). */
-  Jul.priceValue = function (w) {
-    var a = +w.priceMin || 0;
-    var b = +w.priceMax || 0;
-    if (a && b) return (a + b) / 2;
-    return a || b || 0;
-  };
-
   Jul.escape = function (s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;')

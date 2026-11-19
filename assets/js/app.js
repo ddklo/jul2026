@@ -19,7 +19,6 @@
     current: null,
     query: '',
     price: 'all',
-    sort: 'price-asc',
     rendered: false
   };
 
@@ -340,25 +339,6 @@
     return a < hi && b >= lo;
   }
 
-  function sortList(list) {
-    var withIndex = list.map(function (w, i) { return { w: w, i: i }; });
-    var s = state.sort;
-    withIndex.sort(function (A, B) {
-      var a = A.w, b = B.w;
-      if (s === 'price-asc' || s === 'price-desc') {
-        var pa = Jul.priceValue(a), pb = Jul.priceValue(b);
-        if (!pa && pb) return 1;
-        if (pa && !pb) return -1;
-        if (pa !== pb) return s === 'price-asc' ? pa - pb : pb - pa;
-      } else if (s === 'name') {
-        var c = String(a.title || '').localeCompare(String(b.title || ''), 'nb');
-        if (c) return c;
-      }
-      return A.i - B.i;
-    });
-    return withIndex.map(function (x) { return x.w; });
-  }
-
   /* ---------------- Visning ---------------- */
   function render(animate) {
     var terms = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -368,7 +348,7 @@
     var scope = state.wishes.filter(function (w) {
       return searching ? matchesQuery(w, terms) : w.person === state.current;
     });
-    var list = sortList(scope.filter(matchesPrice));
+    var list = scope.filter(matchesPrice);
 
     renderHead(scope, searching);
     renderGrid(list, scope, searching, animate);
@@ -535,10 +515,6 @@
 
     $('#price-filter').addEventListener('change', function (ev) {
       state.price = ev.target.value;
-      render(false);
-    });
-    $('#sort').addEventListener('change', function (ev) {
-      state.sort = ev.target.value;
       render(false);
     });
 
