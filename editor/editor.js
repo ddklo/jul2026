@@ -93,6 +93,8 @@
           imageFit: w.imageFit === 'cover' ? 'cover' : 'contain',
           storeUrl: w.storeUrl || '',
           prisjaktUrl: w.prisjaktUrl || '',
+          hidePrisjakt: !!w.hidePrisjakt,
+          linkLabel: w.linkLabel || '',
           priceMin: w.priceMin ? +w.priceMin : null,
           priceMax: w.priceMax ? +w.priceMax : null,
           priority: +w.priority || 0,
@@ -279,6 +281,8 @@
     setRadio(form, 'imageFit', w.imageFit || 'contain');
     form.elements.storeUrl.value = w.storeUrl;
     form.elements.prisjaktUrl.value = w.prisjaktUrl;
+    form.elements.linkLabel.value = w.linkLabel || '';
+    form.elements.hidePrisjakt.checked = !!w.hidePrisjakt;
     form.elements.priceMin.value = w.priceMin || '';
     form.elements.priceMax.value = w.priceMax || '';
     setRadio(form, 'priority', String(+w.priority || 0));
@@ -301,7 +305,7 @@
       : '<span>' + Jul.icon('image') + '<small>Slipp bilde her</small></span>';
     $('#image-clear').disabled = !w.image;
     var su = Jul.safeUrl(w.storeUrl);
-    var pj = Jul.safeUrl(w.prisjaktUrl) || (w.title ? Jul.prisjaktSearch(w.title) : '');
+    var pj = w.hidePrisjakt ? '' : Jul.safeUrl(w.prisjaktUrl) || (w.title ? Jul.prisjaktSearch(w.title) : '');
     toggleLink($('#test-store'), su);
     toggleLink($('#test-pj'), pj);
     $$('#price-presets button').forEach(function (b) {
@@ -335,7 +339,7 @@
   function addWish(base) {
     var w = base ? JSON.parse(JSON.stringify(base)) : {
       title: '', description: '', image: '', imageFit: 'contain',
-      storeUrl: '', prisjaktUrl: '', priceMin: null, priceMax: null, priority: 0
+      storeUrl: '', prisjaktUrl: '', hidePrisjakt: false, linkLabel: '', priceMin: null, priceMax: null, priority: 0
     };
     w.id = Jul.uid();
     w.person = state.person;
@@ -539,6 +543,9 @@
           break;
         case 'priority':
           w.priority = +t.value;
+          break;
+        case 'hidePrisjakt':
+          w.hidePrisjakt = t.checked;
           break;
         case 'image':
           w.image = t.value.trim();
