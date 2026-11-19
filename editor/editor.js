@@ -89,7 +89,6 @@
           person: w.person,
           title: w.title || '',
           description: w.description || '',
-          category: w.category || 'annet',
           image: w.image || '',
           imageFit: w.imageFit === 'cover' ? 'cover' : 'contain',
           storeUrl: w.storeUrl || '',
@@ -202,24 +201,6 @@
     $('#person-select').innerHTML = people().map(function (p) {
       return '<option value="' + e(p.id) + '">' + e(p.name) + '</option>';
     }).join('');
-    buildCategorySelect();
-  }
-
-  function buildCategorySelect(extra) {
-    var custom = {};
-    state.data.wishes.forEach(function (w) {
-      var c = Jul.getCategory(w.category);
-      if (c.custom) custom[c.id] = 1;
-    });
-    if (extra) custom[extra] = 1;
-    var html = Jul.CATEGORIES.map(function (c) {
-      return '<option value="' + e(c.id) + '">' + e(c.label) + '</option>';
-    }).join('');
-    Object.keys(custom).forEach(function (c) {
-      html += '<option value="' + e(c) + '">' + e(c) + '</option>';
-    });
-    html += '<option value="__new">+ Ny kategori …</option>';
-    $('#category-select').innerHTML = html;
   }
 
   function renderAll() {
@@ -246,17 +227,16 @@
     list.forEach(function (w, i) {
       if (q && (w.title + ' ' + w.description).toLowerCase().indexOf(q) === -1) return;
       var img = Jul.safeImage(w.image);
-      var cat = Jul.getCategory(w.category);
       var thumb = img
         ? '<img src="' + e(img) + '" alt="" loading="lazy">'
-        : '<span class="ed-item__ph">' + Jul.icon(cat.icon) + '</span>';
+        : '<span class="ed-item__ph">' + Jul.icon('gift') + '</span>';
       var price = Jul.formatPrice(+w.priceMin, +w.priceMax) || 'Ingen pris';
       html += '<li class="ed-item' + (w.id === state.selected ? ' is-active' : '') + '" data-id="' + e(w.id) + '">' +
         '<button type="button" class="ed-item__main" data-select="' + e(w.id) + '">' +
         '<span class="ed-item__thumb' + (w.imageFit === 'cover' || !img ? ' is-cover' : '') + '">' + thumb + '</span>' +
         '<span class="ed-item__text"><span class="ed-item__title' + (w.title ? '' : ' is-missing') + '">' +
         (+w.priority === 2 ? Jul.icon('star', 'ed-star') : '') + e(w.title || 'Uten navn') + '</span>' +
-        '<span class="ed-item__meta">' + e(price) + ' · ' + e(cat.label) + '</span></span></button>' +
+        '<span class="ed-item__meta">' + e(price) + '</span></span></button>' +
         '<span class="ed-item__move">' +
         '<button type="button" class="ed-mini" data-move="-1" aria-label="Flytt opp"' + (i === 0 ? ' disabled' : '') + '>' + Jul.icon('chevronUp') + '</button>' +
         '<button type="button" class="ed-mini" data-move="1" aria-label="Flytt ned"' + (i === list.length - 1 ? ' disabled' : '') + '>' + Jul.icon('chevronDown') + '</button>' +
@@ -291,9 +271,6 @@
 
     form.elements.title.value = w.title;
     form.elements.person.value = w.person;
-    var catSel = form.elements.category;
-    if (!Array.prototype.some.call(catSel.options, function (o) { return o.value === w.category; })) buildCategorySelect(w.category);
-    catSel.value = w.category;
     form.elements.description.value = w.description;
     form.elements.image.value = /^data:/.test(w.image) ? '' : w.image;
     form.elements.image.placeholder = /^data:/.test(w.image)
@@ -357,7 +334,7 @@
 
   function addWish(base) {
     var w = base ? JSON.parse(JSON.stringify(base)) : {
-      title: '', description: '', category: 'annet', image: '', imageFit: 'contain',
+      title: '', description: '', image: '', imageFit: 'contain',
       storeUrl: '', prisjaktUrl: '', priceMin: null, priceMax: null, priority: 0
     };
     w.id = Jul.uid();
@@ -567,7 +544,6 @@
           w.image = t.value.trim();
           form.elements.image.placeholder = 'Lim inn bildeadresse (https://…)';
           break;
-        case 'category':
         case 'person':
           return; // håndteres i change
         default:
@@ -581,19 +557,6 @@
       var w = wishById(state.selected);
       var t = ev.target;
       if (!w) return;
-      if (t.name === 'category') {
-        if (t.value === '__new') {
-          var name = (global.prompt('Navn på ny kategori:') || '').trim();
-          if (!name) { t.value = w.category; return; }
-          var match = Jul.CATEGORIES.filter(function (c) { return c.label.toLowerCase() === name.toLowerCase(); })[0];
-          w.category = match ? match.id : name;
-          buildCategorySelect(w.category);
-          t.value = w.category;
-        } else {
-          w.category = t.value;
-        }
-        changed(w, { now: true });
-      }
       if (t.name === 'person') {
         w.person = t.value;
         state.person = t.value;

@@ -20,7 +20,6 @@
     query: '',
     price: 'all',
     sort: 'recommended',
-    category: 'all',
     rendered: false
   };
 
@@ -247,7 +246,6 @@
     var next = indexOf(id);
     var changed = id !== state.current;
     state.current = id;
-    if (changed) state.category = 'all';
 
     $$('.tab').forEach(function (t) {
       var on = t.getAttribute('data-person') === id;
@@ -309,7 +307,7 @@
   function matchesQuery(w, terms) {
     if (!terms.length) return true;
     var p = personById(w.person);
-    var hay = [w.title, w.description, Jul.getCategory(w.category).label, p ? p.name : '']
+    var hay = [w.title, w.description, p ? p.name : '']
       .join(' ')
       .toLowerCase();
     return terms.every(function (t) { return hay.indexOf(t) !== -1; });
@@ -358,25 +356,9 @@
     var scope = state.wishes.filter(function (w) {
       return searching ? matchesQuery(w, terms) : w.person === state.current;
     });
-    var priced = scope.filter(matchesPrice);
-
-    // Kategorier som finnes i utvalget
-    var cats = {};
-    var order = [];
-    priced.forEach(function (w) {
-      var c = Jul.getCategory(w.category);
-      if (!cats[c.id]) { cats[c.id] = { cat: c, n: 0 }; order.push(c.id); }
-      cats[c.id].n++;
-    });
-    if (state.category !== 'all' && !cats[state.category]) state.category = 'all';
-
-    var list = priced.filter(function (w) {
-      return state.category === 'all' || Jul.getCategory(w.category).id === state.category;
-    });
-    list = sortList(list);
+    var list = sortList(scope.filter(matchesPrice));
 
     renderHead(scope, searching);
-    renderChips(order, cats, priced.length, scope.length > 0);
     renderGrid(list, scope, searching, animate);
     state.rendered = true;
   }
@@ -424,34 +406,6 @@
       '</div>';
   }
 
-  function renderChips(order, cats, total, any) {
-    var el = $('#chips');
-    if (!any || order.length < 1) {
-      el.innerHTML = '';
-      el.hidden = true;
-      return;
-    }
-    el.hidden = false;
-    // Sorter kategorier i standard rekkefølge
-    var idx = {};
-    Jul.CATEGORIES.forEach(function (c, i) { idx[c.id] = i; });
-    order.sort(function (a, b) { return (idx[a] == null ? 99 : idx[a]) - (idx[b] == null ? 99 : idx[b]); });
-
-    var html = chip('all', 'Alle', '', total);
-    order.forEach(function (id) {
-      html += chip(id, cats[id].cat.label, cats[id].cat.icon, cats[id].n);
-    });
-    el.innerHTML = html;
-  }
-
-  function chip(id, label, icon, n) {
-    var on = state.category === id;
-    return (
-      '<button type="button" class="chip' + (on ? ' is-active' : '') + '" data-cat="' + Jul.escape(id) + '" aria-pressed="' + on + '">' +
-      (icon ? Jul.icon(icon) : '') + '<span>' + Jul.escape(label) + '</span><span class="chip__n">' + n + '</span></button>'
-    );
-  }
-
   function renderGrid(list, scope, searching, animate) {
     var grid = $('#grid');
     grid.classList.toggle('grid--static', !animate);
@@ -469,11 +423,11 @@
       grid.innerHTML =
         '<div class="empty empty--small">' +
         '<span class="empty__icon">' + Jul.icon(searching ? 'search' : 'sliders') + '</span>' +
-        '<h3>' + (searching && !scope.length ? 'Fant ingen ønsker som passer søket' : 'Ingen ønsker passer filtrene') + '</h3>' +
-        '<p>' + (searching && !scope.length ? 'Prøv et annet ord, for eksempel en kategori eller et produktnavn.' : 'Prøv et annet prisintervall eller en annen kategori.') + '</p>' +
+        '<h3>' + (searching && !scope.length ? 'Fant ingen ønsker som passer søket' : 'Ingen ønsker i dette prisintervallet') + '</h3>' +
+        '<p>' + (searching && !scope.length ? 'Prøv et annet ord, for eksempel et produktnavn.' : 'Prøv et annet prisintervall.') + '</p>' +
         (searching && !scope.length
           ? '<button type="button" class="btn btn--ghost btn--sm" data-action="clear-search">Nullstill søk</button>'
-          : '<button type="button" class="btn btn--ghost btn--sm" data-action="reset">Nullstill filtre</button>') +
+          : '<button type="button" class="btn btn--ghost btn--sm" data-action="reset">Vis alle priser</button>') +
         '</div>';
       return;
     }
@@ -557,7 +511,6 @@
         var was = !!state.query.trim();
         state.query = search.value;
         var now = !!state.query.trim();
-        if (was !== now) state.category = 'all';
         render(was !== now);
       }, 120);
     });
@@ -579,13 +532,6 @@
       render(false);
     });
 
-    $('#chips').addEventListener('click', function (ev) {
-      var c = ev.target.closest('.chip');
-      if (!c) return;
-      state.category = c.getAttribute('data-cat');
-      render(false);
-    });
-
     $('#main').addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-action]');
       if (!b) return;
@@ -594,7 +540,6 @@
       if (a === 'clear-search') clearSearch();
       if (a === 'reset') {
         state.price = 'all';
-        state.category = 'all';
         $('#price-filter').value = 'all';
         render(false);
       }
@@ -632,7 +577,7 @@
     var main = $('#main');
     main.addEventListener('touchstart', function (ev) {
       var t = ev.target;
-      track = !state.query && !t.closest('.chips, .toolbar, input, select, button, a');
+      track = !state.query && !t.closest('.toolbar, input, select, button, a');
       if (!track) return;
       sx = ev.touches[0].clientX; sy = ev.touches[0].clientY; st = Date.now();
     }, { passive: true });

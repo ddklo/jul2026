@@ -1,6 +1,6 @@
 /*!
  * Juleønsker – felles kode for nettsiden og redigeringsverktøyet.
- * Kryptering (Web Crypto: PBKDF2 + AES-GCM), ikoner, kategorier og produktkort.
+ * Kryptering (Web Crypto: PBKDF2 + AES-GCM), ikoner og produktkort.
  * Ingen eksterne avhengigheter.
  */
 (function (global) {
@@ -281,31 +281,8 @@
   Jul.ICONS = ICONS;
 
   /* ------------------------------------------------------------------ *
-   * Kategorier og prioritet
+   * Prioritet
    * ------------------------------------------------------------------ */
-  var CATEGORIES = [
-    { id: 'elektronikk', label: 'Elektronikk', icon: 'headphones', tint: ['#13233f', '#2d4a7c'] },
-    { id: 'klaer', label: 'Klær og tilbehør', icon: 'shirt', tint: ['#3a1219', '#7a2a36'] },
-    { id: 'sport', label: 'Sport og friluft', icon: 'mountain', tint: ['#0f2a22', '#245c47'] },
-    { id: 'leker', label: 'Leker', icon: 'blocks', tint: ['#3a2410', '#8a5a24'] },
-    { id: 'spill', label: 'Spill', icon: 'gamepad', tint: ['#1f1638', '#4a3784'] },
-    { id: 'boker', label: 'Bøker', icon: 'book', tint: ['#2d2214', '#6b5230'] },
-    { id: 'hjem', label: 'Hjem og kjøkken', icon: 'lamp', tint: ['#142a2c', '#2f6266'] },
-    { id: 'skjonnhet', label: 'Skjønnhet og velvære', icon: 'sparkles', tint: ['#35142a', '#7a3260'] },
-    { id: 'opplevelser', label: 'Opplevelser', icon: 'ticket', tint: ['#2e1a0c', '#8a4b1c'] },
-    { id: 'annet', label: 'Annet', icon: 'gift', tint: ['#1c2230', '#3e4a63'] }
-  ];
-  var CAT_MAP = {};
-  CATEGORIES.forEach(function (c) { CAT_MAP[c.id] = c; });
-
-  Jul.CATEGORIES = CATEGORIES;
-  Jul.getCategory = function (id) {
-    if (!id) return CAT_MAP.annet;
-    if (CAT_MAP[id]) return CAT_MAP[id];
-    // Egendefinert kategori
-    return { id: id, label: id, icon: 'gift', tint: CAT_MAP.annet.tint, custom: true };
-  };
-
   Jul.PRIORITIES = [
     { value: 0, label: 'Ingen prioritet', short: '' },
     { value: 1, label: 'Hadde vært fint', short: 'Hadde vært fint' },
@@ -368,18 +345,18 @@
   /* ------------------------------------------------------------------ *
    * Plassholder-illustrasjon når et ønske mangler bilde
    * ------------------------------------------------------------------ */
-  Jul.categoryArt = function (catId) {
-    var c = Jul.getCategory(catId);
+  Jul.placeholderArt = function () {
+    var tint = ['#1c2230', '#3e4a63'];
     var uid = 'g' + Math.random().toString(36).slice(2, 8);
     return (
       '<svg class="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
       '<defs><radialGradient id="' + uid + '" cx="50%" cy="38%" r="75%">' +
-      '<stop offset="0" stop-color="' + c.tint[1] + '"/><stop offset="1" stop-color="' + c.tint[0] + '"/></radialGradient></defs>' +
+      '<stop offset="0" stop-color="' + tint[1] + '"/><stop offset="1" stop-color="' + tint[0] + '"/></radialGradient></defs>' +
       '<rect width="400" height="300" fill="url(#' + uid + ')"/>' +
       '<circle cx="200" cy="150" r="78" fill="#fff" fill-opacity=".05"/>' +
       '<g fill="#f3e3bd" fill-opacity=".55"><circle cx="70" cy="60" r="1.6"/><circle cx="330" cy="80" r="1.2"/><circle cx="300" cy="230" r="1.8"/><circle cx="96" cy="220" r="1.1"/><circle cx="350" cy="160" r=".9"/></g>' +
       '<g transform="translate(152 102) scale(4)" fill="none" stroke="#f3e3bd" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">' +
-      (ICONS[c.icon] || ICONS.gift) +
+      ICONS.gift +
       '</g></svg>'
     );
   };
@@ -391,7 +368,6 @@
   Jul.cardHTML = function (w, opts) {
     opts = opts || {};
     var e = Jul.escape;
-    var cat = Jul.getCategory(w.category);
     var img = Jul.safeImage(w.image);
     var store = Jul.safeUrl(w.storeUrl);
     var pj = Jul.safeUrl(w.prisjaktUrl) || (w.title ? Jul.prisjaktSearch(w.title) : '');
@@ -400,8 +376,8 @@
     var fit = w.imageFit === 'cover' ? ' card__media--cover' : '';
 
     var media = img
-      ? '<img src="' + e(img) + '" alt="' + e(w.title || '') + '" loading="lazy" decoding="async" data-cat="' + e(cat.id) + '">'
-      : Jul.categoryArt(cat.id);
+      ? '<img src="' + e(img) + '" alt="' + e(w.title || '') + '" loading="lazy" decoding="async">'
+      : Jul.placeholderArt();
 
     var badge = '';
     if (prio === 2) badge = '<span class="badge badge--hot">' + Jul.icon('star') + 'Ønsker meg veldig</span>';
@@ -423,7 +399,7 @@
       '<article class="card' + (prio === 2 ? ' card--hot' : '') + '" style="--i:' + (opts.index || 0) + '" data-id="' + e(w.id) + '">' +
       '<div class="card__media' + (img ? fit : ' card__media--art') + '">' + media + badge + '</div>' +
       '<div class="card__body">' +
-      '<div class="card__meta"><span class="cat">' + Jul.icon(cat.icon) + e(cat.label) + '</span>' + person + '</div>' +
+      (person ? '<div class="card__meta">' + person + '</div>' : '') +
       '<h3 class="card__title">' + e(w.title || 'Uten navn') + '</h3>' +
       (w.description ? '<p class="card__desc">' + e(w.description) + '</p>' : '') +
       '<div class="card__bottom">' +
@@ -433,7 +409,7 @@
     );
   };
 
-  /** Erstatter bilder som ikke laster med kategori-illustrasjon. */
+  /** Erstatter bilder som ikke laster med en gave-illustrasjon. */
   Jul.installImageFallback = function (root) {
     (root || document).addEventListener(
       'error',
@@ -444,7 +420,7 @@
           media.classList.remove('card__media--cover');
           media.classList.add('card__media--art');
           var tmp = document.createElement('div');
-          tmp.innerHTML = Jul.categoryArt(t.getAttribute('data-cat'));
+          tmp.innerHTML = Jul.placeholderArt();
           media.replaceChild(tmp.firstChild, t);
         }
       },

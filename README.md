@@ -13,7 +13,7 @@ En elegant, mobilvennlig og passordbeskyttet juleønskeliste for **Dagfinn, Kris
 ```
 index.html               Selve nettsiden (innlogging + ønskelister)
 assets/css/styles.css    Design
-assets/js/shared.js      Kryptering, ikoner, kategorier og produktkort (felles)
+assets/js/shared.js      Kryptering, ikoner og produktkort (felles)
 assets/js/app.js         Logikken til nettsiden
 assets/js/snow.js        Snøfallet i bakgrunnen
 data/wishlist.enc.js     ← De krypterte ønskelistene (den eneste filen du bytter ut)
@@ -68,7 +68,6 @@ Nettsiden oppdateres i løpet av et par minutter. Familien trenger ikke logge in
 |---|---|
 | Produktnavn | Påkrevd |
 | Person | Hvem ønsket tilhører. Endrer du dette, flyttes ønsket. |
-| Kategori | Elektronikk, Klær og tilbehør, Sport og friluft, Leker, Spill, Bøker, Hjem og kjøkken, Skjønnhet og velvære, Opplevelser, Annet. Du kan også lage dine egne. |
 | Kort beskrivelse | Valgfri. Størrelse, farge, modell og lignende. |
 | Produktbilde | Lim inn en bildeadresse, eller last opp, dra inn eller lim inn et bilde |
 | Bildetilpasning | «Vis hele bildet» passer for produktbilder med hvit bakgrunn. «Fyll rammen» passer for stemningsbilder. |
@@ -96,9 +95,9 @@ Listene inneholder eksempelprodukter med illustrasjoner i stedet for ekte produk
 ## 3. Funksjoner på nettsiden
 
 - Fire faner med antall ønsker per person. På mobil er fanene en bunnmeny, og du kan sveipe mellom personene.
-- Produktkort med bilde, beskrivelse, prisintervall, kategori og prioritet, pluss knappene «Se i butikk» og «Prisjakt»
+- Produktkort med bilde, beskrivelse, prisintervall og prioritet, pluss knappene «Se i butikk» og «Prisjakt»
 - Søk på tvers av alle ønskelister
-- Filtrering på prisintervall og kategori, og sortering på pris eller navn
+- Filtrering på prisintervall og sortering på pris eller navn
 - Lenke som går direkte til én persons liste
 - Tomtilstand når en person ikke har ønsker
 - Knapp til toppen og nedtelling til julaften
@@ -150,7 +149,7 @@ node tools/onskeliste.mjs krypter backup.json
   "people": [{ "id": "dagfinn", "name": "Dagfinn", "accent": "#d9b26a" }],
   "wishes": [{
     "id": "w001", "person": "dagfinn", "title": "…", "description": "…",
-    "category": "elektronikk", "image": "https://…", "imageFit": "contain",
+    "image": "https://…", "imageFit": "contain",
     "storeUrl": "https://…", "prisjaktUrl": "https://…",
     "priceMin": 500, "priceMax": 1000, "priority": 2
   }]
