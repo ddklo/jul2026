@@ -75,11 +75,10 @@ Nettsiden oppdateres i løpet av et par minutter. Familien trenger ikke logge in
 | Knappetekst | Valgfri. Standard er «Se i butikk», men du kan skrive for eksempel «Se oppskriften». |
 | Lenke til Prisjakt | La feltet stå tomt for å få et automatisk Prisjakt-søk på produktnavnet. Kryss av for «Skjul Prisjakt-knappen» for ting som ikke selges, for eksempel hjemmelagde ting. |
 | Prisintervall | Fra–til i NOK. Hurtigknappene fyller inn vanlige intervaller. |
-| Prioritet | Ingen, «Hadde vært fint» eller «Ønsker meg veldig». Høy prioritet vises først. |
 
 **Bildetips:** Høyreklikk på produktbildet i nettbutikken og velg **Kopier bildeadresse**, og lim adressen inn i bildefeltet. Opplastede bilder krympes automatisk (maks 900 px, WebP) og krypteres sammen med listen. Mange opplastede bilder gjør datafilen større, så bildeadresser holder filen liten.
 
-**Rekkefølge:** Bruk pilene i listen til venstre. Rekkefølgen styrer standardsorteringen («Anbefalt»), der ønsker med høy prioritet kommer først.
+**Rekkefølge:** Bruk pilene i listen til venstre. Nettsiden sorterer på pris, og rekkefølgen din brukes når ønsker har samme pris eller mangler pris.
 
 ### Andre valg (menyen «Mer»)
 
@@ -96,7 +95,7 @@ Listene inneholder eksempelprodukter med illustrasjoner i stedet for ekte produk
 ## 3. Funksjoner på nettsiden
 
 - Fire faner med antall ønsker per person. På mobil er fanene en bunnmeny, og du kan sveipe mellom personene.
-- Produktkort med bilde, beskrivelse, prisintervall og prioritet, pluss knappene «Se i butikk» og «Prisjakt»
+- Produktkort med bilde, beskrivelse og prisintervall, pluss knappene «Se i butikk» og «Prisjakt»
 - Søk på tvers av alle ønskelister
 - Filtrering på prisintervall og sortering på pris eller navn
 - Lenke som går direkte til én persons liste
@@ -152,7 +151,7 @@ node tools/onskeliste.mjs krypter backup.json
     "id": "w001", "person": "dagfinn", "title": "…", "description": "…",
     "image": "https://…", "imageFit": "contain",
     "storeUrl": "https://…", "prisjaktUrl": "https://…",
-    "priceMin": 500, "priceMax": 1000, "priority": 2
+    "priceMin": 500, "priceMax": 1000
   }]
 }
 ```

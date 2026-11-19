@@ -124,7 +124,6 @@ body.ed { min-height: 100vh; }
 .ed-item__text { min-width: 0; display: grid; }
 .ed-item__title { font-weight: 600; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; }
 .ed-item__title.is-missing { color: var(--muted); font-style: italic; font-weight: 500; }
-.ed-star { width: 13px; height: 13px; color: var(--gold); }
 .ed-item__meta { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ed-item__move { display: grid; padding-right: 4px; opacity: 0.55; transition: opacity 0.15s; }
 .ed-item:hover .ed-item__move, .ed-item.is-active .ed-item__move, .ed-item__move:focus-within { opacity: 1; }

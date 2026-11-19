@@ -19,7 +19,7 @@
     current: null,
     query: '',
     price: 'all',
-    sort: 'recommended',
+    sort: 'price-asc',
     rendered: false
   };
 
@@ -353,9 +353,6 @@
       } else if (s === 'name') {
         var c = String(a.title || '').localeCompare(String(b.title || ''), 'nb');
         if (c) return c;
-      } else {
-        var d = (+b.priority || 0) - (+a.priority || 0);
-        if (d) return d;
       }
       return A.i - B.i;
     });
@@ -398,16 +395,14 @@
 
     var p = personById(state.current);
     if (!p) { head.innerHTML = ''; return; }
-    var hot = 0, min = 0, max = 0;
+    var min = 0, max = 0;
     scope.forEach(function (w) {
-      if (+w.priority === 2) hot++;
       var a = +w.priceMin || +w.priceMax || 0;
       var b = +w.priceMax || +w.priceMin || 0;
       if (a && (!min || a < min)) min = a;
       if (b && b > max) max = b;
     });
     var stats = [plural(scope.length, 'ønske', 'ønsker')];
-    if (hot) stats.push(plural(hot, 'topp-ønske', 'topp-ønsker'));
     var range = Jul.formatPrice(min, max);
     if (scope.length && range) stats.push(range);
 

@@ -8,8 +8,8 @@
   <meta name="theme-color" content="#070b14">
   <title>Rediger ønskelister · Juleønsker 2026</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../assets/css/styles.css?v=5">
-  <link rel="stylesheet" href="editor.css?v=5">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=6">
+  <link rel="stylesheet" href="editor.css?v=6">
 </head>
 <body class="ed">
 
@@ -102,7 +102,7 @@
           <button type="button" class="btn btn--primary btn--sm" id="add-btn"><span data-icon="plus"></span>Nytt ønske</button>
         </div>
         <ol class="ed-list" id="ed-list"></ol>
-        <p class="ed-side__hint">Rekkefølgen her er rekkefølgen familien ser (ved sortering «Anbefalt», etter prioritet).</p>
+        <p class="ed-side__hint">Rekkefølgen brukes når ønsker har samme pris eller mangler pris.</p>
       </aside>
 
       <!-- Midten: skjema -->
@@ -200,14 +200,6 @@
               </div>
             </fieldset>
 
-            <fieldset class="ed-field ed-field--full">
-              <legend class="ed-label">Prioritet <small>valgfritt</small></legend>
-              <div class="ed-seg ed-seg--wide" role="radiogroup" aria-label="Prioritet">
-                <label><input type="radio" name="priority" value="0"><span>Ingen</span></label>
-                <label><input type="radio" name="priority" value="1"><span data-icon="heart"></span><span>Hadde vært fint</span></label>
-                <label><input type="radio" name="priority" value="2"><span data-icon="star"></span><span>Ønsker meg veldig</span></label>
-              </div>
-            </fieldset>
           </div>
         </form>
       </section>
@@ -256,7 +248,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="../assets/js/shared.js?v=5"></script>
-  <script src="editor.js?v=5"></script>
+  <script src="../assets/js/shared.js?v=6"></script>
+  <script src="editor.js?v=6"></script>
 </body>
 </html>

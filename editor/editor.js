@@ -97,7 +97,6 @@
           linkLabel: w.linkLabel || '',
           priceMin: w.priceMin ? +w.priceMin : null,
           priceMax: w.priceMax ? +w.priceMax : null,
-          priority: +w.priority || 0,
           createdAt: w.createdAt || new Date().toISOString()
         };
       })
@@ -237,7 +236,7 @@
         '<button type="button" class="ed-item__main" data-select="' + e(w.id) + '">' +
         '<span class="ed-item__thumb' + (w.imageFit === 'cover' || !img ? ' is-cover' : '') + '">' + thumb + '</span>' +
         '<span class="ed-item__text"><span class="ed-item__title' + (w.title ? '' : ' is-missing') + '">' +
-        (+w.priority === 2 ? Jul.icon('star', 'ed-star') : '') + e(w.title || 'Uten navn') + '</span>' +
+        e(w.title || 'Uten navn') + '</span>' +
         '<span class="ed-item__meta">' + e(price) + '</span></span></button>' +
         '<span class="ed-item__move">' +
         '<button type="button" class="ed-mini" data-move="-1" aria-label="Flytt opp"' + (i === 0 ? ' disabled' : '') + '>' + Jul.icon('chevronUp') + '</button>' +
@@ -285,7 +284,6 @@
     form.elements.hidePrisjakt.checked = !!w.hidePrisjakt;
     form.elements.priceMin.value = w.priceMin || '';
     form.elements.priceMax.value = w.priceMax || '';
-    setRadio(form, 'priority', String(+w.priority || 0));
     $('#form-title').textContent = w.title ? 'Rediger ønske' : 'Nytt ønske';
     updateFormExtras(w);
   }
@@ -339,7 +337,7 @@
   function addWish(base) {
     var w = base ? JSON.parse(JSON.stringify(base)) : {
       title: '', description: '', image: '', imageFit: 'contain',
-      storeUrl: '', prisjaktUrl: '', hidePrisjakt: false, linkLabel: '', priceMin: null, priceMax: null, priority: 0
+      storeUrl: '', prisjaktUrl: '', hidePrisjakt: false, linkLabel: '', priceMin: null, priceMax: null
     };
     w.id = Jul.uid();
     w.person = state.person;
@@ -540,9 +538,6 @@
         case 'priceMin':
         case 'priceMax':
           w[t.name] = t.value === '' ? null : Math.max(0, Math.round(+t.value));
-          break;
-        case 'priority':
-          w.priority = +t.value;
           break;
         case 'hidePrisjakt':
           w.hidePrisjakt = t.checked;

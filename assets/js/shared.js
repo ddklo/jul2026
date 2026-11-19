@@ -309,15 +309,6 @@
   Jul.ICONS = ICONS;
 
   /* ------------------------------------------------------------------ *
-   * Prioritet
-   * ------------------------------------------------------------------ */
-  Jul.PRIORITIES = [
-    { value: 0, label: 'Ingen prioritet', short: '' },
-    { value: 1, label: 'Hadde vært fint', short: 'Hadde vært fint' },
-    { value: 2, label: 'Ønsker meg veldig', short: 'Ønsker meg veldig' }
-  ];
-
-  /* ------------------------------------------------------------------ *
    * Formatering og sikkerhet
    * ------------------------------------------------------------------ */
   var nf = new Intl.NumberFormat('nb-NO', { maximumFractionDigits: 0 });
@@ -400,16 +391,11 @@
     var store = Jul.safeUrl(w.storeUrl);
     var pj = w.hidePrisjakt ? '' : Jul.safeUrl(w.prisjaktUrl) || (w.title ? Jul.prisjaktSearch(w.title) : '');
     var price = Jul.formatPrice(+w.priceMin, +w.priceMax);
-    var prio = +w.priority || 0;
     var fit = w.imageFit === 'cover' ? ' card__media--cover' : '';
 
     var media = img
       ? '<img src="' + e(img) + '" alt="' + e(w.title || '') + '" loading="lazy" decoding="async">'
       : Jul.placeholderArt();
-
-    var badge = '';
-    if (prio === 2) badge = '<span class="badge badge--hot">' + Jul.icon('star') + 'Ønsker meg veldig</span>';
-    else if (prio === 1) badge = '<span class="badge badge--soft">' + Jul.icon('heart') + 'Hadde vært fint</span>';
 
     var person = opts.personName
       ? '<span class="card__person" style="--accent:' + e(opts.accent || 'var(--gold)') + '">' + e(opts.personName) + '</span>'
@@ -424,8 +410,8 @@
     }
 
     return (
-      '<article class="card' + (prio === 2 ? ' card--hot' : '') + '" style="--i:' + (opts.index || 0) + '" data-id="' + e(w.id) + '">' +
-      '<div class="card__media' + (img ? fit : ' card__media--art') + '">' + media + badge + '</div>' +
+      '<article class="card" style="--i:' + (opts.index || 0) + '" data-id="' + e(w.id) + '">' +
+      '<div class="card__media' + (img ? fit : ' card__media--art') + '">' + media + '</div>' +
       '<div class="card__body">' +
       (person ? '<div class="card__meta">' + person + '</div>' : '') +
       '<h3 class="card__title">' + e(w.title || 'Uten navn') + '</h3>' +
