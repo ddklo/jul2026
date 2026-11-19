@@ -357,10 +357,6 @@
     return Jul.safeUrl(url);
   };
 
-  Jul.prisjaktSearch = function (title) {
-    return 'https://www.prisjakt.no/search?search=' + encodeURIComponent(title || '');
-  };
-
   /* ------------------------------------------------------------------ *
    * Plassholder-illustrasjon når et ønske mangler bilde
    * ------------------------------------------------------------------ */
@@ -389,7 +385,7 @@
     var e = Jul.escape;
     var img = Jul.safeImage(w.image);
     var store = Jul.safeUrl(w.storeUrl);
-    var pj = w.hidePrisjakt ? '' : Jul.safeUrl(w.prisjaktUrl) || (w.title ? Jul.prisjaktSearch(w.title) : '');
+    var pj = w.hidePrisjakt ? '' : Jul.safeUrl(w.prisjaktUrl);
     var price = Jul.formatPrice(+w.priceMin, +w.priceMax);
     var fit = w.imageFit === 'cover' ? ' card__media--cover' : '';
 
