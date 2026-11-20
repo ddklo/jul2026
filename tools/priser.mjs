@@ -10,79 +10,30 @@
  * En fil skrives bare når en pris er endret, når en lagret pris er eldre
  * enn REFRESH_DAYS, eller med --force (manuell kjøring). Slik blir det færre commits.
  */
-import { readFile, writeFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { personFiles, readJSON, writeWishes, prisjaktId, prisjaktProduct, sleep } from './felles.mjs';
 
-const DATA = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'data');
 const REFRESH_DAYS = 3;
 const DELAY_MS = 1500;
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36';
 
-// Må være lik WISH_FIELDS i assets/js/shared.js
-const FIELDS = ['id', 'title', 'description', 'image', 'imageFit', 'storeUrl', 'linkLabel', 'prisjaktUrl',
-  'hidePrisjakt', 'priceMin', 'priceMax', 'livePrice', 'createdAt'];
 const force = process.argv.includes('--force');
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const readJSON = async (name) => JSON.parse(await readFile(resolve(DATA, name), 'utf8'));
 const ageDays = (iso) => (Date.now() - Date.parse(iso)) / 864e5;
 
-/** Produkt-ID fra en Prisjakt-produktlenke, ellers null (kategori- og søkelenker har ingen enkeltpris). */
-function prisjaktId(url) {
-  try {
-    const u = new URL(url);
-    if (!/(^|\.)prisjakt\.no$/.test(u.hostname) || u.pathname !== '/product.php') return null;
-    const p = u.searchParams.get('p');
-    return p && /^\d+$/.test(p) ? p : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Finner laveste pris og antall butikker i produktsidens JSON-LD. */
-function parsePrice(html) {
-  for (const m of html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)) {
-    let j;
-    try { j = JSON.parse(m[1]); } catch { continue; }
-    for (const node of [].concat(j['@graph'] || j)) {
-      if (node?.['@type'] !== 'Product' || !node.offers) continue;
-      const o = [].concat(node.offers)[0];
-      const amount = Math.round(Number(o.lowPrice ?? o.price));
-      if (amount > 0) return { amount, offers: Number(o.offerCount) || null };
-    }
-  }
-  return null;
-}
-
-async function fetchPrice(id) {
-  const res = await fetch(`https://www.prisjakt.no/product.php?p=${id}`, {
-    headers: { 'user-agent': UA, 'accept-language': 'nb-NO,nb;q=0.9' },
-    signal: AbortSignal.timeout(30000)
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const price = parsePrice(await res.text());
-  if (!price) throw new Error('fant ingen pris på siden');
-  return price;
-}
-
 async function main() {
-  const { lists, people } = await readJSON('personer.json');
   const now = new Date().toISOString();
   let ok = 0, failed = 0, first = true;
   const written = [];
-  const files = lists.flatMap((l) => people.map((p) => `${l.id}/${p.id}.json`));
   // Samme produkt kan stå på flere lister; hent det bare én gang per kjøring
   const cache = new Map();
   const getPrice = async (id) => {
     if (!cache.has(id)) {
       if (!first) await sleep(DELAY_MS);
       first = false;
-      cache.set(id, fetchPrice(id));
+      cache.set(id, prisjaktProduct(id));
     }
     return cache.get(id);
   };
 
-  for (const file of files) {
+  for (const { file } of await personFiles()) {
     const data = await readJSON(file);
     let changed = false;
 
@@ -108,14 +59,7 @@ async function main() {
     }
 
     if (changed) {
-      // Samme feltrekkefølge som nettsiden (Jul.serializeWishes), så diffene blir små
-      data.wishes = (data.wishes || []).map((w) => {
-        const o = {};
-        for (const k of FIELDS) if (w[k] !== undefined) o[k] = w[k];
-        for (const k of Object.keys(w)) if (!(k in o)) o[k] = w[k];
-        return o;
-      });
-      await writeFile(resolve(DATA, file), JSON.stringify(data, null, 2) + '\n');
+      await writeWishes(file, data);
       written.push(file);
     }
   }

@@ -7,3 +7,6 @@ onskeliste-backup-*.json
 # Systemfiler
 .DS_Store
 Thumbs.db
+
+# Node-moduler (sharp installeres bare ved behov)
+node_modules/

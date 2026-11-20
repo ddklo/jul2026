@@ -11,8 +11,9 @@ permissions:
   contents: write
   pages: write
 
+# Samme gruppe som «Fyll inn manglende», så de ikke pusher samtidig
 concurrency:
-  group: priser
+  group: data-jobber
   cancel-in-progress: false
 
 jobs:
@@ -44,6 +45,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data
           git commit -m "Oppdater priser fra Prisjakt"
+          # Nettsiden kan ha lagret noe i mellomtiden
+          git pull --rebase
           git push
           # Push med GITHUB_TOKEN starter ikke alltid Pages-bygget av seg selv
           gh api -X POST "repos/${{ github.repository }}/pages/builds" --silent || echo "Kunne ikke be om nytt Pages-bygg"

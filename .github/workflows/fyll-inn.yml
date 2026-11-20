@@ -1,0 +1,76 @@
+# Fyller inn manglende bilder og prisantydning på ønskene (tools/fyll-inn.mjs),
+# og holder én GitHub-sak oppdatert med ønsker som må fikses for hånd
+# (for eksempel manglende Prisjakt-produktlenke). Saken lukkes når alt er i orden.
+#
+# Kjører når ønskelistene endres (også lagringer fra nettsiden), hver natt og manuelt.
+# Commits fra jobben selv (GITHUB_TOKEN) starter ikke jobben på nytt.
+name: Fyll inn manglende
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+  schedule:
+    - cron: '47 3 * * *'   # 03:47 UTC, etter prisjobben
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pages: write
+
+# Samme gruppe som prisjobben, så de ikke pusher samtidig
+concurrency:
+  group: data-jobber
+  cancel-in-progress: false
+
+jobs:
+  fyll-inn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer sharp (bildekonvertering)
+        run: npm install --no-save --no-package-lock sharp@0.33.5
+
+      - name: Fyll inn manglende bilder og priser
+        run: node tools/fyll-inn.mjs --mangler "$RUNNER_TEMP/mangler.md"
+
+      - name: Commit og publiser
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git status --porcelain -- data)" ]; then
+            echo "Ingen endringer å publisere"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git commit -m "Fyll inn manglende bilder og priser"
+          git pull --rebase
+          git push
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" --silent || echo "Kunne ikke be om nytt Pages-bygg"
+
+      - name: Oppdater saken om ønsker som mangler noe
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: Ønsker som mangler Prisjakt-produktlenke eller bilde
+        run: |
+          NUM=$(gh issue list --state open --limit 50 --json number,title \
+            --jq "[.[] | select(.title == \"$TITLE\")][0].number // empty")
+          if [ -s "$RUNNER_TEMP/mangler.md" ]; then
+            if [ -n "$NUM" ]; then
+              gh issue edit "$NUM" --body-file "$RUNNER_TEMP/mangler.md"
+            else
+              gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/mangler.md"
+            fi
+          elif [ -n "$NUM" ]; then
+            gh issue close "$NUM" --comment "Alle ønskene har nå bilde og Prisjakt-produktlenke (eller skjult Prisjakt-knapp). 🎄"
+          fi

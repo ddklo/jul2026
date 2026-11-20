@@ -28,7 +28,9 @@ data/<liste>/<person>.json  Ønskene, for eksempel data/bergen/ellie.json
 data/bilder/             Produktbildene
 editor/                  Redigeringsverktøyet (kun administrator)
 tools/priser.mjs         Henter priser fra Prisjakt (kjøres av GitHub Actions)
-.github/workflows/       Den nattlige prisjobben
+tools/fyll-inn.mjs       Fyller inn manglende bilder og prisantydning (kjøres av GitHub Actions)
+tools/felles.mjs         Felles hjelpere for skriptene
+.github/workflows/       Prisjobben og utfyllingsjobben
 ```
 
 ---
@@ -118,6 +120,16 @@ Filene i `data/bergen/` og `data/sorumsand/` er vanlig JSON og kan redigeres ret
 - **Eksporter backup / Importer backup:** alle ønskene i listen som én JSON-fil.
 - **Del lagring med familien** (administrator): legger inn eller bytter det felles GitHub-tokenet.
 
+### Automatisk utfylling
+
+Jobben **Fyll inn manglende** ([`.github/workflows/fyll-inn.yml`](.github/workflows/fyll-inn.yml)) kjører når ønskelistene endres (også når noen lagrer på nettsiden) og hver natt. Den fikser det som kan fikses uten et menneske:
+
+- **Bilde som mangler:** hentes fra Prisjakt-produktsiden, ellers fra nettbutikkens delingsbilde.
+- **Bilde som er en ekstern adresse eller er lastet opp i verktøyet:** lagres som WebP-fil i `data/bilder/`, så det ikke forsvinner eller gjør datafilen stor.
+- **Prisantydning som mangler:** fylles inn fra Prisjakt (laveste pris, og toppen maks 1,6 × laveste).
+
+Ønsker uten Prisjakt-produktlenke kan ikke fikses automatisk, fordi Prisjakts søk blokkerer skript. De samles i én GitHub-sak, «Ønsker som mangler Prisjakt-produktlenke eller bilde», som oppdateres og lukkes av seg selv når alt er i orden. Finnes et produkt ikke på Prisjakt, kryss av for **Skjul Prisjakt-knappen**, så blir det ikke meldt.
+
 ### Legge til en liste
 
 Legg listen til i `lists` i `data/personer.json`, lag mappen `data/<id>/` med én fil per person (`{ "wishes": [] }`), og kopier `bergen.html` til `<id>.html` med ny `data-list` og tittel. Husk også en knapp på forsiden (`index.html`).
@@ -172,7 +184,9 @@ Passordet er en **enkel sperre**, ikke ekte sikkerhet:
 python -m http.server 8000
 ```
 
-**Hente priser lokalt (Node 20+):**
+**Kjøre jobbene lokalt (Node 20+):** `node tools/fyll-inn.mjs` trenger sharp (`npm install --no-save sharp@0.33.5`).
+
+**Hente priser lokalt:**
 
 ```bash
 node tools/priser.mjs
