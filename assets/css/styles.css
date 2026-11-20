@@ -627,6 +627,41 @@ a { color: inherit; }
 .ed-steps { margin: 0 0 14px; padding-left: 22px; display: grid; gap: 8px; color: var(--text); }
 .ed-steps li::marker { color: var(--gold); font-weight: 700; }
 .ed-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+/* Mykere åpning */
+.ed-dialog[open] .ed-dialog__inner { animation: dialogIn 0.28s var(--ease-out) both; }
+.ed-dialog[open]::backdrop { animation: fadeIn 0.2s ease both; }
+@keyframes dialogIn { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
+.ed-dialog__inner { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05); }
+
+/* Egne bekreftelser og meldinger (Jul.ui) */
+.ui-dialog { width: min(440px, calc(100% - 32px)); }
+.ui-dialog .ed-dialog__inner { padding: 26px 26px 22px; }
+.ui-dialog h2 { font-size: 1.45rem; }
+.ui-dialog p { line-height: 1.55; }
+.ui-dialog--info .ed-dialog__icon { background: rgba(217, 178, 106, 0.16); color: var(--gold-2); }
+.ui-dialog--danger .ed-dialog__icon,
+.ui-dialog--error .ed-dialog__icon { background: rgba(201, 68, 90, 0.16); color: #ff8fa0; }
+.ui-dialog .btn--danger {
+  color: #fff; border-color: transparent;
+  background: linear-gradient(180deg, #d9566c, #a8283f);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 10px 26px -10px rgba(201, 68, 90, 0.7);
+}
+.ui-dialog .btn--danger:hover { filter: brightness(1.08); }
+.ui-dialog__item {
+  display: flex; align-items: center; gap: 12px; margin: 4px 0 14px; padding: 10px 12px;
+  border-radius: 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border);
+}
+.ui-dialog__item img, .ui-dialog__item > span {
+  flex: none; width: 52px; height: 52px; border-radius: 10px; object-fit: contain;
+  background: radial-gradient(120% 90% at 50% 20%, #fbf8f2, #e6dfd2); padding: 4px;
+}
+.ui-dialog__item > span { display: grid; place-items: center; color: #8a7a5c; }
+.ui-dialog__item strong { font-weight: 600; line-height: 1.35; }
+.ui-dialog .field input[readonly] { font-size: 0.85rem; }
+@media (max-width: 480px) {
+  .ed-dialog__actions { flex-direction: column-reverse; }
+  .ed-dialog__actions .btn { width: 100%; }
+}
 .ed-hint { margin: 0; font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
 .ed-dialog a { color: var(--gold-2); }
 .ed-dialog .field { margin-bottom: 10px; }

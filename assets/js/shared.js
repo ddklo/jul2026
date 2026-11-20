@@ -512,6 +512,7 @@
     lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
     logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
     x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    alert: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
     eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
     eyeOff: '<path d="M9.9 4.2A10.4 10.4 0 0 1 12 4c6.5 0 10 7 10 7a17.6 17.6 0 0 1-2.2 3.2"/><path d="M6.6 6.6C3.7 8.5 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/>',
     star: '<path d="M12 2.5l2.9 5.9 6.6 1-4.8 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.5 9.4l6.6-1z"/>',
@@ -622,6 +623,80 @@
     // Bilder i repoet (data/bilder/…) – relativt til nettstedets rot
     if (/^data\/bilder\/[\w.-]+\.(png|jpe?g|webp|gif|avif)$/i.test(url)) return Jul.ROOT + url;
     return Jul.safeUrl(url);
+  };
+
+  /* ------------------------------------------------------------------ *
+   * Dialoger i sidens eget design (i stedet for nettleserens confirm,
+   * alert og prompt). Alle gir et Promise.
+   *
+   *   Jul.ui.confirm({ title, message, item: { title, image }, ok, cancel, danger }) → true/false
+   *   Jul.ui.alert({ title, message, ok, tone: 'error' | 'info' })                  → (lukket)
+   *   Jul.ui.copy({ title, message, value })                                        → (lukket)
+   * ------------------------------------------------------------------ */
+  var uiDialog = null;
+  function uiParagraphs(text) {
+    return String(text || '').split(/\n{2,}/).map(function (p) {
+      return '<p>' + Jul.escape(p).replace(/\n/g, '<br>') + '</p>';
+    }).join('');
+  }
+
+  /** Viser dialogen med gitt innhold. Gir knappens verdi ('ok' eller 'cancel'). */
+  function showUi(o) {
+    if (!uiDialog) {
+      uiDialog = document.createElement('dialog');
+      uiDialog.className = 'ed-dialog ui-dialog';
+      document.body.appendChild(uiDialog);
+      // Klikk utenfor boksen lukker som «Avbryt»
+      uiDialog.addEventListener('click', function (ev) {
+        if (ev.target === uiDialog) uiDialog.close('cancel');
+      });
+    }
+    var d = uiDialog;
+    if (d.open) d.close('cancel');
+    var tone = o.tone || (o.danger ? 'danger' : 'info');
+    var item = o.item
+      ? '<div class="ui-dialog__item">' +
+        (Jul.safeImage(o.item.image) ? '<img src="' + Jul.escape(Jul.safeImage(o.item.image)) + '" alt="">' : '<span>' + Jul.icon('gift') + '</span>') +
+        '<strong>' + Jul.escape(o.item.title || 'Uten navn') + '</strong></div>'
+      : '';
+    d.innerHTML =
+      '<form method="dialog" class="ed-dialog__inner glass ui-dialog--' + tone + '">' +
+      '<span class="ed-dialog__icon">' + Jul.icon(o.icon || (tone === 'danger' ? 'trash' : tone === 'error' ? 'alert' : 'gift')) + '</span>' +
+      '<h2>' + Jul.escape(o.title) + '</h2>' + item + uiParagraphs(o.message) + (o.extra || '') +
+      '<div class="ed-dialog__actions">' +
+      (o.cancel === false ? '' : '<button class="btn btn--ghost" value="cancel">' + Jul.escape(o.cancel || 'Avbryt') + '</button>') +
+      '<button class="btn ' + (o.danger ? 'btn--danger' : 'btn--gold') + '" value="ok">' + Jul.escape(o.ok || 'OK') + '</button>' +
+      '</div></form>';
+    d.returnValue = '';
+    return new Promise(function (resolve) {
+      d.addEventListener('close', function onClose() {
+        d.removeEventListener('close', onClose);
+        resolve(d.returnValue === 'ok' ? 'ok' : 'cancel');
+      });
+      d.showModal();
+      // Ved sletting får «Avbryt» fokus, så Enter ikke sletter ved et uhell
+      var focus = d.querySelector(o.danger ? 'button[value=cancel]' : (o.focus || 'button[value=ok]'));
+      if (focus) focus.focus();
+      if (o.onOpen) o.onOpen(d);
+    });
+  }
+
+  Jul.ui = {
+    confirm: function (o) {
+      return showUi(o).then(function (v) { return v === 'ok'; });
+    },
+    alert: function (o) {
+      return showUi(Object.assign({ cancel: false, tone: 'error' }, o)).then(function () {});
+    },
+    /** Viser en lenke som kan kopieres (når utklippstavlen ikke er tilgjengelig). */
+    copy: function (o) {
+      return showUi(Object.assign({}, o, {
+        cancel: false, tone: 'info', icon: 'link', ok: 'Lukk', focus: 'input',
+        extra: '<div class="field"><span class="field__icon">' + Jul.icon('link') + '</span>' +
+          '<input type="text" readonly value="' + Jul.escape(o.value) + '" aria-label="Lenke"></div>',
+        onOpen: function (d) { var i = d.querySelector('input'); i.focus(); i.select(); }
+      })).then(function () {});
+    }
   };
 
   /* ------------------------------------------------------------------ *

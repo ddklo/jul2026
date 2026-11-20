@@ -333,7 +333,16 @@
   }
 
   function deleteWish(w) {
-    if (!global.confirm('Slette «' + (w.title || 'Uten navn') + '»?')) return;
+    Jul.ui.confirm({
+      title: 'Slette ønsket?',
+      item: { title: w.title, image: w.image },
+      message: 'Det fjernes fra ' + personById(w.person).name + ' sin liste når du lagrer. Dette kan ikke angres etter lagring.',
+      ok: 'Slett',
+      danger: true
+    }).then(function (ok) { if (ok) removeWish(w); });
+  }
+
+  function removeWish(w) {
     var list = wishesFor(state.person);
     var i = list.indexOf(w);
     state.data.wishes.splice(state.data.wishes.indexOf(w), 1);
@@ -426,13 +435,22 @@
 
   function confirmMissingTitles(verb) {
     var missing = state.data.wishes.filter(function (w) { return !w.title.trim(); }).length;
-    return !missing || global.confirm(missing + ' ønske(r) mangler produktnavn. ' + verb + ' likevel?');
+    if (!missing) return Promise.resolve(true);
+    return Jul.ui.confirm({
+      title: missing === 1 ? 'Ett ønske mangler navn' : missing + ' ønsker mangler navn',
+      message: 'Ønsker uten produktnavn vises som «Uten navn» på siden. ' + verb + ' likevel?',
+      ok: verb, cancel: 'Tilbake', icon: 'alert'
+    });
   }
 
   /** Lagrer endrede personfiler rett til GitHub (én commit per fil). */
   var saving = false;
   function saveToGitHub() {
-    if (saving || !confirmMissingTitles('Lagre')) return;
+    if (saving) return;
+    confirmMissingTitles('Lagre').then(function (ok) { if (ok) saveFiles(); });
+  }
+
+  function saveFiles() {
     var files = changedFiles();
     if (!files.length) {
       setDirty(false);
@@ -455,7 +473,7 @@
     }, function (err) {
       // Det som ble lagret før feilen, er lagret; resten er fortsatt ulagret
       setDirty(changedFiles().length > 0);
-      if (!err.cancelled) global.alert('Ble ikke lagret: ' + err.message);
+      if (!err.cancelled) Jul.ui.alert({ title: 'Ble ikke lagret', message: err.message });
     }).then(function () {
       saving = false;
       btn.classList.remove('is-loading'); btn.disabled = false;
@@ -467,7 +485,7 @@
     Jul.github.runPrices().then(function () {
       toast('Prisoppdateringen er startet. Nettsiden er oppdatert om noen minutter.');
     }, function (err) {
-      if (!err.cancelled) global.alert('Kunne ikke starte prisoppdateringen: ' + err.message);
+      if (!err.cancelled) Jul.ui.alert({ title: 'Kunne ikke starte prisoppdateringen', message: err.message });
     });
   }
 
@@ -512,7 +530,10 @@
 
   /** Reserve: last ned endrede filer og last dem opp til GitHub for hånd. */
   function downloadDataFile() {
-    if (!confirmMissingTitles('Laste ned')) return;
+    confirmMissingTitles('Last ned').then(function (ok) { if (ok) downloadFiles(); });
+  }
+
+  function downloadFiles() {
     var files = changedFiles();
     if (!files.length) {
       setDirty(false);
@@ -547,17 +568,23 @@
   function importBackup(file) {
     readText(file).then(function (text) {
       var data = JSON.parse(text);
-      if (!data || !Array.isArray(data.wishes)) throw new Error('Filen ser ikke ut som en backup av ønskelisten');
-      if (!global.confirm('Erstatte alle ønsker med innholdet i backupen (' + data.wishes.length + ' ønsker)?')) return;
-      state.data = normalize(data);
-      if (!personById(state.person)) state.person = people()[0].id;
-      var first = wishesFor(state.person)[0];
-      state.selected = first ? first.id : null;
-      buildStaticSelects();
-      renderAll();
-      setDirty(true);
-      toast('Backupen er importert');
-    }).catch(function (err) { global.alert('Kunne ikke importere: ' + err.message); });
+      if (!data || !Array.isArray(data.wishes)) throw new Error('Filen ser ikke ut som en backup av ønskelisten.');
+      return Jul.ui.confirm({
+        title: 'Importere backupen?',
+        message: 'Alle ønskene i ' + state.list.name + ' blir erstattet med de ' + data.wishes.length + ' ønskene i backupen. Ingenting lagres før du trykker Lagre.',
+        ok: 'Importer', icon: 'upload'
+      }).then(function (ok) {
+        if (!ok) return;
+        state.data = normalize(data);
+        if (!personById(state.person)) state.person = people()[0].id;
+        var first = wishesFor(state.person)[0];
+        state.selected = first ? first.id : null;
+        buildStaticSelects();
+        renderAll();
+        setDirty(true);
+        toast('Backupen er importert');
+      });
+    }).catch(function (err) { Jul.ui.alert({ title: 'Kunne ikke importere', message: err.message }); });
   }
 
   /* ---------------- Hendelser ---------------- */
@@ -709,12 +736,13 @@
     $('#save-btn').addEventListener('click', saveToGitHub);
     // Bytt liste: last verktøyet på nytt med ?liste=… (innloggingen huskes i fanen)
     $('#list-select').addEventListener('change', function (ev) {
-      if (state.dirty && !global.confirm('Du har ulagrede endringer i ' + state.list.name + '. Bytte liste likevel?')) {
-        ev.target.value = state.list.id;
-        return;
-      }
-      state.dirty = false;
-      global.location.search = '?liste=' + encodeURIComponent(ev.target.value);
+      var target = ev.target.value;
+      ev.target.value = state.list.id; // står på gjeldende liste til valget er bekreftet
+      confirmLeave('Bytte liste likevel?').then(function (ok) {
+        if (!ok) return;
+        state.dirty = false;
+        global.location.search = '?liste=' + encodeURIComponent(target);
+      });
     });
     $('.ed-menu').addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-cmd]');
@@ -728,12 +756,24 @@
       if (cmd === 'help') showPublishDialog(null);
       if (cmd === 'share-access') shareAccess();
       if (cmd === 'lock') {
-        if (state.dirty && !global.confirm('Du har ulagrede endringer. Logge ut likevel?')) return;
-        state.dirty = false;
-        Jul.auth.clear();
-        global.location.reload();
+        confirmLeave('Logge ut likevel?').then(function (ok) {
+          if (!ok) return;
+          state.dirty = false;
+          Jul.auth.clear();
+          global.location.reload();
+        });
       }
     });
+
+    /** Spør før endringer kastes. Gir true med en gang når alt er lagret. */
+    function confirmLeave(question) {
+      if (!state.dirty) return Promise.resolve(true);
+      return Jul.ui.confirm({
+        title: 'Du har ulagrede endringer',
+        message: 'Endringene i ' + state.list.name + ' er ikke lagret. ' + question,
+        ok: 'Forkast endringene', cancel: 'Bli her', danger: true, icon: 'alert'
+      });
+    }
     document.addEventListener('click', function (ev) {
       var m = $('.ed-menu');
       if (m.open && !m.contains(ev.target)) m.open = false;

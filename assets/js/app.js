@@ -415,13 +415,20 @@
     var w = wishById(id);
     if (!w) return;
     var p = personById(w.person);
-    var ok = global.confirm('Slette «' + (w.title || 'Uten navn') + '» fra ' + genitive(p.name) + ' liste i ' + state.list.name + '?\n\nDette kan ikke angres.');
-    if (!ok) return;
-    var before = state.wishes.slice();
-    state.wishes = state.wishes.filter(function (x) { return x !== w; });
-    render(false);
-    updateCounts();
-    savePerson(w.person, before, 'Slett «' + (w.title || 'Uten navn') + '»');
+    Jul.ui.confirm({
+      title: 'Slette ønsket?',
+      item: { title: w.title, image: w.image },
+      message: 'Det fjernes fra ' + genitive(p.name) + ' liste i ' + state.list.name + '. Dette kan ikke angres.',
+      ok: 'Slett',
+      danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      var before = state.wishes.slice();
+      state.wishes = state.wishes.filter(function (x) { return x !== w; });
+      render(false);
+      updateCounts();
+      savePerson(w.person, before, 'Slett «' + (w.title || 'Uten navn') + '»');
+    });
   }
 
   /** Ny rekkefølge for gjeldende person, ut fra kortene i rutenettet. */
@@ -540,7 +547,9 @@
     }
     copyText(url).then(
       function () { toast('Lenken til ' + genitive(p.name) + ' liste er kopiert'); },
-      function () { global.prompt('Kopier lenken:', url); }
+      function () {
+        Jul.ui.copy({ title: 'Del ' + genitive(p.name) + ' liste', message: 'Kopier lenken under. Mottakeren trenger også passordet.', value: url });
+      }
     );
   }
 
