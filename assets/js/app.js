@@ -619,7 +619,11 @@
         ticking = false;
         var y = global.scrollY;
         toTop.classList.toggle('is-visible', y > 600);
-        document.body.classList.toggle('is-scrolled', y > 8);
+        var scrolled = y > 8;
+        if (scrolled !== document.body.classList.contains('is-scrolled')) {
+          document.body.classList.toggle('is-scrolled', scrolled);
+          followIndicator(600); // den valgte fanen endrer størrelse; markeringen følger med
+        }
       });
     }, { passive: true });
 
