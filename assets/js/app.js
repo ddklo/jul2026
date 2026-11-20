@@ -261,7 +261,7 @@
     var p = personById(id);
     document.documentElement.style.setProperty('--person', (p && p.accent) || '#d9b26a');
     document.title = (p ? genitive(p.name) + ' ønskeliste · ' : '') + state.list.name + ' · Juleønsker 2026';
-    moveIndicator();
+    followIndicator(600);
 
     if (first || !changed || rm()) {
       render(true);
@@ -304,8 +304,22 @@
     var ind = $('.tabs__indicator');
     if (!active || !ind) return;
     ind.style.width = active.offsetWidth + 'px';
-    ind.style.transform = 'translateX(' + active.offsetLeft + 'px)';
+    ind.style.height = active.offsetHeight + 'px';
+    ind.style.transform = 'translate(' + active.offsetLeft + 'px, ' + active.offsetTop + 'px)';
     ind.style.opacity = '1';
+  }
+
+  /** Den valgte fanen vokser med en animasjon; markeringen følger med mens den skjer. */
+  var followUntil = 0;
+  function followIndicator(ms) {
+    var start = !followUntil;
+    followUntil = Math.max(followUntil, performance.now() + ms);
+    if (!start) return;
+    (function step() {
+      moveIndicator();
+      if (performance.now() < followUntil) requestAnimationFrame(step);
+      else followUntil = 0;
+    })();
   }
 
   /* ---------------- Visning ---------------- */
@@ -576,6 +590,9 @@
       var a = b.getAttribute('data-action');
       if (a === 'share') shareCurrent();
     });
+    // «Del lenke» ligger også på raden med fanene (desktop)
+    var tabShare = $('.tabs__share');
+    if (tabShare) tabShare.addEventListener('click', shareCurrent);
     $('#main').addEventListener('click', function (ev) {
       var del = ev.target.closest('[data-admin="delete"]');
       if (del && state.canEdit) deleteWish(del.closest('.card').getAttribute('data-id'));
