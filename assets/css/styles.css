@@ -536,6 +536,15 @@ a { color: inherit; }
 .card__price--live strong { color: var(--green-2); }
 .card__actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
 .card__actions .btn:only-child { grid-column: 1 / -1; }
+/* Nettbutikk-knappen er sekundær: kort navn, kuttes heller enn å presse hovedknappen */
+.card__store { max-width: 10.5em; min-width: 0; }
+.card__store span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card__store .icon { flex: none; width: 14px; height: 14px; opacity: 0.75; }
+/* Bilde og tittel lenker til hovedknappen */
+.card__media-link { position: absolute; inset: 0; z-index: 1; }
+.card__title a { color: inherit; text-decoration: none; }
+.card__title a:hover { text-decoration: underline; text-decoration-color: rgba(242, 216, 155, 0.5); text-underline-offset: 3px; }
+.card__title a:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 3px; border-radius: 4px; }
 
 /* ---------------- Tomtilstand ---------------- */
 .empty {
@@ -586,6 +595,10 @@ a { color: inherit; }
 }
 .to-top.is-visible { opacity: 1; transform: none; pointer-events: auto; }
 .to-top .icon { width: 20px; height: 20px; }
+/* Mobil: knappen dekket knappene på kortene. Bunnteksten har «Til toppen». */
+@media (max-width: 719px) {
+  .to-top { display: none; }
+}
 
 .toast {
   position: fixed; left: 50%; bottom: calc(24px + var(--bottom-nav) + env(safe-area-inset-bottom)); z-index: 60;

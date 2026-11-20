@@ -92,9 +92,9 @@ Filene i `data/bergen/` og `data/sorumsand/` er vanlig JSON og kan redigeres ret
 | `description` | Valgfri. Størrelse, farge, modell og lignende. |
 | `image` | Bildeadresse (`https://…`), et bilde i repoet (`data/bilder/…`), eller et bilde lastet opp i verktøyet |
 | `imageFit` | `contain` («Vis hele bildet») passer for produktbilder med hvit bakgrunn. `cover` («Fyll rammen») passer for stemningsbilder. |
-| `storeUrl` | Vises som knappen «Se i butikk» |
-| `linkLabel` | Valgfri knappetekst, for eksempel «Se oppskriften» |
-| `prisjaktUrl` | Lenke til Prisjakt, helst direkte til produktsiden (`https://www.prisjakt.no/product.php?p=…`). Tomt felt gir ingen Prisjakt-knapp. |
+| `storeUrl` | Valgfri. Vises som en mindre knapp med butikkens navn (for eksempel «Lekekassen»). Uten Prisjakt-lenke blir den hovedknappen «Se i butikk». |
+| `linkLabel` | Valgfri tekst på nettbutikk-knappen i stedet for butikkens navn, for eksempel «Se oppskriften» |
+| `prisjaktUrl` | Hovedknappen. Lenke til Prisjakt, helst direkte til produktsiden (`https://www.prisjakt.no/product.php?p=…`), som gir «Se på Prisjakt» og laveste pris. Kategori- og søkelenker gir «Søk på Prisjakt». |
 | `hidePrisjakt` | Skjuler Prisjakt-knappen uten å slette lenken |
 | `priceMin`, `priceMax` | Prisantydning i NOK |
 | `livePrice` | Settes av prisjobben. Ikke rediger for hånd. |
@@ -131,7 +131,7 @@ En GitHub Actions-jobb ([`.github/workflows/priser.yml`](.github/workflows/prise
 ## 3. Funksjoner på nettsiden
 
 - Fire faner med antall ønsker per person. På mobil er fanene en bunnmeny, og du kan sveipe mellom personene.
-- Produktkort med bilde, beskrivelse, laveste pris og prisantydning, pluss knappene «Se i butikk» og «Prisjakt»
+- Produktkort med bilde, beskrivelse, laveste pris og prisantydning. Hovedknappen går til Prisjakt, og en mindre knapp går til nettbutikken. Bildet og tittelen går også til Prisjakt.
 - Lenke som går direkte til én persons liste
 - Tomtilstand når en person ikke har ønsker
 - Knapp til toppen og nedtelling til julaften

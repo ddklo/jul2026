@@ -421,6 +421,15 @@
     return { amount: lp.amount, offers: lp.offers || 0, text: n(lp.amount) + ' kr', date: df.format(t) };
   };
 
+  /** Kort butikknavn fra en lenke: https://www.lekekassen.no/… → «Lekekassen». */
+  Jul.storeName = function (url) {
+    var m = /^https?:\/\/(?:www\.)?([^/:?#]+)/i.exec(url || '');
+    if (!m) return '';
+    var parts = m[1].split('.');
+    var base = parts.length > 1 ? parts[parts.length - 2] : parts[0];
+    return base.charAt(0).toUpperCase() + base.slice(1);
+  };
+
   Jul.escape = function (s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;')
@@ -488,13 +497,22 @@
       ? '<span class="card__person" style="--accent:' + e(opts.accent || 'var(--gold)') + '">' + e(opts.personName) + '</span>'
       : '';
 
+    // Prisjakt er hovedknappen. Nettbutikken er en mindre knapp ved siden av,
+    // med butikkens navn (eller egen knappetekst). Uten Prisjakt blir butikken hovedknapp.
+    var ext = ' target="_blank" rel="noopener noreferrer"';
+    var storeLabel = w.linkLabel || Jul.storeName(store) || 'Nettbutikk';
     var actions = '';
-    if (store) {
-      actions += '<a class="btn btn--primary btn--sm" href="' + e(store) + '" target="_blank" rel="noopener noreferrer">' + e(w.linkLabel || 'Se i butikk') + Jul.icon('external') + '</a>';
-    }
     if (pj) {
-      actions += '<a class="btn btn--ghost btn--sm" href="' + e(pj) + '" target="_blank" rel="noopener noreferrer" title="Sammenlign priser på Prisjakt">' + Jul.icon('chart') + 'Prisjakt</a>';
+      actions += '<a class="btn btn--primary btn--sm" href="' + e(pj) + '"' + ext + ' title="Sammenlign priser på Prisjakt">' +
+        Jul.icon('chart') + (Jul.prisjaktId(pj) ? 'Se på Prisjakt' : 'Søk på Prisjakt') + '</a>';
+      if (store) {
+        actions += '<a class="btn btn--ghost btn--sm card__store" href="' + e(store) + '"' + ext + ' title="' + e(storeLabel) + ' – åpnes i ny fane">' +
+          '<span>' + e(storeLabel) + '</span>' + Jul.icon('external') + '</a>';
+      }
+    } else if (store) {
+      actions += '<a class="btn btn--primary btn--sm" href="' + e(store) + '"' + ext + '>' + e(w.linkLabel || 'Se i butikk') + Jul.icon('external') + '</a>';
     }
+    var mainUrl = pj || store;
 
     var name = e(w.title || 'Uten navn');
     var admin = opts.editUrl
@@ -508,15 +526,19 @@
 
     return (
       '<article class="card" style="--i:' + (opts.index || 0) + '" data-id="' + e(w.id) + '">' + admin +
-      '<div class="card__media' + (img ? fit : ' card__media--art') + '">' + media + '</div>' +
+      // Bilde og tittel er også lenker til hovedknappen – større trykkflate på mobil
+      '<div class="card__media' + (img ? fit : ' card__media--art') + '">' + media +
+      (mainUrl ? '<a class="card__media-link" href="' + e(mainUrl) + '"' + ext + ' tabindex="-1" aria-hidden="true"></a>' : '') +
+      '</div>' +
       '<div class="card__body">' +
       (person ? '<div class="card__meta">' + person + '</div>' : '') +
-      '<h3 class="card__title">' + e(w.title || 'Uten navn') + '</h3>' +
+      '<h3 class="card__title">' + (mainUrl ? '<a href="' + e(mainUrl) + '"' + ext + '>' + name + '</a>' : name) + '</h3>' +
       (w.description ? '<p class="card__desc">' + e(w.description) + '</p>' : '') +
       '<div class="card__bottom">' +
       (live
-        ? '<p class="card__price card__price--live" title="Laveste pris på Prisjakt' + (live.offers ? ' blant ' + live.offers + ' butikker' : '') + ', sjekket ' + e(live.date) + '">' +
-          '<span>Laveste pris nå<small>Prisjakt · ' + e(live.date) + '</small></span><strong>' + e(live.text) + '</strong></p>'
+        ? '<p class="card__price card__price--live" title="Laveste pris på Prisjakt, sjekket ' + e(live.date) + '">' +
+          '<span>Laveste pris nå<small>Prisjakt' + (live.offers > 1 ? ' · ' + live.offers + ' butikker' : '') + ' · ' + e(live.date) + '</small></span>' +
+          '<strong>' + e(live.text) + '</strong></p>'
         : '') +
       (price ? '<p class="card__price"><span>Prisantydning</span><strong>' + price + '</strong></p>' : '') +
       (actions ? '<div class="card__actions">' + actions + '</div>' : '') +
