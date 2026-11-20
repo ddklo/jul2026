@@ -20,8 +20,9 @@
    * Passordet er bare en enkel sperre, ikke ekte sikkerhet: dataene ligger
    * åpent i data/*.json. Passordene lagres som SHA-256 her, slik at de ikke
    * står i klartekst i koden.
-   *   jul2026      → «view»  (se ønskelistene)
-   *   jul2026admin → «admin» (også redigere og oppdatere priser)
+   *   jul2026      → «view»  (se, redigere, flytte og slette ønsker og oppdatere priser)
+   *   jul2026admin → «admin» (det samme, og sette opp lagring: Del lagring med familien)
+   * Navnet «view» er beholdt så huskede innlogginger fortsatt virker.
    * Ny hash: node -e "console.log(require('crypto').createHash('sha256').update('passord').digest('hex'))"
    * ------------------------------------------------------------------ */
   var PASSWORDS = {
@@ -35,6 +36,15 @@
         return ('0' + b.toString(16)).slice(-2);
       }).join('');
     });
+  }
+
+  /** Passordet som skrevet, uten mellomrom foran/bak, og med små bokstaver. */
+  function passwordVariants(password) {
+    var tries = [];
+    [password, password.trim(), password.trim().toLowerCase()].forEach(function (p) {
+      if (p && tries.indexOf(p) === -1) tries.push(p);
+    });
+    return tries;
   }
 
   var ROLE_KEY = 'juleonsker:role';
@@ -60,14 +70,30 @@
      * mobiltastaturer ofte legger til mellomrom eller stor forbokstav.
      */
     check: function (password) {
-      var tries = [];
-      [password, password.trim(), password.trim().toLowerCase()].forEach(function (p) {
-        if (p && tries.indexOf(p) === -1) tries.push(p);
-      });
-      return Promise.all(tries.map(sha256hex)).then(function (hashes) {
+      return Promise.all(passwordVariants(password).map(sha256hex)).then(function (hashes) {
         for (var i = 0; i < hashes.length; i++) if (PASSWORDS[hashes[i]]) return PASSWORDS[hashes[i]];
         return null;
       });
+    },
+    /**
+     * Logger inn: sjekker passordet, husker rollen og låser opp det felles
+     * GitHub-tokenet (se Jul.access), slik at alle kan lagre endringer.
+     * Gir rollen, eller null ved feil passord.
+     */
+    login: function (password, persistent) {
+      return Jul.auth.check(password).then(function (role) {
+        if (!role) return null;
+        Jul.auth.save(role, persistent);
+        return Jul.access.unlock(password).then(function (token) {
+          if (token) Jul.github.setToken(token, persistent);
+          return role;
+        }, function () { return role; });
+      });
+    },
+    /** Om innloggingen huskes på enheten («Husk meg»). */
+    remembered: function () {
+      var ls = safeStore('localStorage');
+      return !!(ls && ls.getItem(ROLE_KEY));
     },
     /** «Husk meg» → localStorage, ellers sessionStorage (gjelder fanen). */
     save: function (role, persistent) {
@@ -89,6 +115,7 @@
         var s = safeStore(t);
         if (s) {
           s.removeItem(ROLE_KEY);
+          s.removeItem('jul-gh-token');
           s.removeItem('juleonsker:key'); // fra da listen var kryptert
         }
       });
@@ -155,105 +182,247 @@
   };
 
   /* ------------------------------------------------------------------ *
-   * Lagring til GitHub (kun administrator)
-   * Endringer committes rett til repoet med GitHub-API-et. Det krever et
-   * fine-grained token for dette repoet med «Contents: Read and write»
-   * (lagre) og «Actions: Read and write» (oppdatere priser). Tokenet lagres
-   * bare i nettleseren (localStorage), aldri i repoet.
+   * Lagring til GitHub
+   * Endringer committes rett til repoet med GitHub-API-et. Alle bruker ett
+   * felles fine-grained token for dette repoet («Contents» og «Actions»:
+   * Read and write). Administrator legger det inn én gang
+   * (redigeringsverktøyet → Mer → Del lagring med familien). Tokenet lagres
+   * kryptert med passordene i data/tilgang.json og låses opp i nettleseren
+   * når noen logger inn. Passordet er en enkel sperre, ikke ekte sikkerhet:
+   * se «Om passordet» i README.
    * ------------------------------------------------------------------ */
   var TOKEN_KEY = 'jul-gh-token';
   var API = 'https://api.github.com/repos/';
   var BRANCH = 'main';
+  var ACCESS_FILE = 'data/tilgang.json';
+  var ACCESS_ITER = 100000;
 
   function b64utf8(text) {
-    var bytes = new TextEncoder().encode(text);
+    return bytesToB64(new TextEncoder().encode(text));
+  }
+  function bytesToB64(bytes) {
     var bin = '';
     for (var i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
     return btoa(bin);
   }
+  function b64ToBytes(s) {
+    var bin = atob(s), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
 
   function ghError(status, what) {
     var msg =
-      status === 401 ? 'GitHub-tokenet er ugyldig eller utløpt.' :
+      status === 401 ? 'GitHub-tokenet er ugyldig eller utløpt. Be administrator om å legge inn et nytt.' :
       status === 403 || status === 404 ? 'GitHub-tokenet mangler tilgang til ' + what + ' i ' + Jul.REPO + '.' :
       'GitHub svarte med feil ' + status + '.';
     var err = new Error(msg);
     err.status = status;
     return err;
   }
+  function cancelled() {
+    return Object.assign(new Error('Avbrutt'), { cancelled: true });
+  }
 
-  var tokenDialog = null;
-  function buildTokenDialog() {
+  /* ---------- Det felles tokenet, kryptert med passordene ---------- */
+  function passwordKey(password, salt, iter) {
+    var subtle = global.crypto.subtle;
+    return subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']).then(function (base) {
+      return subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: salt, iterations: iter }, base,
+        { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    });
+  }
+
+  var accessFile = null;
+  Jul.access = {
+    /** Innholdet i data/tilgang.json, eller null hvis lagring ikke er satt opp. */
+    load: function () {
+      if (!accessFile) {
+        accessFile = fetch(Jul.ROOT + ACCESS_FILE + '?t=' + Date.now(), { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .catch(function () { return null; });
+      }
+      return accessFile;
+    },
+    /** Låser opp det felles tokenet med et passord. Gir tokenet, eller null. */
+    unlock: function (password) {
+      return Jul.access.load().then(function (file) {
+        if (!file || !file.entries) return null;
+        var jobs = [];
+        passwordVariants(password).forEach(function (p) {
+          file.entries.forEach(function (entry) { jobs.push([p, entry]); });
+        });
+        var i = 0;
+        function next() {
+          if (i >= jobs.length) return null;
+          var job = jobs[i++];
+          return passwordKey(job[0], b64ToBytes(job[1].salt), file.iter || ACCESS_ITER)
+            .then(function (key) {
+              return global.crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(job[1].iv) }, key, b64ToBytes(job[1].data));
+            })
+            .then(function (buf) { return new TextDecoder().decode(buf); }, next);
+        }
+        return next();
+      });
+    },
+    /** Lager innholdet i data/tilgang.json: tokenet kryptert én gang per passord. */
+    build: function (token, passwords) {
+      return Promise.all(passwords.map(function (pw) {
+        var salt = global.crypto.getRandomValues(new Uint8Array(16));
+        var iv = global.crypto.getRandomValues(new Uint8Array(12));
+        return passwordKey(pw, salt, ACCESS_ITER).then(function (key) {
+          return global.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(token));
+        }).then(function (ct) {
+          return { salt: bytesToB64(salt), iv: bytesToB64(iv), data: bytesToB64(new Uint8Array(ct)) };
+        });
+      })).then(function (entries) {
+        accessFile = null;
+        return JSON.stringify({ v: 1, alg: 'AES-256-GCM', kdf: 'PBKDF2-SHA-256', iter: ACCESS_ITER, entries: entries }, null, 2) + '\n';
+      });
+    },
+    path: ACCESS_FILE
+  };
+
+  /* ---------- Dialoger ---------- */
+  function makeDialog(o) {
     var d = document.createElement('dialog');
     d.className = 'ed-dialog';
     d.innerHTML =
       '<form method="dialog" class="ed-dialog__inner glass" novalidate>' +
-      '<span class="ed-dialog__icon">' + Jul.icon('key') + '</span>' +
-      '<h2>Koble til GitHub</h2>' +
-      '<p>For å lagre endringer og oppdatere priser trenger denne nettleseren et GitHub-token. Det gjør du én gang.</p>' +
-      '<ol class="ed-steps">' +
-      '<li>Lag et <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained token</a> med tilgang til bare <strong>' + Jul.escape(Jul.REPO) + '</strong>.</li>' +
-      '<li>Under <strong>Permissions</strong>: <strong>Contents: Read and write</strong> og <strong>Actions: Read and write</strong>.</li>' +
-      '<li>Lim inn tokenet her.</li></ol>' +
-      '<div class="field"><span class="field__icon">' + Jul.icon('key') + '</span>' +
-      '<input type="password" name="token" placeholder="github_pat_…" autocomplete="off" spellcheck="false" aria-label="GitHub-token"></div>' +
-      '<p class="ed-hint">Tokenet lagres bare i denne nettleseren.</p>' +
+      '<span class="ed-dialog__icon">' + Jul.icon(o.icon) + '</span>' +
+      '<h2>' + o.title + '</h2>' + o.body +
+      '<div class="field"><span class="field__icon">' + Jul.icon(o.icon) + '</span>' +
+      '<input type="password" name="value" placeholder="' + o.placeholder + '" autocomplete="' + (o.autocomplete || 'off') + '" ' +
+      'autocapitalize="off" spellcheck="false" aria-label="' + o.placeholder + '"></div>' +
+      (o.hint ? '<p class="ed-hint">' + o.hint + '</p>' : '') +
       '<p class="login__error" role="alert"></p>' +
       '<div class="ed-dialog__actions">' +
       '<button class="btn btn--ghost" value="cancel" formnovalidate>Avbryt</button>' +
-      '<button class="btn btn--gold" value="ok">Koble til</button></div></form>';
+      '<button class="btn btn--gold" value="ok">' + o.ok + '</button></div></form>';
     document.body.appendChild(d);
     return d;
   }
 
+  /**
+   * Viser en dialog med ett felt. check(verdi) gir et Promise med resultatet,
+   * eller kaster en feil med meldingen som skal vises. Avbryt gir { cancelled }.
+   */
+  function askInDialog(d, check) {
+    var form = d.querySelector('form'), input = form.elements.value, err = d.querySelector('.login__error');
+    input.value = '';
+    err.textContent = '';
+    d.showModal();
+    input.focus();
+    return new Promise(function (resolve, reject) {
+      var busy = false;
+      function done() {
+        form.removeEventListener('submit', onSubmit);
+        d.removeEventListener('close', onClose);
+      }
+      function onClose() { done(); reject(cancelled()); }
+      function onSubmit(ev) {
+        if (ev.submitter && ev.submitter.value === 'cancel') return;
+        ev.preventDefault();
+        if (busy) return;
+        var v = input.value.trim();
+        if (!v) { err.textContent = 'Feltet er tomt.'; return; }
+        busy = true;
+        err.textContent = 'Sjekker …';
+        check(v).then(function (result) {
+          done();
+          d.close();
+          resolve(result);
+        }, function (e) {
+          err.textContent = e instanceof TypeError ? 'Fikk ikke kontakt med GitHub. Er du på nett?' : e.message;
+          input.select();
+        }).then(function () { busy = false; });
+      }
+      form.addEventListener('submit', onSubmit);
+      d.addEventListener('close', onClose);
+    });
+  }
+
+  var passwordDialog = null, tokenDialog = null;
+
+  /** Sjekker at et token virker mot repoet. */
+  function verifyToken(t) {
+    return fetch(API + Jul.REPO, { headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + t } })
+      .then(function (r) {
+        if (!r.ok) throw ghError(r.status, 'repoet');
+        return t;
+      });
+  }
+
   Jul.github = {
     getToken: function () {
-      try { return global.localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+      var stores = [safeStore('sessionStorage'), safeStore('localStorage')];
+      for (var i = 0; i < stores.length; i++) {
+        var t = stores[i] && stores[i].getItem(TOKEN_KEY);
+        if (t) return t;
+      }
+      return '';
     },
-    setToken: function (v) {
-      try {
-        if (v) global.localStorage.setItem(TOKEN_KEY, v);
-        else global.localStorage.removeItem(TOKEN_KEY);
-      } catch (e) { /* lagring er av – tokenet må limes inn på nytt */ }
+    /** Husker tokenet like lenge som innloggingen («Husk meg» → localStorage). */
+    setToken: function (v, persistent) {
+      ['localStorage', 'sessionStorage'].forEach(function (t) {
+        var s = safeStore(t);
+        if (!s) return;
+        if (v && (t === 'sessionStorage' || persistent)) s.setItem(TOKEN_KEY, v);
+        else s.removeItem(TOKEN_KEY);
+      });
     },
 
-    /** Gir et token: det lagrede, eller ber om et nytt og sjekker det mot repoet. */
+    /**
+     * Gir tokenet: det som ble låst opp ved innlogging, ellers spør om
+     * passordet på nytt. Er lagring ikke satt opp, får administrator legge
+     * inn et token direkte.
+     */
     token: function () {
       var saved = Jul.github.getToken();
       if (saved) return Promise.resolve(saved);
-      tokenDialog = tokenDialog || buildTokenDialog();
-      var d = tokenDialog, form = d.querySelector('form'), input = form.elements.token, err = d.querySelector('.login__error');
-      input.value = '';
-      err.textContent = '';
-      d.showModal();
-      return new Promise(function (resolve, reject) {
-        function done() {
-          form.removeEventListener('submit', onSubmit);
-          d.removeEventListener('close', onClose);
-        }
-        function onClose() { done(); reject(Object.assign(new Error('Avbrutt'), { cancelled: true })); }
-        function onSubmit(ev) {
-          if (ev.submitter && ev.submitter.value === 'cancel') return;
-          ev.preventDefault();
-          var t = input.value.trim();
-          if (!t) { err.textContent = 'Lim inn tokenet.'; return; }
-          err.textContent = 'Sjekker …';
-          fetch(API + Jul.REPO, { headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + t } })
-            .then(function (r) {
-              if (!r.ok) throw ghError(r.status, 'repoet');
-              Jul.github.setToken(t);
-              done();
-              d.close();
-              resolve(t);
-            })
-            .catch(function (e) {
-              err.textContent = e instanceof TypeError ? 'Fikk ikke kontakt med GitHub. Er du på nett?' : e.message;
+      return Jul.access.load().then(function (file) {
+        if (file) {
+          passwordDialog = passwordDialog || makeDialog({
+            icon: 'lock', title: 'Skriv passordet', ok: 'Lagre',
+            placeholder: 'Passord', autocomplete: 'current-password',
+            body: '<p>For å lagre endringer må du skrive passordet ditt én gang til.</p>'
+          });
+          return askInDialog(passwordDialog, function (pw) {
+            return Jul.access.unlock(pw).then(function (t) {
+              if (!t) throw new Error('Feil passord – prøv igjen.');
+              Jul.github.setToken(t, Jul.auth.remembered());
+              return t;
             });
+          });
         }
-        form.addEventListener('submit', onSubmit);
-        d.addEventListener('close', onClose);
+        if (Jul.auth.load() !== 'admin') {
+          throw new Error('Lagring er ikke satt opp ennå. Be administrator om å velge «Del lagring med familien» i redigeringsverktøyet.');
+        }
+        return Jul.github.askToken();
       });
     },
+
+    /** Ber om et GitHub-token (administrator) og sjekker det mot repoet. */
+    askToken: function () {
+      tokenDialog = tokenDialog || makeDialog({
+        icon: 'key', title: 'Koble til GitHub', ok: 'Koble til', placeholder: 'github_pat_…',
+        body:
+          '<p>Lagring er ikke satt opp ennå. Lag ett token som hele familien kan bruke:</p>' +
+          '<ol class="ed-steps">' +
+          '<li>Lag et <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained token</a> med tilgang til bare <strong>' + Jul.escape(Jul.REPO) + '</strong>.</li>' +
+          '<li>Under <strong>Permissions</strong>: <strong>Contents: Read and write</strong> og <strong>Actions: Read and write</strong>.</li>' +
+          '<li>Lim inn tokenet her.</li></ol>',
+        hint: 'Del det med familien etterpå med <strong>Mer → Del lagring med familien</strong> i redigeringsverktøyet.'
+      });
+      return askInDialog(tokenDialog, function (t) {
+        return verifyToken(t).then(function () {
+          Jul.github.setToken(t, Jul.auth.remembered());
+          return t;
+        });
+      });
+    },
+
+    verifyToken: verifyToken,
 
     request: function (method, path, body) {
       return Jul.github.token().then(function (t) {

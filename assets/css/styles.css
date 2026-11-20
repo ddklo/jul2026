@@ -636,7 +636,7 @@ a { color: inherit; }
 .admin-btn .icon { width: 16px; height: 16px; }
 /* Smal skjerm: Rediger-knappen er viktigere enn nedtellingen */
 @media (max-width: 640px) {
-  .is-admin .countdown { display: none; }
+  .can-edit .countdown { display: none; }
 }
 .ph__admin { margin: 6px 0 0; font-size: 0.8rem; color: var(--gold-2); display: inline-flex; align-items: center; gap: 6px; }
 .ph__admin .icon { width: 14px; height: 14px; }

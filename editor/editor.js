@@ -1,5 +1,5 @@
 /*!
- * Juleønsker 2026 – redigeringsverktøy (kun administrator).
+ * Juleønsker 2026 – redigeringsverktøy (for alle som er logget inn).
  * Leser data/personer.json og én fil per person, lar deg endre ønskene og
  * lagrer personfilene som er endret rett til GitHub (eller laster dem ned).
  */
@@ -117,7 +117,7 @@
     state.loading.then(function (data) {
       st.innerHTML = Jul.icon('check') + 'Fant ønskelisten for ' + e(data.list.name) + ' (' + data.wishes.length + ' ønsker)';
       st.className = 'ed-status is-ok';
-      if (Jul.auth.load() === 'admin') openWorkspace(data);
+      if (Jul.auth.load()) openWorkspace(data);
       else if (!matchMedia('(pointer: coarse)').matches) $('#ed-password').focus();
     }, function (err) {
       if (global.console) console.error(err);
@@ -133,15 +133,12 @@
       var btn = $('#open-btn');
       btn.classList.add('is-loading'); btn.disabled = true;
       err.textContent = '';
-      Jul.auth.check(pw).then(function (role) {
-        if (role !== 'admin') {
-          err.textContent = role === 'view'
-            ? 'Dette passordet gir bare lesetilgang. Bruk administratorpassordet.'
-            : 'Feil passord.';
+      Jul.auth.login(pw, false).then(function (role) {
+        if (!role) {
+          err.textContent = 'Feil passord.';
           $('#ed-password').select();
           return;
         }
-        Jul.auth.save('admin', false);
         return state.loading.then(openWorkspace, function () {
           err.textContent = 'Passordet er riktig, men ønskelistene ble ikke funnet.';
         });
@@ -157,6 +154,7 @@
       return '<option value="' + e(l.id) + '"' + (l.id === data.list.id ? ' selected' : '') + '>' + e(l.name) + '</option>';
     }).join('');
     document.title = 'Rediger ' + data.list.name + ' · Juleønsker 2026';
+    $$('[data-admin-only]').forEach(function (el) { el.hidden = Jul.auth.load() !== 'admin'; });
     state.data = normalize(data);
     people().forEach(function (p) { state.saved[p.id] = personFile(p.id); });
     // ?onske=<id> (fra «Rediger» på et kort) åpner det ønsket direkte
@@ -473,6 +471,45 @@
     });
   }
 
+  /**
+   * Administrator: legg inn (eller bytt) det felles GitHub-tokenet. Det krypteres
+   * med begge passordene og lagres som data/tilgang.json, slik at alle som
+   * logger inn kan lagre uten egen GitHub-bruker.
+   */
+  function shareAccess() {
+    $('#access-form').reset();
+    $('#access-error').textContent = '';
+    $('#access-dialog').showModal();
+  }
+  function initShareAccess() {
+    var form = $('#access-form'), err = $('#access-error'), btn = $('#access-save');
+    form.addEventListener('submit', function (ev) {
+      if (ev.submitter && ev.submitter.value === 'cancel') return;
+      ev.preventDefault();
+      var token = form.elements.token.value.trim();
+      var family = form.elements.family.value, admin = form.elements.admin.value;
+      if (!token) { err.textContent = 'Lim inn GitHub-tokenet.'; return; }
+      btn.disabled = true;
+      err.textContent = 'Sjekker …';
+      Promise.all([Jul.auth.check(family), Jul.auth.check(admin)]).then(function (roles) {
+        if (roles[0] !== 'view') throw new Error('Familiepassordet stemmer ikke.');
+        if (roles[1] !== 'admin') throw new Error('Administratorpassordet stemmer ikke.');
+        return Jul.github.verifyToken(token);
+      }).then(function () {
+        // Bruk det nye tokenet til å lagre filen, og husk det i denne nettleseren
+        Jul.github.setToken(token, Jul.auth.remembered());
+        return Jul.access.build(token, [family.trim(), admin.trim()]);
+      }).then(function (text) {
+        return Jul.github.saveFile(Jul.access.path, text, 'Del lagring med familien (nytt GitHub-token)');
+      }).then(function () {
+        $('#access-dialog').close();
+        toast('Lagring er delt. Alle som logger inn kan nå lagre endringer.');
+      }, function (e) {
+        err.textContent = e instanceof TypeError ? 'Fikk ikke kontakt med GitHub. Er du på nett?' : e.message;
+      }).then(function () { btn.disabled = false; });
+    });
+  }
+
   /** Reserve: last ned endrede filer og last dem opp til GitHub for hånd. */
   function downloadDataFile() {
     if (!confirmMissingTitles('Laste ned')) return;
@@ -689,10 +726,7 @@
       if (cmd === 'prices') runPrices();
       if (cmd === 'download') downloadDataFile();
       if (cmd === 'help') showPublishDialog(null);
-      if (cmd === 'disconnect') {
-        Jul.github.setToken('');
-        toast('GitHub-tokenet er glemt i denne nettleseren');
-      }
+      if (cmd === 'share-access') shareAccess();
       if (cmd === 'lock') {
         if (state.dirty && !global.confirm('Du har ulagrede endringer. Logge ut likevel?')) return;
         state.dirty = false;
@@ -731,6 +765,7 @@
     }
     initUnlock();
     initWorkspace();
+    initShareAccess();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

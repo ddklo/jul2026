@@ -39,14 +39,14 @@ tools/priser.mjs         Henter priser fra Prisjakt (kjøres av GitHub Actions)
 4. Velg branchen (for eksempel `main`) og mappen **`/ (root)`**, og klikk **Save**.
 5. Etter et minutt eller to ligger siden på `https://<brukernavn>.github.io/<repo-navn>/`.
 
-Send lenken til riktig liste (`…/bergen` eller `…/sorumsand`) og passordet for lesetilgang til familien. Passordene er de samme for begge listene. Passordene står med vilje ikke i denne README-en.
+Send lenken til riktig liste (`…/bergen` eller `…/sorumsand`) og familiepassordet til familien. Passordene er de samme for begge listene. Passordene står med vilje ikke i denne README-en.
 
 ### Passord og roller
 
 | Rolle | Kan |
 |---|---|
-| Lesetilgang | Se alle ønskelistene |
-| Administrator | I tillegg redigere, flytte og slette ønsker og oppdatere priser. Admin ser en gull-knapp **Rediger** øverst og verktøy på hvert kort. |
+| Familien | Se, redigere, flytte og slette ønsker og oppdatere priser. Alle som er logget inn ser en gull-knapp **Rediger** øverst og verktøy på hvert kort. |
+| Administrator | Det samme, og i tillegg sette opp lagring (**Mer → Del lagring med familien**). |
 
 Passordene ligger som SHA-256-hasher i `assets/js/shared.js` (`PASSWORDS`). For å bytte passord lager du en ny hash og bytter den ut:
 
@@ -62,11 +62,19 @@ Hver person har sin egen lenke, for eksempel `…/bergen#ellie`. Trykk på **Del
 
 ## 2. Oppdater ønskene
 
-Alle endringer lagres **rett til GitHub**. Første gang ber siden om et GitHub-token: lag et [fine-grained token](https://github.com/settings/personal-access-tokens/new) med tilgang til bare dette repoet og **Contents: Read and write** og **Actions: Read and write**, og lim det inn. Tokenet lagres bare i den nettleseren. Nettsiden oppdateres omtrent et minutt etter at du har lagret.
+Alle endringer lagres **rett til GitHub** som en commit. Ingen i familien trenger egen GitHub-bruker: siden bruker ett felles GitHub-token, som låses opp med passordet når man logger inn. Nettsiden oppdateres omtrent et minutt etter at du har lagret.
+
+**Oppsett (én gang, administrator):**
+
+1. Lag et [fine-grained token](https://github.com/settings/personal-access-tokens/new) med tilgang til bare dette repoet, **Contents: Read and write** og **Actions: Read and write**, og gjerne utløpsdato i januar.
+2. Åpne redigeringsverktøyet, logg inn med administratorpassordet og velg **Mer → Del lagring med familien**.
+3. Lim inn tokenet og skriv begge passordene. Tokenet krypteres med passordene og lagres i `data/tilgang.json`.
+
+Når tokenet utløper eller passordene byttes, gjentar du dette. Er man allerede innlogget fra før, ber siden om passordet én gang til første gang man lagrer.
 
 ### Rett på ønskelisten
 
-Som administrator har hvert kort tre knapper:
+Når du er logget inn, har hvert kort tre knapper:
 
 - **⠿ (håndtaket):** dra kortet til ny plass. Det virker også med fingeren på mobil, og med piltastene når håndtaket har fokus. Rekkefølgen lagres når du slipper.
 - **Blyanten:** åpner ønsket i redigeringsverktøyet.
@@ -78,7 +86,7 @@ Som administrator har hvert kort tre knapper:
 2. Velg liste (Bergen eller Sørumsand) øverst til venstre, så person, og klikk på et ønske eller på **Nytt ønske**. Du ser kortet slik familien vil se det.
 3. Trykk **Lagre** (eller Ctrl/Cmd + S). Hver endret person lagres som én commit.
 
-Uten token kan du velge **Mer → Last ned endrede filer** og laste dem opp selv til `data/bergen` eller `data/sorumsand` på GitHub (**Add file → Upload files**).
+Er lagring ikke satt opp, kan du velge **Mer → Last ned endrede filer** og laste dem opp selv til `data/bergen` eller `data/sorumsand` på GitHub (**Add file → Upload files**).
 
 ### Direkte på GitHub
 
@@ -106,7 +114,7 @@ Filene i `data/bergen/` og `data/sorumsand/` er vanlig JSON og kan redigeres ret
 - **Oppdater priser nå:** starter prisjobben med en gang i stedet for å vente til natten (se [Priser fra Prisjakt](#priser-fra-prisjakt)).
 - **Last ned endrede filer / Publisere filer for hånd:** reserve hvis du ikke vil bruke token.
 - **Eksporter backup / Importer backup:** alle ønskene i listen som én JSON-fil.
-- **Glem GitHub-tokenet:** fjerner tokenet fra denne nettleseren.
+- **Del lagring med familien** (administrator): legger inn eller bytter det felles GitHub-tokenet.
 
 ### Legge til en liste
 
@@ -120,7 +128,7 @@ En GitHub Actions-jobb ([`.github/workflows/priser.yml`](.github/workflows/prise
 - Prisen skjules hvis den er eldre enn en uke, eller hvis du har byttet produktlenke siden sist.
 - En fil committes bare når en pris er endret, eller hver tredje dag for å holde datoen fersk.
 
-**Kjøre manuelt:** Velg **Mer → Oppdater priser nå** i redigeringsverktøyet. Det bruker det samme GitHub-tokenet som lagringen. Uten token kan du åpne **Actions → Oppdater priser** på GitHub og trykke **Run workflow**.
+**Kjøre manuelt:** Velg **Mer → Oppdater priser nå** i redigeringsverktøyet. Det bruker det samme felles tokenet som lagringen. Du kan også åpne **Actions → Oppdater priser** på GitHub og trykke **Run workflow**.
 
 > Lagrer du en person etter at prisene er oppdatert, har filen med seg prisene fra da du åpnet siden. De blir riktige igjen ved neste kjøring.
 
@@ -145,10 +153,11 @@ En GitHub Actions-jobb ([`.github/workflows/priser.yml`](.github/workflows/prise
 Passordet er en **enkel sperre**, ikke ekte sikkerhet:
 
 - Ønskene ligger åpent i `data/*.json`. Med et offentlig repo kan hvem som helst lese dem direkte, uten passord.
-- Passordsjekken skjer i nettleseren. Den som kan litt JavaScript, kommer forbi den, også til admin-funksjonene. Uten et GitHub-token med skrivetilgang kan de likevel ikke lagre noe.
+- Passordsjekken skjer i nettleseren. Den som kan litt JavaScript, kommer forbi den.
 - Innloggingen huskes ved at rollen («view» eller «admin») lagres i nettleserens `localStorage` eller `sessionStorage`.
 - Siden har `noindex`, slik at søkemotorer ikke skal vise den.
-- GitHub-tokenet lagres i nettleserens `localStorage`. Den som har det, kan endre filene i repoet. Lag det med så lite tilgang som mulig (bare dette repoet, bare Contents og Actions), bruk det bare på egne enheter, og slett det på GitHub når julen er over.
+- **Det felles GitHub-tokenet** ligger kryptert med passordene i `data/tilgang.json`, som er offentlig. Et kort passord som familiepassordet kan knekkes på sekunder, og den som får tokenet, kan endre hele repoet (også selve nettsiden). Det er akseptert her fordi siden bare er en ønskeliste. Begrens skaden: gi tokenet tilgang til bare dette repoet og bare Contents og Actions, sett utløpsdato i januar, og slett det på GitHub når julen er over. Blir noe ødelagt, kan alt hentes tilbake fra git-historikken.
+- Når man er logget inn, lagres tokenet i nettleseren (`localStorage` med «Husk meg», ellers `sessionStorage`). «Logg ut» fjerner det.
 
 ---
 

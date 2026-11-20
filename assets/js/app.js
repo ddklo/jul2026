@@ -13,7 +13,7 @@
 
   var state = {
     list: null,      // { id, name } – hvilken ønskeliste siden viser (body data-list)
-    admin: false,    // innlogget med administratorpassordet
+    canEdit: false,  // innlogget: kan redigere, flytte og slette
     data: null,      // Promise med { title, list, people, wishes }
     people: [],
     wishes: [],
@@ -114,7 +114,7 @@
       }
       setLoginError('');
       setLoading(true);
-      Promise.all([Jul.auth.check(value), state.data]).then(
+      Promise.all([Jul.auth.login(value, $('#remember').checked), state.data]).then(
         function (res) {
           var role = res[0];
           if (!role) {
@@ -123,7 +123,6 @@
             pw.select();
             return;
           }
-          Jul.auth.save(role, $('#remember').checked);
           unlock(res[1], role, true);
         },
         function (err) {
@@ -146,11 +145,12 @@
     state.people = (data.people && data.people.length ? data.people : Jul.DEFAULT_PEOPLE).slice();
     state.wishes = (data.wishes || []).slice();
     state.list = data.list;
-    state.admin = role === 'admin';
-    document.body.classList.toggle('is-admin', state.admin);
+    // Alle som er logget inn kan redigere; passordet er bare en liten sperre
+    state.canEdit = !!role;
+    document.body.classList.toggle('can-edit', state.canEdit);
     $('#list-name').textContent = data.list.name;
     var admin = $('#admin-link');
-    admin.hidden = !state.admin;
+    admin.hidden = !state.canEdit;
     admin.href = editUrl();
 
     var login = $('#login');
@@ -338,7 +338,7 @@
       '<div class="ph__text"><p class="eyebrow">Ønskelisten til</p>' +
       '<h2 class="ph__title">' + e(p.name) + '</h2>' +
       '<p class="ph__stats">' + stats.map(function (s) { return '<span>' + e(s) + '</span>'; }).join('') + '</p>' +
-      (state.admin && scope.length > 1
+      (state.canEdit && scope.length > 1
         ? '<p class="ph__admin">' + Jul.icon('grip') + 'Dra i håndtaket for å endre rekkefølgen</p>'
         : '') +
       '</div>' +
@@ -361,7 +361,7 @@
     }
     var html = '';
     list.forEach(function (w, i) {
-      html += Jul.cardHTML(w, { index: Math.min(i, 12), editUrl: state.admin ? editUrl(w.id) : '' });
+      html += Jul.cardHTML(w, { index: Math.min(i, 12), editUrl: state.canEdit ? editUrl(w.id) : '' });
     });
     grid.innerHTML = html;
   }
@@ -448,7 +448,7 @@
 
     grid.addEventListener('pointerdown', function (ev) {
       var grip = ev.target.closest('[data-admin="drag"]');
-      if (!grip || !state.admin || ev.button > 0) return;
+      if (!grip || !state.canEdit || ev.button > 0) return;
       ev.preventDefault();
       var card = grip.closest('.card');
       drag = { card: card, id: ev.pointerId, y: ev.clientY };
@@ -569,7 +569,7 @@
     });
     $('#main').addEventListener('click', function (ev) {
       var del = ev.target.closest('[data-admin="delete"]');
-      if (del && state.admin) deleteWish(del.closest('.card').getAttribute('data-id'));
+      if (del && state.canEdit) deleteWish(del.closest('.card').getAttribute('data-id'));
     });
     initSorting();
 
