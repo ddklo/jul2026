@@ -13,7 +13,8 @@
   var e = Jul.escape;
 
   var state = {
-    loading: null,   // Promise med dataene fra data/
+    list: null,      // { id, name } – listen som redigeres (Bergen, Sørumsand …)
+    loading: null,   // Promise med dataene fra data/<liste>/
     saved: {},       // person-id → filinnholdet slik det ligger publisert
     data: null,      // { title, people, wishes } – ønskene har feltet person
     person: null,
@@ -107,9 +108,14 @@
   /* ---------------- Åpning ---------------- */
   function initUnlock() {
     var st = $('#data-status');
-    state.loading = Jul.loadData();
+    // Listen velges med ?liste=bergen. Uten (eller ukjent) brukes den første.
+    var wanted = new URLSearchParams(global.location.search).get('liste');
+    state.loading = Jul.loadMeta().then(function (meta) {
+      var ids = (meta.lists || []).map(function (l) { return l.id; });
+      return Jul.loadData(ids.indexOf(wanted) !== -1 ? wanted : ids[0]);
+    });
     state.loading.then(function (data) {
-      st.innerHTML = Jul.icon('check') + 'Fant ønskelistene (' + data.wishes.length + ' ønsker)';
+      st.innerHTML = Jul.icon('check') + 'Fant ønskelisten for ' + e(data.list.name) + ' (' + data.wishes.length + ' ønsker)';
       st.className = 'ed-status is-ok';
       if (Jul.auth.load() === 'admin') openWorkspace(data);
       else if (!matchMedia('(pointer: coarse)').matches) $('#ed-password').focus();
@@ -146,6 +152,11 @@
   }
 
   function openWorkspace(data) {
+    state.list = data.list;
+    $('#list-select').innerHTML = data.lists.map(function (l) {
+      return '<option value="' + e(l.id) + '"' + (l.id === data.list.id ? ' selected' : '') + '>' + e(l.name) + '</option>';
+    }).join('');
+    document.title = 'Rediger ' + data.list.name + ' · Juleønsker 2026';
     state.data = normalize(data);
     people().forEach(function (p) { state.saved[p.id] = personFile(p.id); });
     state.person = people()[0].id;
@@ -439,12 +450,15 @@
     $('#publish-files').innerHTML = names
       ? 'Disse filene ligger i nedlastingsmappen din: ' + names.map(function (n) { return '<code>' + e(n) + '</code>'; }).join(', ') + '.'
       : 'Klikk <strong>Last ned endrede filer</strong>. Du får én fil per person som er endret, for eksempel <code>ellie.json</code>.';
+    // Filene til hver liste ligger i sin egen mappe, f.eks. data/bergen
+    $$('.publish-folder').forEach(function (el) { el.textContent = 'data/' + state.list.id; });
+    $('#publish-list').textContent = state.list.name;
     $('#publish-dialog').showModal();
   }
 
   function exportBackup() {
     var d = new Date().toISOString().slice(0, 10);
-    download('onskeliste-backup-' + d + '.json', JSON.stringify(state.data, null, 2), 'application/json');
+    download('onskeliste-backup-' + state.list.id + '-' + d + '.json', JSON.stringify(state.data, null, 2), 'application/json');
   }
 
   function importBackup(file) {
@@ -610,6 +624,15 @@
 
     // Toppmeny
     $('#download-btn').addEventListener('click', downloadDataFile);
+    // Bytt liste: last verktøyet på nytt med ?liste=… (innloggingen huskes i fanen)
+    $('#list-select').addEventListener('change', function (ev) {
+      if (state.dirty && !global.confirm('Du har ulagrede endringer i ' + state.list.name + '. Bytte liste likevel?')) {
+        ev.target.value = state.list.id;
+        return;
+      }
+      state.dirty = false;
+      global.location.search = '?liste=' + encodeURIComponent(ev.target.value);
+    });
     $('.ed-menu').addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-cmd]');
       if (!b) return;

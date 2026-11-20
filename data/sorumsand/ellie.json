@@ -1,0 +1,108 @@
+{
+  "wishes": [
+    {
+      "id": "wmwo56pw2r51vc",
+      "title": "Candy Maker startkit fra Panduro",
+      "description": "DIY-sett med alt som trengs for å lage godteri og drops.",
+      "image": "data/bilder/wmwo56pw2r51vc.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://panduro.com/nb-no/products/godteri-baking/karameller/karamellsett/diy-kit-candy-maker-startkit-med-alt-som-trengs-for-a-lage-godteri-og-drops!-900330",
+      "linkLabel": "",
+      "prisjaktUrl": "https://www.prisjakt.no/search?search=godteri%20lage%20selv%20sett",
+      "hidePrisjakt": false,
+      "priceMin": null,
+      "priceMax": null,
+      "createdAt": "2026-11-19T22:49:04.657Z"
+    },
+    {
+      "id": "wmwo56pw2qsklp",
+      "title": "Candy Making Kit – rosa drops med bubblegum-smak",
+      "description": "DIY-sett for å lage rosa drops med smak av bubblegum.",
+      "image": "data/bilder/wmwo56pw2qsklp.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://panduro.com/nb-no/products/godteri-baking/karameller/karamellsett/diy-kit-candy-making-kit-lag-rosa-drops-med-smak-av-bubblegum!-900332",
+      "linkLabel": "",
+      "prisjaktUrl": "https://www.prisjakt.no/search?search=godteri%20lage%20selv%20sett",
+      "hidePrisjakt": false,
+      "priceMin": null,
+      "priceMax": null,
+      "createdAt": "2026-11-19T22:49:04.657Z"
+    },
+    {
+      "id": "wmwo56pw2w702v",
+      "title": "Silikonform for gummibjørner",
+      "description": "50 små bjørner, 190 × 130 × 10 mm.",
+      "image": "data/bilder/wmwo56pw2w702v.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://panduro.com/nb-no/products/godteri-baking/karameller/redskaper-tilbehor/silikonform-godteribjorner-gummibjorner-50-sma-bjorner-190%C3%97130%C3%9710-mm-902318",
+      "linkLabel": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=15949728",
+      "hidePrisjakt": false,
+      "priceMin": null,
+      "priceMax": null,
+      "livePrice": {
+        "productId": "15949728",
+        "amount": 207,
+        "offers": 3,
+        "checkedAt": "2026-11-20T11:59:42.458Z"
+      },
+      "createdAt": "2026-11-19T22:49:04.657Z"
+    },
+    {
+      "id": "wmwo56pw294pv4",
+      "title": "Karamellform – kjærlighet på pinne",
+      "description": "",
+      "image": "data/bilder/wmwo56pw294pv4.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://panduro.com/nb-no/products/godteri-baking/karameller/redskaper-tilbehor/karamellform-kjarlighet-pa-pinne-902163",
+      "linkLabel": "",
+      "prisjaktUrl": "https://www.prisjakt.no/s/silikonform/",
+      "hidePrisjakt": false,
+      "priceMin": null,
+      "priceMax": null,
+      "createdAt": "2026-11-19T22:49:04.657Z"
+    },
+    {
+      "id": "wmwo56pw2qf9ux",
+      "title": "Silikonform for slikkepinner",
+      "description": "160 × 160 × 17 mm – kan også brukes til ispinner.",
+      "image": "data/bilder/wmwo56pw2qf9ux.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://panduro.com/nb-no/products/godteri-baking/karameller/redskaper-tilbehor/silikonform-slikkepinner-160%C3%97160%C3%9717-mm-eller-hvorfor-ikke-ispinner-902319",
+      "linkLabel": "",
+      "prisjaktUrl": "https://www.prisjakt.no/s/silikonform/",
+      "hidePrisjakt": false,
+      "priceMin": null,
+      "priceMax": null,
+      "createdAt": "2026-11-19T22:49:04.657Z"
+    },
+    {
+      "id": "wmwo56pw2qvgq8",
+      "title": "Hjerteformet sjokoladefondue",
+      "description": "Rød og hvit.",
+      "image": "data/bilder/wmwo56pw2qvgq8.webp",
+      "imageFit": "cover",
+      "storeUrl": "https://www.temashop.no/hjerteformet-chokoladefondue-roed-hvid",
+      "linkLabel": "",
+      "prisjaktUrl": "https://www.prisjakt.no/s/sjokoladefondue/",
+      "hidePrisjakt": false,
+      "priceMin": null,
+      "priceMax": null,
+      "createdAt": "2026-11-19T22:49:04.657Z"
+    },
+    {
+      "id": "wmwo56pw26cxqv",
+      "title": "Kaka klemmeball",
+      "description": "",
+      "image": "data/bilder/wmwo56pw26cxqv.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://www.temashop.no/kaka-klemmebold",
+      "linkLabel": "",
+      "prisjaktUrl": "https://www.prisjakt.no/s/squishy-toys/",
+      "hidePrisjakt": false,
+      "priceMin": null,
+      "priceMax": null,
+      "createdAt": "2026-11-19T22:49:04.657Z"
+    }
+  ]
+}

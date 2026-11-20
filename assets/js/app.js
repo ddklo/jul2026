@@ -12,7 +12,8 @@
   function rm() { return !!(reducedMotion && reducedMotion.matches); }
 
   var state = {
-    data: null,      // Promise med { title, people, wishes }
+    list: null,      // { id, name } – hvilken ønskeliste siden viser (body data-list)
+    data: null,      // Promise med { title, list, people, wishes }
     people: [],
     wishes: [],
     current: null,
@@ -143,7 +144,11 @@
   function unlock(data, role, animate) {
     state.people = (data.people && data.people.length ? data.people : Jul.DEFAULT_PEOPLE).slice();
     state.wishes = (data.wishes || []).slice();
-    $('#admin-link').hidden = role !== 'admin';
+    state.list = data.list;
+    $('#list-name').textContent = data.list.name;
+    var admin = $('#admin-link');
+    admin.hidden = role !== 'admin';
+    admin.href = 'editor/?liste=' + encodeURIComponent(data.list.id);
 
     var login = $('#login');
     var app = $('#app');
@@ -252,7 +257,7 @@
     });
     var p = personById(id);
     document.documentElement.style.setProperty('--person', (p && p.accent) || '#d9b26a');
-    document.title = (p ? genitive(p.name) + ' ønskeliste · ' : '') + 'Juleønsker 2026';
+    document.title = (p ? genitive(p.name) + ' ønskeliste · ' : '') + state.list.name + ' · Juleønsker 2026';
     moveIndicator();
 
     if (first || !changed || rm()) {
@@ -475,7 +480,7 @@
     }
 
     document.body.classList.add('is-checking');
-    state.data = Jul.loadData();
+    state.data = Jul.loadData(document.body.getAttribute('data-list'));
     var role = Jul.auth.load();
     state.data.then(
       function (data) {
@@ -485,7 +490,7 @@
       function (err) {
         if (global.console) console.error(err);
         showLogin();
-        setLoginError('Fant ikke ønskelistene (data/personer.json).');
+        setLoginError('Fant ikke ønskelistene: ' + (err && err.message ? err.message : err));
       }
     );
   }

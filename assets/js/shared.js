@@ -97,8 +97,8 @@
 
   /* ------------------------------------------------------------------ *
    * Data
-   * data/personer.json  { title, people: [{ id, name, accent }] }
-   * data/<id>.json      { wishes: [...] }  – én fil per person, i visningsrekkefølge
+   * data/personer.json        { title, lists: [{ id, name }], people: [{ id, name, accent }] }
+   * data/<liste>/<person>.json { wishes: [...] }  – én fil per person og liste, i visningsrekkefølge
    * Ønskene får feltet `person` når de lastes inn; det lagres ikke i filene.
    * ------------------------------------------------------------------ */
   function getJSON(path) {
@@ -108,11 +108,19 @@
     });
   }
 
-  Jul.loadData = function () {
-    return getJSON('data/personer.json').then(function (meta) {
+  /** Listene (Bergen, Sørumsand …) og personene, uten ønsker. */
+  Jul.loadMeta = function () {
+    return getJSON('data/personer.json');
+  };
+
+  /** Ønskene i én liste. Gir { title, list, lists, people, wishes }. */
+  Jul.loadData = function (listId) {
+    return Jul.loadMeta().then(function (meta) {
+      var list = (meta.lists || []).filter(function (l) { return l.id === listId; })[0];
+      if (!list) throw new Error('Fant ikke listen «' + listId + '» i data/personer.json');
       var people = meta.people && meta.people.length ? meta.people : Jul.DEFAULT_PEOPLE;
       return Promise.all(people.map(function (p) {
-        return getJSON('data/' + p.id + '.json');
+        return getJSON('data/' + list.id + '/' + p.id + '.json');
       })).then(function (files) {
         var wishes = [];
         files.forEach(function (f, i) {
@@ -121,7 +129,7 @@
             wishes.push(w);
           });
         });
-        return { title: meta.title, people: people, wishes: wishes };
+        return { title: meta.title, list: list, lists: meta.lists, people: people, wishes: wishes };
       });
     });
   };

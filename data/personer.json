@@ -1,5 +1,15 @@
 {
   "title": "Juleønsker 2026",
+  "lists": [
+    {
+      "id": "bergen",
+      "name": "Bergen"
+    },
+    {
+      "id": "sorumsand",
+      "name": "Sørumsand"
+    }
+  ],
   "people": [
     {
       "id": "dagfinn",

@@ -1,0 +1,30 @@
+{
+  "wishes": [
+    {
+      "id": "wmwo4g8wck1mn0",
+      "title": "Tom Ford Eau de Grey Vetiver EDT",
+      "description": "Eau de toilette (ikke eau de parfum). 50 ml eller 100 ml.",
+      "image": "data/bilder/wmwo4g8wck1mn0.webp",
+      "imageFit": "contain",
+      "storeUrl": "",
+      "prisjaktUrl": "https://www.prisjakt.no/c/parfymer?101570=33040&brand=5854",
+      "hidePrisjakt": false,
+      "priceMin": 850,
+      "priceMax": 1550,
+      "createdAt": "2026-11-19T22:28:29.581Z"
+    },
+    {
+      "id": "wmwo4xvs2mmqwg",
+      "title": "HeatX XC Gloves",
+      "description": "Lette varmehansker med batteri, laget for langrenn og vintertrening. Sort.",
+      "image": "data/bilder/wmwo4xvs2mmqwg.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://www.foss-sport.no/heatx/203634/heatx-hansker-xc-varmehansker-til-langrenn",
+      "prisjaktUrl": "https://www.prisjakt.no/c/votter-hansker?3666=29704",
+      "hidePrisjakt": false,
+      "priceMin": 1250,
+      "priceMax": 1600,
+      "createdAt": "2026-11-19T22:42:12.386Z"
+    }
+  ]
+}

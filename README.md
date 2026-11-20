@@ -2,8 +2,10 @@
 
 En elegant og mobilvennlig juleønskeliste for **Dagfinn, Kristin, Ellie og Sidney**. Den er helt gratis å drifte via GitHub Pages.
 
+Det er to ønskelister, **Bergen** og **Sørumsand**, med de samme personene, men hver sine ønsker. Hver liste har sin egen adresse: `…/bergen` og `…/sorumsand`. Forsiden lar deg velge mellom dem.
+
 - Statisk nettside (HTML, CSS og JavaScript) uten backend, database, sporing eller eksterne biblioteker
-- Ønskene ligger som vanlige JSON-filer, én per person, som kan redigeres direkte på GitHub
+- Ønskene ligger som vanlige JSON-filer, én per person og liste, som kan redigeres direkte på GitHub
 - To passord: ett for å se listene, og ett for administrator, som også kan redigere og oppdatere priser
 - Laveste pris fra Prisjakt hentes hver natt
 
@@ -12,13 +14,15 @@ En elegant og mobilvennlig juleønskeliste for **Dagfinn, Kristin, Ellie og Sidn
 ## Innhold
 
 ```
-index.html               Selve nettsiden (innlogging + ønskelister)
+index.html               Forsiden: velg Bergen eller Sørumsand
+bergen.html              Ønskelisten for Bergen (innlogging + ønskelister)
+sorumsand.html           Ønskelisten for Sørumsand – samme side, bare data-list er ulik
 assets/css/styles.css    Design
 assets/js/shared.js      Innlogging, lasting av data, ikoner og produktkort (felles)
 assets/js/app.js         Logikken til nettsiden
 assets/js/snow.js        Snøfallet i bakgrunnen
-data/personer.json       Personene (navn, farge og rekkefølge)
-data/<person>.json       Ønskene til hver person, for eksempel data/ellie.json
+data/personer.json       Listene og personene (navn, farge og rekkefølge)
+data/<liste>/<person>.json  Ønskene, for eksempel data/bergen/ellie.json
 data/bilder/             Produktbildene
 editor/                  Redigeringsverktøyet (kun administrator)
 tools/priser.mjs         Henter priser fra Prisjakt (kjøres av GitHub Actions)
@@ -35,7 +39,7 @@ tools/priser.mjs         Henter priser fra Prisjakt (kjøres av GitHub Actions)
 4. Velg branchen (for eksempel `main`) og mappen **`/ (root)`**, og klikk **Save**.
 5. Etter et minutt eller to ligger siden på `https://<brukernavn>.github.io/<repo-navn>/`.
 
-Send lenken og passordet for lesetilgang til familien. Passordene står med vilje ikke i denne README-en.
+Send lenken til riktig liste (`…/bergen` eller `…/sorumsand`) og passordet for lesetilgang til familien. Passordene er de samme for begge listene. Passordene står med vilje ikke i denne README-en.
 
 ### Passord og roller
 
@@ -52,7 +56,7 @@ node -e "console.log(require('crypto').createHash('sha256').update('nytt-passord
 
 ### Lenke direkte til én person
 
-Hver person har sin egen lenke, for eksempel `…/#ellie`. Trykk på **Del lenke** på nettsiden for å kopiere eller dele den. Mottakeren må fortsatt ha passordet.
+Hver person har sin egen lenke, for eksempel `…/bergen#ellie`. Trykk på **Del lenke** på nettsiden for å kopiere eller dele den. Mottakeren må fortsatt ha passordet.
 
 ---
 
@@ -60,10 +64,10 @@ Hver person har sin egen lenke, for eksempel `…/#ellie`. Trykk på **Del lenke
 
 ### I redigeringsverktøyet
 
-1. Logg inn som administrator på nettsiden og trykk på **blyanten** øverst, eller gå rett til `…/editor/`.
-2. Velg person, og klikk på et ønske eller på **Nytt ønske**. Du ser kortet slik familien vil se det.
+1. Logg inn som administrator på en av listene og trykk på **blyanten** øverst, eller gå rett til `…/editor/`.
+2. Velg liste (Bergen eller Sørumsand) øverst til venstre, så person, og klikk på et ønske eller på **Nytt ønske**. Du ser kortet slik familien vil se det.
 3. Klikk **Last ned endrede filer** (eller trykk Ctrl/Cmd + S). Du får én fil per person som er endret, for eksempel `ellie.json`.
-4. **Last opp filene til GitHub:** Åpne mappen **`data`** i repoet, klikk **Add file → Upload files**, dra inn filene og klikk **Commit changes**.
+4. **Last opp filene til GitHub:** Åpne mappen for listen, **`data/bergen`** eller **`data/sorumsand`**, i repoet, klikk **Add file → Upload files**, dra inn filene og klikk **Commit changes**.
 
 Nettsiden oppdateres i løpet av et par minutter.
 
@@ -71,7 +75,7 @@ Nettsiden oppdateres i løpet av et par minutter.
 
 ### Direkte på GitHub
 
-Filene i `data/` er vanlig JSON og kan redigeres rett på github.com (blyant-ikonet på filen). Rekkefølgen i filen er rekkefølgen på nettsiden.
+Filene i `data/bergen/` og `data/sorumsand/` er vanlig JSON og kan redigeres rett på github.com (blyant-ikonet på filen). Rekkefølgen i filen er rekkefølgen på nettsiden.
 
 ### Felter per ønske
 
@@ -94,6 +98,10 @@ Filene i `data/` er vanlig JSON og kan redigeres rett på github.com (blyant-iko
 
 - **Oppdater priser nå:** starter prisjobben med en gang i stedet for å vente til natten (se [Priser fra Prisjakt](#priser-fra-prisjakt)).
 - **Eksporter backup / Importer backup:** alle ønskene som én JSON-fil.
+
+### Legge til en liste
+
+Legg listen til i `lists` i `data/personer.json`, lag mappen `data/<id>/` med én fil per person (`{ "wishes": [] }`), og kopier `bergen.html` til `<id>.html` med ny `data-list` og tittel. Husk også en knapp på forsiden (`index.html`).
 
 ### Priser fra Prisjakt
 
@@ -137,7 +145,7 @@ Passordet er en **enkel sperre**, ikke ekte sikkerhet:
 
 ## 5. For den teknisk interesserte
 
-**Kjøre lokalt:** Dataene hentes med `fetch`, så siden må serveres over http (å dobbeltklikke på `index.html` virker ikke):
+**Kjøre lokalt:** Dataene hentes med `fetch`, så siden må serveres over http (å dobbeltklikke på `index.html` virker ikke). Lokalt må du bruke `/bergen.html`; adressen uten `.html` virker bare på GitHub Pages.
 
 ```bash
 python -m http.server 8000
@@ -153,9 +161,13 @@ node tools/priser.mjs
 
 ```json
 // data/personer.json
-{ "title": "Juleønsker 2026", "people": [{ "id": "dagfinn", "name": "Dagfinn", "accent": "#d9b26a" }] }
+{
+  "title": "Juleønsker 2026",
+  "lists": [{ "id": "bergen", "name": "Bergen" }, { "id": "sorumsand", "name": "Sørumsand" }],
+  "people": [{ "id": "dagfinn", "name": "Dagfinn", "accent": "#d9b26a" }]
+}
 
-// data/dagfinn.json
+// data/bergen/dagfinn.json
 {
   "wishes": [{
     "id": "w001", "title": "…", "description": "…",

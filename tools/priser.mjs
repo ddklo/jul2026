@@ -2,12 +2,12 @@
 /**
  * Henter laveste pris fra Prisjakt for ønsker som lenker direkte til et produkt
  * (https://www.prisjakt.no/product.php?p=…), og lagrer den som `livePrice` på
- * ønsket i data/<person>.json. Kjøres hver natt av GitHub Actions
+ * ønsket i data/<liste>/<person>.json. Kjøres hver natt av GitHub Actions
  * (.github/workflows/priser.yml), eller manuelt:
  *
  *   node tools/priser.mjs [--force]
  *
- * En personfil skrives bare når en pris er endret, når en lagret pris er eldre
+ * En fil skrives bare når en pris er endret, når en lagret pris er eldre
  * enn REFRESH_DAYS, eller med --force (manuell kjøring). Slik blir det færre commits.
  */
 import { readFile, writeFile } from 'node:fs/promises';
@@ -63,13 +63,23 @@ async function fetchPrice(id) {
 }
 
 async function main() {
-  const { people } = await readJSON('personer.json');
+  const { lists, people } = await readJSON('personer.json');
   const now = new Date().toISOString();
   let ok = 0, failed = 0, first = true;
   const written = [];
+  const files = lists.flatMap((l) => people.map((p) => `${l.id}/${p.id}.json`));
+  // Samme produkt kan stå på flere lister; hent det bare én gang per kjøring
+  const cache = new Map();
+  const getPrice = async (id) => {
+    if (!cache.has(id)) {
+      if (!first) await sleep(DELAY_MS);
+      first = false;
+      cache.set(id, fetchPrice(id));
+    }
+    return cache.get(id);
+  };
 
-  for (const person of people) {
-    const file = `${person.id}.json`;
+  for (const file of files) {
     const data = await readJSON(file);
     let changed = false;
 
@@ -80,10 +90,8 @@ async function main() {
         if (old) { delete w.livePrice; changed = true; }
         continue;
       }
-      if (!first) await sleep(DELAY_MS);
-      first = false;
       try {
-        const { amount, offers } = await fetchPrice(id);
+        const { amount, offers } = await getPrice(id);
         ok++;
         const same = old && old.productId === id && old.amount === amount && old.offers === offers;
         if (!same || force || !old.checkedAt || ageDays(old.checkedAt) > REFRESH_DAYS) changed = true;

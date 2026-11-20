@@ -1,4 +1,4 @@
-# Henter laveste pris fra Prisjakt hver natt og lagrer den i data/<person>.json.
+# Henter laveste pris fra Prisjakt hver natt og lagrer den i data/<liste>/<person>.json.
 # Kan også startes manuelt: «Run workflow» på GitHub, eller «Oppdater priser nå» i redigeringsverktøyet.
 name: Oppdater priser
 

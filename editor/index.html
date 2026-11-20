@@ -8,8 +8,8 @@
   <meta name="theme-color" content="#070b14">
   <title>Rediger ønskelister · Juleønsker 2026</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../assets/css/styles.css?v=11">
-  <link rel="stylesheet" href="editor.css?v=11">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=12">
+  <link rel="stylesheet" href="editor.css?v=12">
 </head>
 <body class="ed">
 
@@ -43,7 +43,11 @@
       <div class="ed-top__brand">
         <span class="brand__star" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 1.8l2.4 7.1 7.4.2-5.9 4.5 2.1 7.2L12 16.6l-6 4.2 2.1-7.2-5.9-4.5 7.4-.2z"/></svg></span>
         <div>
-          <strong>Ønskeliste-redigering</strong>
+          <span class="ed-top__title">
+            <strong>Rediger</strong>
+            <label for="list-select" class="sr-only">Ønskeliste</label>
+            <select id="list-select" class="ed-input ed-list-select"></select>
+          </span>
           <span class="ed-dirty" id="dirty" data-state="clean">Alt er lagret</span>
         </div>
       </div>
@@ -197,7 +201,7 @@
       <p id="publish-files"></p>
       <p>Slik publiserer du dem:</p>
       <ol class="ed-steps">
-        <li>Gå til repoet ditt på <strong>github.com</strong> og åpne mappen <code>data</code>.</li>
+        <li>Gå til repoet ditt på <strong>github.com</strong> og åpne mappen <code class="publish-folder">data</code> (listen for <span id="publish-list"></span>).</li>
         <li>Klikk <strong>Add file → Upload files</strong> og dra inn filene. De erstatter filene med samme navn.</li>
         <li>Klikk <strong>Commit changes</strong>. Nettsiden oppdateres i løpet av et par minutter.</li>
       </ol>
@@ -228,7 +232,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="../assets/js/shared.js?v=11"></script>
-  <script src="editor.js?v=11"></script>
+  <script src="../assets/js/shared.js?v=12"></script>
+  <script src="editor.js?v=12"></script>
 </body>
 </html>

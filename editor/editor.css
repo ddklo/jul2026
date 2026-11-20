@@ -49,6 +49,9 @@ body.ed { min-height: 100vh; }
 .ed-top__brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .ed-top__brand strong { display: block; font-family: var(--font-display); font-weight: 500; font-size: 1.15rem; }
 .ed-top__actions { display: flex; align-items: center; gap: 8px; }
+.ed-top__title { display: flex; align-items: center; gap: 8px; }
+.ed-top__title strong { display: inline; }
+.ed-list-select { width: auto; min-height: 0; padding: 4px 32px 4px 10px; font-size: 0.95rem; background-position: right 10px center; }
 .ed-dirty { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); }
 .ed-dirty::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green-2); }
 .ed-dirty[data-state="dirty"] { color: var(--gold-2); }
