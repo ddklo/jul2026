@@ -15,7 +15,7 @@
         "productId": "537780",
         "amount": 1069,
         "offers": 6,
-        "checkedAt": "2026-11-20T13:03:30.659Z"
+        "checkedAt": "2026-11-20T13:51:27.907Z"
       },
       "createdAt": "2026-11-19T22:28:29.581Z"
     },
@@ -34,9 +34,29 @@
         "productId": "18706564",
         "amount": 1179,
         "offers": 9,
-        "checkedAt": "2026-11-20T13:03:30.659Z"
+        "checkedAt": "2026-11-20T13:51:27.907Z"
       },
       "createdAt": "2026-11-19T22:42:12.386Z"
+    },
+    {
+      "id": "wmwp1f6wl4hk3q",
+      "title": "Lenz Heat Sock 5.1 Toe Cap",
+      "description": "Varmestrømper, Regular Fit (ikke Slim Fit). Batteripakken selges separat, for eksempel Lenz rcB 1200.",
+      "image": "data/bilder/wmwp1f6wl4hk3q.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://www.fjellsport.no/merker/lenz/lenz-heat-sock-5-1-tc-grey-237793",
+      "linkLabel": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=11750545",
+      "hidePrisjakt": false,
+      "priceMin": 850,
+      "priceMax": 1400,
+      "livePrice": {
+        "productId": "11750545",
+        "amount": 834,
+        "offers": 5,
+        "checkedAt": "2026-11-20T13:51:27.907Z"
+      },
+      "createdAt": "2026-11-20T13:51:27.790Z"
     }
   ]
 }
