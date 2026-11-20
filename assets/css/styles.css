@@ -41,6 +41,7 @@
   --shadow-lg: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 30px 80px -30px rgba(0, 0, 0, 0.9);
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1); /* mykere start og stopp for størrelsesendringer */
 
   --gutter: clamp(16px, 4vw, 40px);
   --maxw: 1240px;
@@ -443,20 +444,27 @@ a { color: inherit; }
 }
 .tab.is-active .tab__count { background: color-mix(in srgb, var(--accent) 22%, transparent); color: color-mix(in srgb, var(--accent) 70%, #fff); }
 
-/* Desktop: den valgte personen vokser i fanen (i stedet for en stor overskrift) */
+/* Desktop: den valgte personen vokser i fanen (i stedet for en stor overskrift).
+   Raden har fast høyde, så innholdet under ikke hopper mens én fane krymper og en annen vokser. */
 @media (min-width: 720px) {
-  .tab { transition: color 0.25s, height 0.45s var(--ease-out), padding 0.45s var(--ease-out), font-size 0.45s var(--ease-out); }
-  .tab__avatar { transition: width 0.45s var(--ease-out), height 0.45s var(--ease-out), transform 0.3s var(--ease-out), box-shadow 0.3s; }
-  .tab__count { transition: background-color 0.25s, color 0.25s, min-width 0.45s var(--ease-out), height 0.45s var(--ease-out), font-size 0.45s var(--ease-out); }
-  .tab.is-active { height: 94px; padding: 0 26px 0 10px; gap: 14px; font-size: 1.5rem; }
-  .tab.is-active .tab__name { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.01em; }
+  .tabs__inner { height: 106px; transition: height 0.5s var(--ease-smooth); } /* 94 px fane + 2 × 5 px luft + kant */
+  .tab { transition: color 0.25s, height 0.5s var(--ease-smooth), padding 0.5s var(--ease-smooth), font-size 0.5s var(--ease-smooth), gap 0.5s var(--ease-smooth); }
+  .tab__avatar { transition: width 0.5s var(--ease-smooth), height 0.5s var(--ease-smooth), transform 0.3s var(--ease-smooth), box-shadow 0.3s; }
+  .tab__count { transition: background-color 0.25s, color 0.25s, min-width 0.5s var(--ease-smooth), height 0.5s var(--ease-smooth), font-size 0.5s var(--ease-smooth); }
+  .tabs__indicator { transition: transform 0.5s var(--ease-smooth), width 0.5s var(--ease-smooth), height 0.5s var(--ease-smooth), box-shadow 0.4s; }
+  .tab.is-active { height: 94px; padding: 0 26px 0 10px; gap: 14px; font-size: 1.5rem; font-weight: 700; }
   .tab.is-active .tab__avatar { width: 78px; height: 78px; transform: none; }
   .tab.is-active .tab__count { min-width: 32px; height: 28px; font-size: 0.92rem; }
-  /* Når fanelinjen ligger fast øverst (man har scrollet), krymper den til middels størrelse */
-  .is-scrolled .tab.is-active { height: 62px; padding: 0 20px 0 8px; gap: 10px; font-size: 1.15rem; }
-  .is-scrolled .tab.is-active .tab__avatar { width: 50px; height: 50px; }
-  .is-scrolled .tab.is-active .tab__count { min-width: 26px; height: 22px; font-size: 0.78rem; }
+  /* Når fanelinjen har lagt seg fast øverst, krymper den til middels størrelse */
+  .is-stuck .tabs__inner { height: 74px; }
+  .is-stuck .tab.is-active { height: 62px; padding: 0 20px 0 8px; gap: 10px; font-size: 1.15rem; }
+  .is-stuck .tab.is-active .tab__avatar { width: 50px; height: 50px; }
+  .is-stuck .tab.is-active .tab__count { min-width: 26px; height: 22px; font-size: 0.78rem; }
+  /* Linjen under fanene holder alltid samme høyde */
+  .person-head { min-height: 26px; }
 }
+/* Dra-hintet holder plass også når det ikke vises (0–1 ønsker) */
+.ph__admin.is-hidden { visibility: hidden; }
 
 /* ---------------- Innhold ---------------- */
 .main {
@@ -465,8 +473,8 @@ a { color: inherit; }
   padding: 14px var(--gutter) 40px;
   outline: none;
 }
-.swap { transition: opacity 0.17s ease, transform 0.17s ease; }
-.swap.is-out { opacity: 0; transform: translateX(calc(var(--dir, 1) * -18px)); }
+.swap { transition: opacity 0.22s ease, transform 0.32s var(--ease-smooth); }
+.swap.is-out { opacity: 0; transform: translateX(calc(var(--dir, 1) * -12px)); }
 
 /* Personheader */
 .person-head { margin: 22px 0 22px; }
@@ -522,7 +530,7 @@ a { color: inherit; }
   transition: transform 0.4s var(--ease-out), border-color 0.3s, box-shadow 0.4s;
 }
 .grid--static .card { animation: fadeIn 0.3s ease both; }
-@keyframes cardIn { from { opacity: 0; transform: translateY(18px) scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes cardIn { from { opacity: 0; transform: translateY(12px) scale(0.99); } to { opacity: 1; transform: none; } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .card::after {

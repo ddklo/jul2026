@@ -263,7 +263,7 @@
     var p = personById(id);
     document.documentElement.style.setProperty('--person', (p && p.accent) || '#d9b26a');
     document.title = (p ? genitive(p.name) + ' ønskeliste · ' : '') + state.list.name + ' · Juleønsker 2026';
-    followIndicator(600);
+    followIndicator(650);
 
     if (first || !changed || rm()) {
       render(true);
@@ -275,16 +275,34 @@
     keepTabsInView();
   }
 
+  var heightTimer = 0;
   function transition(dir, fn) {
     var els = $$('.swap');
+    var grid = $('#grid');
+    // Lås høyden mens innholdet byttes, så siden under ikke hopper
+    var startH = grid.offsetHeight;
+    clearTimeout(heightTimer);
+    grid.style.transition = '';
+    grid.style.height = startH + 'px';
     els.forEach(function (el) {
       el.style.setProperty('--dir', dir);
       el.classList.add('is-out');
     });
     setTimeout(function () {
       fn();
+      // Mål ny høyde, og la listen gli dit i stedet for å hoppe
+      grid.style.height = 'auto';
+      var endH = grid.offsetHeight;
+      grid.style.height = startH + 'px';
+      void grid.offsetHeight;
+      grid.style.transition = 'height 0.45s cubic-bezier(0.22, 1, 0.36, 1)';
+      grid.style.height = endH + 'px';
       els.forEach(function (el) { el.classList.remove('is-out'); });
-    }, 170);
+      heightTimer = setTimeout(function () {
+        grid.style.height = '';
+        grid.style.transition = '';
+      }, 480);
+    }, 200);
   }
 
   function keepTabsInView() {
@@ -354,8 +372,8 @@
       '<div class="ph__text"><p class="eyebrow">Ønskelisten til</p>' +
       '<h2 class="ph__title">' + e(p.name) + '</h2>' +
       '<p class="ph__stats">' + stats.map(function (s) { return '<span>' + e(s) + '</span>'; }).join('') + '</p>' +
-      (state.canEdit && scope.length > 1
-        ? '<p class="ph__admin">' + Jul.icon('grip') + 'Dra i håndtaket for å endre rekkefølgen</p>'
+      (state.canEdit
+        ? '<p class="ph__admin' + (scope.length > 1 ? '' : ' is-hidden') + '">' + Jul.icon('grip') + 'Dra i håndtaket for å endre rekkefølgen</p>'
         : '') +
       '</div>' +
       '<button type="button" class="btn btn--ghost btn--sm ph__action" data-action="share">' + Jul.icon('share') + '<span>Del lenke</span></button>' +
@@ -621,10 +639,16 @@
         ticking = false;
         var y = global.scrollY;
         toTop.classList.toggle('is-visible', y > 600);
-        var scrolled = y > 8;
-        if (scrolled !== document.body.classList.contains('is-scrolled')) {
-          document.body.classList.toggle('is-scrolled', scrolled);
-          followIndicator(600); // den valgte fanen endrer størrelse; markeringen følger med
+        document.body.classList.toggle('is-scrolled', y > 8);
+        // Fanelinjen ligger fast når siden er scrollet forbi overskriften. Slingringsmonnet
+        // hindrer at den vipper frem og tilbake når krympingen flytter innholdet litt.
+        var hero = $('.hero');
+        var stickAt = hero ? hero.offsetTop + hero.offsetHeight : 0;
+        var stuck = document.body.classList.contains('is-stuck');
+        var next = y > stickAt + 40 ? true : y < stickAt - 40 ? false : stuck;
+        if (next !== stuck) {
+          document.body.classList.toggle('is-stuck', next);
+          followIndicator(650); // den valgte fanen endrer størrelse; markeringen følger med
         }
       });
     }, { passive: true });
