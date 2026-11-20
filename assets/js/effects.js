@@ -112,6 +112,21 @@
     if (t) burst(ev.clientX, ev.clientY, t.classList.contains('brand') ? 22 : 12);
   }, { passive: true });
 
+  /* ---------------- Julekulen på innloggingen ---------------- */
+  Array.prototype.forEach.call(doc.querySelectorAll('.ornament'), function (orn) {
+    orn.addEventListener('click', function () {
+      orn.classList.remove('is-spinning');
+      void orn.offsetWidth; // start animasjonen på nytt
+      orn.classList.add('is-spinning');
+      var r = orn.getBoundingClientRect();
+      burst(r.left + r.width / 2, r.top + r.height * 0.62, 20);
+      if (global.Jul && Jul.music) Jul.music.jingle();
+    });
+    orn.addEventListener('animationend', function (ev) {
+      if (ev.animationName === 'ornamentSpin') orn.classList.remove('is-spinning');
+    });
+  });
+
   /* ---------------- Planlegging ---------------- */
   var shootTimer = null;
   function scheduleShoot() {

@@ -20,7 +20,7 @@ sorumsand.html           Ønskelisten for Sørumsand – samme side, bare data-l
 assets/css/styles.css    Design
 assets/js/shared.js      Innlogging, lasting av data, ikoner og produktkort (felles)
 assets/js/app.js         Logikken til nettsiden
-assets/js/snow.js        Snøfallet i bakgrunnen
+assets/js/snow.js        Snøfallet i bakgrunnen og snøfonnen som hoper seg opp nederst
 assets/js/effects.js     Stjerner, stjerneskudd, julenissen i sleden og gnister ved klikk
 assets/js/music.js       Julemusikk (spilledåse laget med Web Audio) og knappen som demper den
 data/personer.json       Listene og personene (navn, farge og rekkefølge)
@@ -145,7 +145,7 @@ En GitHub Actions-jobb ([`.github/workflows/priser.yml`](.github/workflows/prise
 - Lenke som går direkte til én persons liste
 - Tomtilstand når en person ikke har ønsker
 - Knapp til toppen og nedtelling til julaften
-- Rolig snøfall, blinkende julelys og stjerner, stjerneskudd, julenissen som flyr forbi i sleden innimellom, gnister når du klikker og en snøfonn nederst. Alle bevegelser slås av når enheten har «redusert bevegelse» på (`prefers-reduced-motion`).
+- Rolig snøfall, blinkende julelys og stjerner, stjerneskudd, julenissen som flyr forbi i sleden innimellom, gnister når du klikker, snø på toppen av kortene, nisseluer på personene, kristtorn ved overskriftene, en julekule som snurrer når du trykker på den, og snø som hoper seg opp nederst på skjermen (på mobil oppå bunnmenyen). Alle bevegelser slås av når enheten har «redusert bevegelse» på (`prefers-reduced-motion`).
 - Julemusikk i bakgrunnen: «Jingle Bells», «Glade jul», «We Wish You a Merry Christmas» og «Deck the Halls» som spilledåse. Melodiene er falt i det fri, og lyden lages i nettleseren, så det finnes ingen lydfiler. Musikken starter ved første klikk (nettlesere tillater ikke lyd før det), og knappen nederst til venstre demper den. Valget huskes på enheten.
 - Innloggingen huskes på enheten. Med «Husk meg» avkrysset varer den til du logger ut, ellers til fanen lukkes.
 

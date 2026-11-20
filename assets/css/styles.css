@@ -762,6 +762,47 @@ a { color: inherit; }
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 46' preserveAspectRatio='none'%3E%3Cpath d='M0 46V30c80-18 150-22 230-8s170 18 250 0 160-24 250-10 170 22 260 6 110-20 160-14V46z' fill='%23f4efe6' fill-opacity='.07'/%3E%3Cpath d='M0 46V36c120-10 220-14 330-4s200 10 300-2 190-14 300-2 180 8 270 2V46z' fill='%23f4efe6' fill-opacity='.06'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
 }
 
+/* Snø på kortene: et ujevnt lag langs toppkanten */
+.card::before {
+  content: ""; position: absolute; top: -1px; left: -2px; right: -2px; height: 17px; z-index: 2; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 17' preserveAspectRatio='none'%3E%3Cpath d='M0 0h300v6c-6 3-9 1-14 4s-8 7-12 2-9-3-15 0-11 1-17-2-9 4-15 4-8-5-14-3-10 6-17 4-7-6-14-4-9 3-15 1-10-5-16-1-9 8-14 3-8-3-14-1-11 2-17-1-8 5-14 5-9-4-15-2-9 3-15 0-7-4-12 0-9 6-14 2-8-4-14-2-10 2-16-1V0z' fill='%23fdfcf8'/%3E%3C/svg%3E") top / 100% 100% no-repeat;
+  filter: drop-shadow(0 2px 1.5px rgba(70, 90, 125, 0.45));
+}
+
+/* Nisseluer på personene */
+.tab__avatar::before, .ph__avatar::before {
+  content: ""; position: absolute; pointer-events: none; z-index: 1;
+  /* Speilvendt og vippet mot venstre, så tallboblen til høyre (mobil) synes */
+  top: -44%; left: -6%; width: 82%; height: 72%;
+  transform: scaleX(-1) rotate(16deg); transform-origin: 70% 100%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 36'%3E%3Cpath d='M5 27C8 15 18 5 33 6c3 0 5 2 4 4-3-1-7 0-9 3 3 4 5 9 5 14z' fill='%23c8243b'/%3E%3Cpath d='M9 24c3-9 9-14 17-16' stroke='%23ff6b7d' stroke-width='2' fill='none' stroke-linecap='round' opacity='.6'/%3E%3Crect x='2' y='25' width='34' height='9' rx='4.5' fill='%23fbf8f1'/%3E%3Ccircle cx='38' cy='8' r='5' fill='%23fbf8f1'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+}
+.ph__avatar { position: relative; }
+
+/* Kristtorn-kvist ved overskriftene */
+.ph .eyebrow::before, .login__card .eyebrow::before {
+  content: ""; flex: none; width: 26px; height: 19px; margin-right: -4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 20'%3E%3Cpath d='M14 12C10 6 5 5 1 7c2 1 2 3 1 4 3 0 4 2 4 4 2-2 5-2 8-3z' fill='%232f8a57'/%3E%3Cpath d='M14 12c4-6 9-7 13-5-2 1-2 3-1 4-3 0-4 2-4 4-2-2-5-2-8-3z' fill='%23256f46'/%3E%3Cpath d='M13 11.5 4 8.5M15 11.5l9-3' stroke='%2318482e' stroke-width='.7' fill='none'/%3E%3Ccircle cx='11.6' cy='10.4' r='2.6' fill='%23d9334a'/%3E%3Ccircle cx='16.4' cy='10.4' r='2.6' fill='%23c42a40'/%3E%3Ccircle cx='14' cy='7.6' r='2.6' fill='%23e0425a'/%3E%3Ccircle cx='13.2' cy='6.8' r='.8' fill='%23fff' fill-opacity='.7'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Julekulen på innloggingen: trykk for å snurre den */
+.ornament { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ornament svg { display: block; transition: transform 0.2s; }
+.ornament:hover svg { transform: scale(1.06); }
+.ornament.is-spinning svg { animation: ornamentSpin 1s var(--ease-out); }
+@keyframes ornamentSpin {
+  0% { transform: rotateY(0) scale(1); }
+  40% { transform: rotateY(400deg) scale(1.15); }
+  100% { transform: rotateY(720deg) scale(1); }
+}
+
+/* Snøfonnen nederst på skjermen (tegnes av assets/js/snow.js) */
+.snow-pile {
+  position: fixed; left: 0; right: 0; bottom: var(--bottom-nav); z-index: 30; pointer-events: none;
+}
+.is-locked .snow-pile { bottom: 0; }
+
 /* ---------------- Musikk-knapp (assets/js/music.js) ---------------- */
 .music-btn {
   position: fixed; left: max(16px, env(safe-area-inset-left)); bottom: calc(20px + var(--bottom-nav) + env(safe-area-inset-bottom));
