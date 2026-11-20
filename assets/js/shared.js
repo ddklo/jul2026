@@ -510,7 +510,9 @@
           '<span>' + e(storeLabel) + '</span>' + Jul.icon('external') + '</a>';
       }
     } else if (store) {
-      actions += '<a class="btn btn--primary btn--sm" href="' + e(store) + '"' + ext + '>' + e(w.linkLabel || 'Se i butikk') + Jul.icon('external') + '</a>';
+      var shop = Jul.storeName(store);
+      actions += '<a class="btn btn--primary btn--sm" href="' + e(store) + '"' + ext + '>' +
+        e(w.linkLabel || (shop ? 'Se hos ' + shop : 'Se i butikk')) + Jul.icon('external') + '</a>';
     }
     var mainUrl = pj || store;
 

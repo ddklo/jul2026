@@ -92,7 +92,7 @@ Filene i `data/bergen/` og `data/sorumsand/` er vanlig JSON og kan redigeres ret
 | `description` | Valgfri. Størrelse, farge, modell og lignende. |
 | `image` | Bildeadresse (`https://…`), et bilde i repoet (`data/bilder/…`), eller et bilde lastet opp i verktøyet |
 | `imageFit` | `contain` («Vis hele bildet») passer for produktbilder med hvit bakgrunn. `cover` («Fyll rammen») passer for stemningsbilder. |
-| `storeUrl` | Valgfri. Vises som en mindre knapp med butikkens navn (for eksempel «Lekekassen»). Uten Prisjakt-lenke blir den hovedknappen «Se i butikk». |
+| `storeUrl` | Valgfri. Vises som en mindre knapp med butikkens navn (for eksempel «Lekekassen»). Uten Prisjakt-lenke (eller med `hidePrisjakt`) blir den hovedknappen, for eksempel «Se hos Panduro». |
 | `linkLabel` | Valgfri tekst på nettbutikk-knappen i stedet for butikkens navn, for eksempel «Se oppskriften» |
 | `prisjaktUrl` | Hovedknappen. Lenke til Prisjakt, helst direkte til produktsiden (`https://www.prisjakt.no/product.php?p=…`), som gir «Se på Prisjakt» og laveste pris. Kategori- og søkelenker gir «Søk på Prisjakt». |
 | `hidePrisjakt` | Skjuler Prisjakt-knappen uten å slette lenken |

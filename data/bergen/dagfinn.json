@@ -7,10 +7,16 @@
       "image": "data/bilder/wmwo4g8wck1mn0.webp",
       "imageFit": "contain",
       "storeUrl": "",
-      "prisjaktUrl": "https://www.prisjakt.no/c/parfymer?101570=33040&brand=5854",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=537780",
       "hidePrisjakt": false,
       "priceMin": 850,
       "priceMax": 1550,
+      "livePrice": {
+        "productId": "537780",
+        "amount": 1069,
+        "offers": 6,
+        "checkedAt": "2026-11-20T13:03:30.659Z"
+      },
       "createdAt": "2026-11-19T22:28:29.581Z"
     },
     {
@@ -20,10 +26,16 @@
       "image": "data/bilder/wmwo4xvs2mmqwg.webp",
       "imageFit": "contain",
       "storeUrl": "https://www.foss-sport.no/heatx/203634/heatx-hansker-xc-varmehansker-til-langrenn",
-      "prisjaktUrl": "https://www.prisjakt.no/c/votter-hansker?3666=29704",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=18706564",
       "hidePrisjakt": false,
       "priceMin": 1250,
       "priceMax": 1600,
+      "livePrice": {
+        "productId": "18706564",
+        "amount": 1179,
+        "offers": 9,
+        "checkedAt": "2026-11-20T13:03:30.659Z"
+      },
       "createdAt": "2026-11-19T22:42:12.386Z"
     }
   ]

@@ -30,7 +30,7 @@
         "productId": "13998527",
         "amount": 776,
         "offers": 3,
-        "checkedAt": "2026-11-20T11:59:42.458Z"
+        "checkedAt": "2026-11-20T13:03:30.659Z"
       },
       "createdAt": "2026-11-19T22:46:25.093Z"
     },
@@ -50,7 +50,7 @@
         "productId": "13023597",
         "amount": 637,
         "offers": 19,
-        "checkedAt": "2026-11-20T11:59:42.458Z"
+        "checkedAt": "2026-11-20T13:03:30.659Z"
       },
       "createdAt": "2026-11-19T22:46:25.093Z"
     },
@@ -63,7 +63,7 @@
       "storeUrl": "https://lekekassen.no/handholdt-digitalt-mikroskop-for-barn",
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/s/mikroskop-barn/",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": 200,
       "priceMax": 600,
       "createdAt": "2026-11-19T22:46:25.093Z"

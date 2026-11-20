@@ -9,7 +9,7 @@
       "storeUrl": "https://panduro.com/nb-no/products/godteri-baking/karameller/karamellsett/diy-kit-candy-maker-startkit-med-alt-som-trengs-for-a-lage-godteri-og-drops!-900330",
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/search?search=godteri%20lage%20selv%20sett",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-19T22:49:04.657Z"
@@ -23,7 +23,7 @@
       "storeUrl": "https://panduro.com/nb-no/products/godteri-baking/karameller/karamellsett/diy-kit-candy-making-kit-lag-rosa-drops-med-smak-av-bubblegum!-900332",
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/search?search=godteri%20lage%20selv%20sett",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-19T22:49:04.657Z"
@@ -44,7 +44,7 @@
         "productId": "15949728",
         "amount": 207,
         "offers": 3,
-        "checkedAt": "2026-11-20T11:59:42.458Z"
+        "checkedAt": "2026-11-20T13:03:30.659Z"
       },
       "createdAt": "2026-11-19T22:49:04.657Z"
     },
@@ -57,7 +57,7 @@
       "storeUrl": "https://panduro.com/nb-no/products/godteri-baking/karameller/redskaper-tilbehor/karamellform-kjarlighet-pa-pinne-902163",
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/s/silikonform/",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-19T22:49:04.657Z"
@@ -71,7 +71,7 @@
       "storeUrl": "https://panduro.com/nb-no/products/godteri-baking/karameller/redskaper-tilbehor/silikonform-slikkepinner-160%C3%97160%C3%9717-mm-eller-hvorfor-ikke-ispinner-902319",
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/s/silikonform/",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-19T22:49:04.657Z"
@@ -85,7 +85,7 @@
       "storeUrl": "https://www.temashop.no/hjerteformet-chokoladefondue-roed-hvid",
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/s/sjokoladefondue/",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-19T22:49:04.657Z"
@@ -99,7 +99,7 @@
       "storeUrl": "https://www.temashop.no/kaka-klemmebold",
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/s/squishy-toys/",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-19T22:49:04.657Z"

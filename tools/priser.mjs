@@ -19,6 +19,9 @@ const REFRESH_DAYS = 3;
 const DELAY_MS = 1500;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36';
 
+// Må være lik WISH_FIELDS i assets/js/shared.js
+const FIELDS = ['id', 'title', 'description', 'image', 'imageFit', 'storeUrl', 'linkLabel', 'prisjaktUrl',
+  'hidePrisjakt', 'priceMin', 'priceMax', 'livePrice', 'createdAt'];
 const force = process.argv.includes('--force');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const readJSON = async (name) => JSON.parse(await readFile(resolve(DATA, name), 'utf8'));
@@ -105,6 +108,13 @@ async function main() {
     }
 
     if (changed) {
+      // Samme feltrekkefølge som nettsiden (Jul.serializeWishes), så diffene blir små
+      data.wishes = (data.wishes || []).map((w) => {
+        const o = {};
+        for (const k of FIELDS) if (w[k] !== undefined) o[k] = w[k];
+        for (const k of Object.keys(w)) if (!(k in o)) o[k] = w[k];
+        return o;
+      });
       await writeFile(resolve(DATA, file), JSON.stringify(data, null, 2) + '\n');
       written.push(file);
     }
