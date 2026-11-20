@@ -14,22 +14,47 @@
     {
       "id": "dagfinn",
       "name": "Dagfinn",
-      "accent": "#d9b26a"
+      "accent": "#d9b26a",
+      "avatar": {
+        "style": "short",
+        "hair": "#6b4226",
+        "age": "adult",
+        "beard": false,
+        "sweater": "#b3263a"
+      }
     },
     {
       "id": "kristin",
       "name": "Kristin",
-      "accent": "#e06a7b"
+      "accent": "#e06a7b",
+      "avatar": {
+        "style": "curly",
+        "hair": "#e6c56b",
+        "age": "adult",
+        "sweater": "#2e7a52"
+      }
     },
     {
       "id": "ellie",
       "name": "Ellie",
-      "accent": "#5cbf95"
+      "accent": "#5cbf95",
+      "avatar": {
+        "style": "wavy",
+        "hair": "#efd383",
+        "age": "child",
+        "sweater": "#c8243b"
+      }
     },
     {
       "id": "sidney",
       "name": "Sidney",
-      "accent": "#8cb8e6"
+      "accent": "#8cb8e6",
+      "avatar": {
+        "style": "kid",
+        "hair": "#f3dc8c",
+        "age": "small",
+        "sweater": "#2e7a52"
+      }
     }
   ]
 }

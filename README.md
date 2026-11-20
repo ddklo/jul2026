@@ -199,7 +199,11 @@ node tools/priser.mjs
 {
   "title": "Juleønsker 2026",
   "lists": [{ "id": "bergen", "name": "Bergen" }, { "id": "sorumsand", "name": "Sørumsand" }],
-  "people": [{ "id": "dagfinn", "name": "Dagfinn", "accent": "#d9b26a" }]
+  "people": [{
+    "id": "dagfinn", "name": "Dagfinn", "accent": "#d9b26a",
+    // Tegnet avatar: style short | curly | wavy | kid, age adult | child | small
+    "avatar": { "style": "short", "hair": "#6b4226", "age": "adult", "beard": false, "sweater": "#b3263a" }
+  }]
 }
 
 // data/bergen/dagfinn.json

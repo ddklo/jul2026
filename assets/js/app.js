@@ -195,7 +195,7 @@
       html +=
         '<button class="tab" role="tab" type="button" id="tab-' + Jul.escape(p.id) + '" data-person="' + Jul.escape(p.id) +
         '" aria-selected="false" aria-controls="main" tabindex="-1" style="--accent:' + Jul.escape(p.accent || '#d9b26a') + '">' +
-        '<span class="tab__avatar" aria-hidden="true">' + Jul.escape((p.name || '?').charAt(0)) +
+        '<span class="tab__avatar" aria-hidden="true">' + Jul.avatarHTML(p) +
         '<span class="tab__bubble">' + n + '</span></span>' +
         '<span class="tab__name">' + Jul.escape(p.name) + '</span>' +
         '<span class="tab__count" aria-label="' + plural(n, 'ønske', 'ønsker') + '">' + n + '</span>' +
@@ -334,7 +334,7 @@
 
     head.innerHTML =
       '<div class="ph" style="--accent:' + e(p.accent || '#d9b26a') + '">' +
-      '<span class="ph__avatar" aria-hidden="true">' + e((p.name || '?').charAt(0)) + '</span>' +
+      '<span class="ph__avatar" aria-hidden="true">' + Jul.avatarHTML(p) + '</span>' +
       '<div class="ph__text"><p class="eyebrow">Ønskelisten til</p>' +
       '<h2 class="ph__title">' + e(p.name) + '</h2>' +
       '<p class="ph__stats">' + stats.map(function (s) { return '<span>' + e(s) + '</span>'; }).join('') + '</p>' +

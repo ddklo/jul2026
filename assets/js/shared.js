@@ -814,6 +814,101 @@
   };
 
   /** Standardpersoner (brukes når datafilen mangler personer). */
+  /* ------------------------------------------------------------------ *
+   * Avatarer: tegnede portretter i julegenser, laget som SVG ut fra
+   * «avatar» på personen i data/personer.json:
+   *   { style: 'short' | 'curly' | 'wavy' | 'kid', hair: '#farge',
+   *     age: 'adult' | 'child' | 'small', beard: true/false, sweater: '#farge' }
+   * Uten «avatar» vises forbokstaven som før.
+   * ------------------------------------------------------------------ */
+  var avatarSeq = 0;
+  function color(c, fallback) {
+    return /^#[0-9a-f]{3,8}$/i.test(c || '') ? c : fallback;
+  }
+  function shade(hex, f) {
+    // Mørkere (f < 0) eller lysere (f > 0) variant av en hex-farge
+    var n = parseInt(hex.slice(1).replace(/^(.)(.)(.)$/, '$1$1$2$2$3$3'), 16);
+    var r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    var t = f < 0 ? 0 : 255, p = Math.abs(f);
+    var mix = function (v) { return Math.round((t - v) * p + v); };
+    return '#' + ((1 << 24) + (mix(r) << 16) + (mix(g) << 8) + mix(b)).toString(16).slice(1);
+  }
+
+  Jul.avatarHTML = function (person) {
+    var a = person && person.avatar;
+    if (!a) return Jul.escape(((person && person.name) || '?').charAt(0));
+    var id = 'av' + (++avatarSeq);
+    var hair = color(a.hair, '#7a5230'), hairDark = shade(hair, -0.25), hairLight = shade(hair, 0.3);
+    var skin = '#f2c9a5', skinDark = '#d9a47f';
+    var sweater = color(a.sweater, '#b3263a');
+    var small = a.age === 'small', child = a.age === 'child' || small;
+    // Ansiktet: barn har rundere og litt lavere ansikt og større øyne
+    var cy = small ? 32 : child ? 31 : 29.5, rx = small ? 13.2 : 12.6, ry = small ? 13 : child ? 13.8 : 14.6;
+    var eyeR = small ? 2 : child ? 1.8 : 1.55;
+    var s = [];
+
+    s.push('<svg class="avatar-svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false">');
+    s.push('<defs><clipPath id="' + id + '"><circle cx="32" cy="32" r="32"/></clipPath></defs>');
+    s.push('<g clip-path="url(#' + id + ')">');
+
+    // Hår bak (langt hår)
+    if (a.style === 'curly') {
+      s.push('<g fill="' + hair + '">');
+      [[15, 24, 8], [12, 34, 8], [14, 44, 8], [18, 52, 7], [49, 24, 8], [52, 34, 8], [50, 44, 8], [46, 52, 7], [22, 14, 8], [32, 11, 9], [42, 14, 8]]
+        .forEach(function (c) { s.push('<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '"/>'); });
+      s.push('</g>');
+    } else if (a.style === 'wavy') {
+      s.push('<path fill="' + hair + '" d="M16 31C13 18 22 10 32 10s19 8 16 21c2 9 2 18-1 25l-7-3c2-8 2-15 0-22H24c-2 7-2 14 0 22l-7 3c-3-7-3-16-1-25z"/>');
+    }
+
+    // Kropp med julegenser og mønster
+    s.push('<path fill="' + sweater + '" d="M6 64c2-12 12-18 26-18s24 6 26 18z"/>');
+    s.push('<path d="M12 58l4-3 4 3 4-3 4 3 4-3 4 3 4-3 4 3 4-3 4 3 4-3 4 3" stroke="#fff" stroke-width="1.5" fill="none" stroke-linejoin="round" opacity=".75"/>');
+    s.push('<g fill="#fff" opacity=".7"><circle cx="20" cy="62" r="1"/><circle cx="32" cy="62" r="1"/><circle cx="44" cy="62" r="1"/></g>');
+    s.push('<rect x="27.5" y="' + (cy + ry - 4) + '" width="9" height="8" rx="3" fill="' + skinDark + '"/>');
+    s.push('<path d="M24 ' + (cy + ry + 3.5) + 'q8 5 16 0" stroke="' + shade(sweater, 0.35) + '" stroke-width="2.4" fill="none" stroke-linecap="round"/>');
+
+    // Ører og ansikt
+    s.push('<g fill="' + skin + '"><circle cx="' + (32 - rx) + '" cy="' + (cy + 1.5) + '" r="3"/><circle cx="' + (32 + rx) + '" cy="' + (cy + 1.5) + '" r="3"/>');
+    s.push('<ellipse cx="32" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '"/></g>');
+
+    // Skjeggstubber
+    if (a.beard) {
+      // Halvmåne langs kjeven
+      var l = 32 - rx + 1, r = 32 + rx - 1, top = cy + 2, bottom = cy + ry;
+      s.push('<path fill="' + hair + '" opacity=".24" d="M' + l + ' ' + top + 'Q' + (l + 1) + ' ' + bottom + ' 32 ' + bottom +
+        'Q' + (r - 1) + ' ' + bottom + ' ' + r + ' ' + top + 'Q32 ' + (bottom - 4.5) + ' ' + l + ' ' + top + 'z"/>');
+    }
+
+    // Øyne, bryn, nese, kinn og smil
+    var ey = cy + 1;
+    s.push('<g fill="#2b2420"><circle cx="27" cy="' + ey + '" r="' + eyeR + '"/><circle cx="37" cy="' + ey + '" r="' + eyeR + '"/></g>');
+    if (child) s.push('<g fill="#fff"><circle cx="27.6" cy="' + (ey - 0.7) + '" r=".6"/><circle cx="37.6" cy="' + (ey - 0.7) + '" r=".6"/></g>');
+    s.push('<path d="M24.5 ' + (ey - 3.6) + 'q2.5-1.6 5 0M34.5 ' + (ey - 3.6) + 'q2.5-1.6 5 0" stroke="' + hairDark + '" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="' + (child ? 0.5 : 0.85) + '"/>');
+    s.push('<path d="M32 ' + (ey + 2) + 'q-1.4 2.8.2 3.2" stroke="' + skinDark + '" stroke-width="1" fill="none" stroke-linecap="round"/>');
+    s.push('<g fill="#ff7b7b" opacity=".32"><circle cx="24.5" cy="' + (ey + 4.5) + '" r="2.6"/><circle cx="39.5" cy="' + (ey + 4.5) + '" r="2.6"/></g>');
+    s.push('<path d="M28 ' + (ey + 7) + 'q4 ' + (child ? 4 : 3.2) + ' 8 0" stroke="#9a4a3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>');
+
+    // Hår foran
+    if (a.style === 'short') {
+      s.push('<path fill="' + hair + '" d="M19.6 30C18 17 25 11 33 11c9 0 14 6 12 19-1-6-4-9-8-10-4 2-10 2-14 1-2 2-3 5-3.4 9z"/>');
+      s.push('<path d="M26 16c4 1 9 1 13 0" stroke="' + hairLight + '" stroke-width="1" fill="none" opacity=".5"/>');
+    } else if (a.style === 'curly') {
+      s.push('<g fill="' + hair + '">');
+      [[21, 21, 4.6], [25, 17, 5], [31, 15, 5.2], [37, 16, 5], [42, 19, 4.6], [44.5, 24, 3.6], [19.5, 25, 3.6]]
+        .forEach(function (c) { s.push('<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '"/>'); });
+      s.push('</g><g fill="' + hairLight + '" opacity=".45"><circle cx="30" cy="13.5" r="1.6"/><circle cx="23" cy="16" r="1.3"/><circle cx="40" cy="14.5" r="1.3"/></g>');
+    } else if (a.style === 'wavy') {
+      s.push('<path fill="' + hair + '" d="M19.5 29C19 18 26 13 33 13c8 0 13 6 12 16-3-6-7-8-11-7-3-2-6-2-8 0-3 1-5 3-6.5 7z"/>');
+      s.push('<rect x="40" y="18.5" width="5" height="2.6" rx="1.3" transform="rotate(-25 42.5 19.8)" fill="#e0425a"/>');
+    } else if (a.style === 'kid') {
+      s.push('<path fill="' + hair + '" d="M19.2 31C17 18 24 13 32 13s15 5 12.8 18c-1-5-3-8-6-9l-2 2.5-2.5-3-2.5 3-2.5-3-2 3c-3 0-6 3-7.6 6.5z"/>');
+    }
+
+    s.push('</g></svg>');
+    return s.join('');
+  };
+
   Jul.DEFAULT_PEOPLE = [
     { id: 'dagfinn', name: 'Dagfinn', accent: '#d9b26a' },
     { id: 'kristin', name: 'Kristin', accent: '#e06a7b' },

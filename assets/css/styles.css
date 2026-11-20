@@ -780,6 +780,11 @@ a { color: inherit; }
 }
 .ph__avatar { position: relative; }
 
+/* Tegnede avatarer (Jul.avatarHTML) fyller sirkelen; nisseluen ligger over */
+.avatar-svg { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; display: block; }
+/* Tallet på antall ønsker ligger over nisseluen */
+.tab__bubble { z-index: 2; }
+
 /* Kristtorn-kvist ved overskriftene */
 .ph .eyebrow::before, .login__card .eyebrow::before {
   content: ""; flex: none; width: 26px; height: 19px; margin-right: -4px;

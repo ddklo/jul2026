@@ -80,7 +80,7 @@
     var out = {
       title: data.title || 'Juleønsker 2026',
       people: (data.people && data.people.length ? data.people : Jul.DEFAULT_PEOPLE).map(function (p) {
-        return { id: p.id, name: p.name, accent: p.accent };
+        return { id: p.id, name: p.name, accent: p.accent, avatar: p.avatar };
       }),
       wishes: (data.wishes || []).map(function (w) {
         return {
@@ -188,7 +188,7 @@
       var on = p.id === state.person;
       return '<button type="button" role="tab" aria-selected="' + on + '" class="ed-person' + (on ? ' is-active' : '') +
         '" data-person="' + e(p.id) + '" style="--accent:' + e(p.accent) + '">' +
-        '<span class="ed-person__dot" aria-hidden="true">' + e(p.name.charAt(0)) + '</span>' +
+        '<span class="ed-person__dot" aria-hidden="true">' + Jul.avatarHTML(p) + '</span>' +
         '<span>' + e(p.name) + '</span><span class="ed-person__n">' + wishesFor(p.id).length + '</span></button>';
     }).join('');
   }

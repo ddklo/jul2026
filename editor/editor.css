@@ -96,6 +96,7 @@ body.ed { min-height: 100vh; }
 .ed-person:hover { color: var(--text); }
 .ed-person.is-active { color: var(--text); border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .ed-person__dot {
+  position: relative; overflow: hidden;
   width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none;
   font-family: var(--font-display); font-size: 0.82rem; color: #10141e; background: var(--accent);
 }
