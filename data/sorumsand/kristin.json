@@ -1,3 +1,18 @@
 {
-  "wishes": []
+  "wishes": [
+    {
+      "id": "wmwp9uccttaci8",
+      "title": "",
+      "description": "",
+      "image": "",
+      "imageFit": "contain",
+      "storeUrl": "https://www.magasinet.no/haven-tent-xl-safari-canopy-camo-uten-liggeunderlag",
+      "linkLabel": "",
+      "prisjaktUrl": "",
+      "hidePrisjakt": false,
+      "priceMin": null,
+      "priceMax": null,
+      "createdAt": "2026-11-20T17:47:11.502Z"
+    }
+  ]
 }
