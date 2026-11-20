@@ -46,7 +46,7 @@ Send lenken til riktig liste (`…/bergen` eller `…/sorumsand`) og passordet f
 | Rolle | Kan |
 |---|---|
 | Lesetilgang | Se alle ønskelistene |
-| Administrator | I tillegg redigere ønskene (blyant-knappen øverst) og oppdatere priser |
+| Administrator | I tillegg redigere, flytte og slette ønsker og oppdatere priser. Admin ser en gull-knapp **Rediger** øverst og verktøy på hvert kort. |
 
 Passordene ligger som SHA-256-hasher i `assets/js/shared.js` (`PASSWORDS`). For å bytte passord lager du en ny hash og bytter den ut:
 
@@ -62,16 +62,23 @@ Hver person har sin egen lenke, for eksempel `…/bergen#ellie`. Trykk på **Del
 
 ## 2. Oppdater ønskene
 
+Alle endringer lagres **rett til GitHub**. Første gang ber siden om et GitHub-token: lag et [fine-grained token](https://github.com/settings/personal-access-tokens/new) med tilgang til bare dette repoet og **Contents: Read and write** og **Actions: Read and write**, og lim det inn. Tokenet lagres bare i den nettleseren. Nettsiden oppdateres omtrent et minutt etter at du har lagret.
+
+### Rett på ønskelisten
+
+Som administrator har hvert kort tre knapper:
+
+- **⠿ (håndtaket):** dra kortet til ny plass. Det virker også med fingeren på mobil, og med piltastene når håndtaket har fokus. Rekkefølgen lagres når du slipper.
+- **Blyanten:** åpner ønsket i redigeringsverktøyet.
+- **Søppelbøtta:** sletter ønsket etter at du har bekreftet.
+
 ### I redigeringsverktøyet
 
-1. Logg inn som administrator på en av listene og trykk på **blyanten** øverst, eller gå rett til `…/editor/`.
+1. Trykk **Rediger** øverst på listen, eller gå rett til `…/editor/`.
 2. Velg liste (Bergen eller Sørumsand) øverst til venstre, så person, og klikk på et ønske eller på **Nytt ønske**. Du ser kortet slik familien vil se det.
-3. Klikk **Last ned endrede filer** (eller trykk Ctrl/Cmd + S). Du får én fil per person som er endret, for eksempel `ellie.json`.
-4. **Last opp filene til GitHub:** Åpne mappen for listen, **`data/bergen`** eller **`data/sorumsand`**, i repoet, klikk **Add file → Upload files**, dra inn filene og klikk **Commit changes**.
+3. Trykk **Lagre** (eller Ctrl/Cmd + S). Hver endret person lagres som én commit.
 
-Nettsiden oppdateres i løpet av et par minutter.
-
-> Har nettleseren kalt filen `ellie (1).json`? Gi den nytt navn til `ellie.json` før du laster den opp.
+Uten token kan du velge **Mer → Last ned endrede filer** og laste dem opp selv til `data/bergen` eller `data/sorumsand` på GitHub (**Add file → Upload files**).
 
 ### Direkte på GitHub
 
@@ -97,7 +104,9 @@ Filene i `data/bergen/` og `data/sorumsand/` er vanlig JSON og kan redigeres ret
 ### Andre valg (menyen «Mer»)
 
 - **Oppdater priser nå:** starter prisjobben med en gang i stedet for å vente til natten (se [Priser fra Prisjakt](#priser-fra-prisjakt)).
-- **Eksporter backup / Importer backup:** alle ønskene som én JSON-fil.
+- **Last ned endrede filer / Publisere filer for hånd:** reserve hvis du ikke vil bruke token.
+- **Eksporter backup / Importer backup:** alle ønskene i listen som én JSON-fil.
+- **Glem GitHub-tokenet:** fjerner tokenet fra denne nettleseren.
 
 ### Legge til en liste
 
@@ -111,9 +120,9 @@ En GitHub Actions-jobb ([`.github/workflows/priser.yml`](.github/workflows/prise
 - Prisen skjules hvis den er eldre enn en uke, eller hvis du har byttet produktlenke siden sist.
 - En fil committes bare når en pris er endret, eller hver tredje dag for å holde datoen fersk.
 
-**Kjøre manuelt:** Velg **Mer → Oppdater priser nå** i redigeringsverktøyet. Første gang trenger du et [fine-grained token](https://github.com/settings/personal-access-tokens/new) med tilgang til bare dette repoet og **Actions: Read and write**. Tokenet lagres bare i nettleseren der du limer det inn. Uten token kan du åpne **Actions → Oppdater priser** på GitHub og trykke **Run workflow**.
+**Kjøre manuelt:** Velg **Mer → Oppdater priser nå** i redigeringsverktøyet. Det bruker det samme GitHub-tokenet som lagringen. Uten token kan du åpne **Actions → Oppdater priser** på GitHub og trykke **Run workflow**.
 
-> Laster du opp en personfil fra redigeringsverktøyet etter at prisene er oppdatert, har filen med seg prisene fra da du åpnet verktøyet. De blir riktige igjen ved neste kjøring.
+> Lagrer du en person etter at prisene er oppdatert, har filen med seg prisene fra da du åpnet siden. De blir riktige igjen ved neste kjøring.
 
 > Prisjakt har ikke noe åpent API. Jobben leser den offentlige produktsiden, og Prisjakt kan når som helst endre siden eller stenge for slike oppslag. Da blir jobben rød i Actions, og prisene forsvinner fra kortene etter en uke. Resten av siden virker som før.
 
@@ -136,10 +145,10 @@ En GitHub Actions-jobb ([`.github/workflows/priser.yml`](.github/workflows/prise
 Passordet er en **enkel sperre**, ikke ekte sikkerhet:
 
 - Ønskene ligger åpent i `data/*.json`. Med et offentlig repo kan hvem som helst lese dem direkte, uten passord.
-- Passordsjekken skjer i nettleseren. Den som kan litt JavaScript, kommer forbi den, også til redigeringsverktøyet. Verktøyet kan likevel ikke endre noe på GitHub; det laster bare ned filer.
+- Passordsjekken skjer i nettleseren. Den som kan litt JavaScript, kommer forbi den, også til admin-funksjonene. Uten et GitHub-token med skrivetilgang kan de likevel ikke lagre noe.
 - Innloggingen huskes ved at rollen («view» eller «admin») lagres i nettleserens `localStorage` eller `sessionStorage`.
 - Siden har `noindex`, slik at søkemotorer ikke skal vise den.
-- Tokenet til «Oppdater priser nå» lagres i nettleserens `localStorage`. Lag det med så lite tilgang som mulig (bare dette repoet, bare Actions), og slett det på GitHub når julen er over.
+- GitHub-tokenet lagres i nettleserens `localStorage`. Den som har det, kan endre filene i repoet. Lag det med så lite tilgang som mulig (bare dette repoet, bare Contents og Actions), bruk det bare på egne enheter, og slett det på GitHub når julen er over.
 
 ---
 

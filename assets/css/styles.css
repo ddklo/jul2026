@@ -600,6 +600,58 @@ a { color: inherit; }
 .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 .noscript { position: relative; z-index: 5; text-align: center; padding: 20px; color: var(--text-2); }
 
+/* ---------------- Dialoger (felles for nettsiden og redigeringsverktøyet) ---------------- */
+.ed-dialog { padding: 0; border: 0; background: transparent; color: var(--text); max-width: min(520px, calc(100% - 32px)); }
+.ed-dialog::backdrop { background: rgba(3, 5, 10, 0.7); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.ed-dialog__inner { border-radius: 24px; padding: 28px; background: rgba(15, 23, 39, 0.97); }
+.ed-dialog h2 { margin: 12px 0 8px; font-family: var(--font-display); font-weight: 500; font-size: 1.6rem; }
+.ed-dialog p { color: var(--text-2); margin: 0 0 14px; }
+.ed-dialog__icon {
+  width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center;
+  background: rgba(79, 174, 134, 0.16); color: var(--green-2);
+}
+.ed-dialog__icon .icon { width: 24px; height: 24px; }
+.ed-steps { margin: 0 0 14px; padding-left: 22px; display: grid; gap: 8px; color: var(--text); }
+.ed-steps li::marker { color: var(--gold); font-weight: 700; }
+.ed-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.ed-hint { margin: 0; font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+.ed-dialog a { color: var(--gold-2); }
+.ed-dialog .field { margin-bottom: 10px; }
+
+/* ---------------- Administrator ---------------- */
+.admin-btn { box-shadow: 0 0 0 3px rgba(217, 178, 106, 0.2), 0 8px 24px -10px rgba(217, 178, 106, 0.7); }
+.admin-btn .icon { width: 16px; height: 16px; }
+/* Smal skjerm: Rediger-knappen er viktigere enn nedtellingen */
+@media (max-width: 640px) {
+  .is-admin .countdown { display: none; }
+}
+.ph__admin { margin: 6px 0 0; font-size: 0.8rem; color: var(--gold-2); display: inline-flex; align-items: center; gap: 6px; }
+.ph__admin .icon { width: 14px; height: 14px; }
+.card__admin {
+  position: absolute; top: 10px; left: 10px; right: 10px; z-index: 3;
+  display: flex; justify-content: space-between; gap: 8px; pointer-events: none;
+}
+.card__admin > * { pointer-events: auto; }
+.card__tools { display: flex; gap: 6px; }
+.card__tool {
+  width: 38px; height: 38px; display: grid; place-items: center; padding: 0;
+  border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(8, 12, 22, 0.8); color: var(--text); cursor: pointer; text-decoration: none;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.card__tool:hover, .card__tool:focus-visible { background: rgba(8, 12, 22, 0.96); color: var(--gold-2); border-color: rgba(242, 216, 155, 0.5); }
+.card__tool--danger:hover, .card__tool--danger:focus-visible { color: #ff8fa0; border-color: rgba(255, 143, 160, 0.5); }
+.card__tool .icon { width: 18px; height: 18px; }
+.card__grip { cursor: grab; touch-action: none; }
+.card.is-dragging {
+  opacity: 0.6; transform: scale(0.97); transition: none; z-index: 5;
+  border-color: var(--gold); box-shadow: 0 0 0 2px rgba(217, 178, 106, 0.55);
+}
+.is-sorting, .is-sorting * { cursor: grabbing !important; -webkit-user-select: none; user-select: none; }
+.is-sorting .card:hover { transform: none; }
+.card.is-saving { opacity: 0.5; pointer-events: none; }
+
 /* ---------------- Responsivt ---------------- */
 /* Mobil: fanene blir en fast bunnmeny som er lett å nå med tommelen */
 @media (max-width: 719px) {

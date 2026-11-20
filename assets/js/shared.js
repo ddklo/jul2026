@@ -134,6 +134,193 @@
     });
   };
 
+  // Feltene i personfilene, i fast rekkefølge (person ligger i filnavnet)
+  var WISH_FIELDS = ['id', 'title', 'description', 'image', 'imageFit', 'storeUrl', 'linkLabel', 'prisjaktUrl',
+    'hidePrisjakt', 'priceMin', 'priceMax', 'livePrice', 'createdAt'];
+
+  /** Innholdet i data/<liste>/<person>.json for ønskene til én person. */
+  Jul.serializeWishes = function (wishes) {
+    return JSON.stringify({
+      wishes: wishes.map(function (w) {
+        var o = {};
+        WISH_FIELDS.forEach(function (k) { if (w[k] !== undefined) o[k] = w[k]; });
+        return o;
+      })
+    }, null, 2) + '\n';
+  };
+
+  /** Filen i repoet for én person i én liste. */
+  Jul.dataPath = function (listId, personId) {
+    return 'data/' + listId + '/' + personId + '.json';
+  };
+
+  /* ------------------------------------------------------------------ *
+   * Lagring til GitHub (kun administrator)
+   * Endringer committes rett til repoet med GitHub-API-et. Det krever et
+   * fine-grained token for dette repoet med «Contents: Read and write»
+   * (lagre) og «Actions: Read and write» (oppdatere priser). Tokenet lagres
+   * bare i nettleseren (localStorage), aldri i repoet.
+   * ------------------------------------------------------------------ */
+  var TOKEN_KEY = 'jul-gh-token';
+  var API = 'https://api.github.com/repos/';
+  var BRANCH = 'main';
+
+  function b64utf8(text) {
+    var bytes = new TextEncoder().encode(text);
+    var bin = '';
+    for (var i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+
+  function ghError(status, what) {
+    var msg =
+      status === 401 ? 'GitHub-tokenet er ugyldig eller utløpt.' :
+      status === 403 || status === 404 ? 'GitHub-tokenet mangler tilgang til ' + what + ' i ' + Jul.REPO + '.' :
+      'GitHub svarte med feil ' + status + '.';
+    var err = new Error(msg);
+    err.status = status;
+    return err;
+  }
+
+  var tokenDialog = null;
+  function buildTokenDialog() {
+    var d = document.createElement('dialog');
+    d.className = 'ed-dialog';
+    d.innerHTML =
+      '<form method="dialog" class="ed-dialog__inner glass" novalidate>' +
+      '<span class="ed-dialog__icon">' + Jul.icon('key') + '</span>' +
+      '<h2>Koble til GitHub</h2>' +
+      '<p>For å lagre endringer og oppdatere priser trenger denne nettleseren et GitHub-token. Det gjør du én gang.</p>' +
+      '<ol class="ed-steps">' +
+      '<li>Lag et <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained token</a> med tilgang til bare <strong>' + Jul.escape(Jul.REPO) + '</strong>.</li>' +
+      '<li>Under <strong>Permissions</strong>: <strong>Contents: Read and write</strong> og <strong>Actions: Read and write</strong>.</li>' +
+      '<li>Lim inn tokenet her.</li></ol>' +
+      '<div class="field"><span class="field__icon">' + Jul.icon('key') + '</span>' +
+      '<input type="password" name="token" placeholder="github_pat_…" autocomplete="off" spellcheck="false" aria-label="GitHub-token"></div>' +
+      '<p class="ed-hint">Tokenet lagres bare i denne nettleseren.</p>' +
+      '<p class="login__error" role="alert"></p>' +
+      '<div class="ed-dialog__actions">' +
+      '<button class="btn btn--ghost" value="cancel" formnovalidate>Avbryt</button>' +
+      '<button class="btn btn--gold" value="ok">Koble til</button></div></form>';
+    document.body.appendChild(d);
+    return d;
+  }
+
+  Jul.github = {
+    getToken: function () {
+      try { return global.localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+    },
+    setToken: function (v) {
+      try {
+        if (v) global.localStorage.setItem(TOKEN_KEY, v);
+        else global.localStorage.removeItem(TOKEN_KEY);
+      } catch (e) { /* lagring er av – tokenet må limes inn på nytt */ }
+    },
+
+    /** Gir et token: det lagrede, eller ber om et nytt og sjekker det mot repoet. */
+    token: function () {
+      var saved = Jul.github.getToken();
+      if (saved) return Promise.resolve(saved);
+      tokenDialog = tokenDialog || buildTokenDialog();
+      var d = tokenDialog, form = d.querySelector('form'), input = form.elements.token, err = d.querySelector('.login__error');
+      input.value = '';
+      err.textContent = '';
+      d.showModal();
+      return new Promise(function (resolve, reject) {
+        function done() {
+          form.removeEventListener('submit', onSubmit);
+          d.removeEventListener('close', onClose);
+        }
+        function onClose() { done(); reject(Object.assign(new Error('Avbrutt'), { cancelled: true })); }
+        function onSubmit(ev) {
+          if (ev.submitter && ev.submitter.value === 'cancel') return;
+          ev.preventDefault();
+          var t = input.value.trim();
+          if (!t) { err.textContent = 'Lim inn tokenet.'; return; }
+          err.textContent = 'Sjekker …';
+          fetch(API + Jul.REPO, { headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + t } })
+            .then(function (r) {
+              if (!r.ok) throw ghError(r.status, 'repoet');
+              Jul.github.setToken(t);
+              done();
+              d.close();
+              resolve(t);
+            })
+            .catch(function (e) {
+              err.textContent = e instanceof TypeError ? 'Fikk ikke kontakt med GitHub. Er du på nett?' : e.message;
+            });
+        }
+        form.addEventListener('submit', onSubmit);
+        d.addEventListener('close', onClose);
+      });
+    },
+
+    request: function (method, path, body) {
+      return Jul.github.token().then(function (t) {
+        return fetch(API + Jul.REPO + path, {
+          method: method,
+          cache: 'no-store',
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: 'Bearer ' + t,
+            'X-GitHub-Api-Version': '2022-11-28'
+          },
+          body: body ? JSON.stringify(body) : undefined
+        }).then(function (r) {
+          // Ugyldig token: glem det, så neste forsøk ber om et nytt
+          if (r.status === 401) Jul.github.setToken('');
+          return r;
+        });
+      });
+    },
+
+    /**
+     * Lagrer (committer) en tekstfil i repoet. Lagringer til samme fil står i kø,
+     * slik at raske endringer etter hverandre ikke kolliderer.
+     */
+    saveFile: function (path, text, message) {
+      var prev = queue[path] || Promise.resolve();
+      var job = prev.catch(function () {}).then(function () { return putFile(path, text, message, true); });
+      queue[path] = job;
+      return job;
+    },
+
+    /** Starter prisjobben (.github/workflows/priser.yml). */
+    runPrices: function () {
+      return Jul.github.request('POST', '/actions/workflows/priser.yml/dispatches', { ref: BRANCH }).then(function (r) {
+        if (r.status !== 204) throw ghError(r.status, 'Actions');
+      });
+    }
+  };
+
+  var queue = {};
+  var shas = {};
+
+  function currentSha(path) {
+    return Jul.github.request('GET', '/contents/' + path + '?ref=' + BRANCH).then(function (r) {
+      if (r.status === 404) return null; // ny fil
+      if (!r.ok) throw ghError(r.status, 'Contents');
+      return r.json().then(function (j) { return j.sha; });
+    });
+  }
+
+  function putFile(path, text, message, retry) {
+    var sha = shas[path] ? Promise.resolve(shas[path]) : currentSha(path);
+    return sha.then(function (s) {
+      var body = { message: message, content: b64utf8(text), branch: BRANCH };
+      if (s) body.sha = s;
+      return Jul.github.request('PUT', '/contents/' + path, body);
+    }).then(function (r) {
+      // Filen er endret av noen andre siden sist (f.eks. prisjobben): hent ny sha og prøv igjen
+      if ((r.status === 409 || r.status === 422) && retry) {
+        delete shas[path];
+        return putFile(path, text, message, false);
+      }
+      if (!r.ok) throw ghError(r.status, 'Contents');
+      return r.json().then(function (j) { shas[path] = j.content && j.content.sha; });
+    });
+  }
+
   /* ------------------------------------------------------------------ *
    * Ikoner (egne, linjebaserte SVG-ikoner)
    * ------------------------------------------------------------------ */
@@ -177,7 +364,8 @@
     save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/>',
     key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>',
     file: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/>',
-    menu: '<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>'
+    menu: '<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>',
+    grip: '<circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/>'
   };
 
   Jul.icon = function (name, cls) {
@@ -279,7 +467,8 @@
 
   /* ------------------------------------------------------------------ *
    * Produktkort
-   * opts: { index, personName, accent }
+   * opts: { index, personName, accent, editUrl }
+   * Med editUrl får kortet administratorverktøy: dra-håndtak, rediger og slett.
    * ------------------------------------------------------------------ */
   Jul.cardHTML = function (w, opts) {
     opts = opts || {};
@@ -307,8 +496,18 @@
       actions += '<a class="btn btn--ghost btn--sm" href="' + e(pj) + '" target="_blank" rel="noopener noreferrer" title="Sammenlign priser på Prisjakt">' + Jul.icon('chart') + 'Prisjakt</a>';
     }
 
+    var name = e(w.title || 'Uten navn');
+    var admin = opts.editUrl
+      ? '<div class="card__admin">' +
+        '<button type="button" class="card__tool card__grip" data-admin="drag" aria-label="Flytt «' + name + '» (dra)" title="Dra for å flytte">' + Jul.icon('grip') + '</button>' +
+        '<span class="card__tools">' +
+        '<a class="card__tool" href="' + e(opts.editUrl) + '" aria-label="Rediger «' + name + '»" title="Rediger">' + Jul.icon('pencil') + '</a>' +
+        '<button type="button" class="card__tool card__tool--danger" data-admin="delete" aria-label="Slett «' + name + '»" title="Slett">' + Jul.icon('trash') + '</button>' +
+        '</span></div>'
+      : '';
+
     return (
-      '<article class="card" style="--i:' + (opts.index || 0) + '" data-id="' + e(w.id) + '">' +
+      '<article class="card" style="--i:' + (opts.index || 0) + '" data-id="' + e(w.id) + '">' + admin +
       '<div class="card__media' + (img ? fit : ' card__media--art') + '">' + media + '</div>' +
       '<div class="card__body">' +
       (person ? '<div class="card__meta">' + person + '</div>' : '') +

@@ -13,6 +13,7 @@
 
   var state = {
     list: null,      // { id, name } – hvilken ønskeliste siden viser (body data-list)
+    admin: false,    // innlogget med administratorpassordet
     data: null,      // Promise med { title, list, people, wishes }
     people: [],
     wishes: [],
@@ -145,10 +146,12 @@
     state.people = (data.people && data.people.length ? data.people : Jul.DEFAULT_PEOPLE).slice();
     state.wishes = (data.wishes || []).slice();
     state.list = data.list;
+    state.admin = role === 'admin';
+    document.body.classList.toggle('is-admin', state.admin);
     $('#list-name').textContent = data.list.name;
     var admin = $('#admin-link');
-    admin.hidden = role !== 'admin';
-    admin.href = 'editor/?liste=' + encodeURIComponent(data.list.id);
+    admin.hidden = !state.admin;
+    admin.href = editUrl();
 
     var login = $('#login');
     var app = $('#app');
@@ -334,7 +337,11 @@
       '<span class="ph__avatar" aria-hidden="true">' + e((p.name || '?').charAt(0)) + '</span>' +
       '<div class="ph__text"><p class="eyebrow">Ønskelisten til</p>' +
       '<h2 class="ph__title">' + e(p.name) + '</h2>' +
-      '<p class="ph__stats">' + stats.map(function (s) { return '<span>' + e(s) + '</span>'; }).join('') + '</p></div>' +
+      '<p class="ph__stats">' + stats.map(function (s) { return '<span>' + e(s) + '</span>'; }).join('') + '</p>' +
+      (state.admin && scope.length > 1
+        ? '<p class="ph__admin">' + Jul.icon('grip') + 'Dra i håndtaket for å endre rekkefølgen</p>'
+        : '') +
+      '</div>' +
       '<button type="button" class="btn btn--ghost btn--sm ph__action" data-action="share">' + Jul.icon('share') + '<span>Del lenke</span></button>' +
       '</div>';
   }
@@ -354,9 +361,154 @@
     }
     var html = '';
     list.forEach(function (w, i) {
-      html += Jul.cardHTML(w, { index: Math.min(i, 12) });
+      html += Jul.cardHTML(w, { index: Math.min(i, 12), editUrl: state.admin ? editUrl(w.id) : '' });
     });
     grid.innerHTML = html;
+  }
+
+  /* ---------------- Administrator: rediger, flytt og slett ----------------
+   * Flytting og sletting lagres med en gang til GitHub (Jul.github.saveFile).
+   * Redigering skjer i redigeringsverktøyet.
+   */
+  function editUrl(wishId) {
+    return 'editor/?liste=' + encodeURIComponent(state.list.id) + (wishId ? '&onske=' + encodeURIComponent(wishId) : '');
+  }
+
+  function wishById(id) {
+    for (var i = 0; i < state.wishes.length; i++) if (state.wishes[i].id === id) return state.wishes[i];
+    return null;
+  }
+
+  function updateCounts() {
+    $$('.tab').forEach(function (t) {
+      var n = countFor(t.getAttribute('data-person'));
+      $('.tab__bubble', t).textContent = n;
+      var c = $('.tab__count', t);
+      c.textContent = n;
+      c.setAttribute('aria-label', plural(n, 'ønske', 'ønsker'));
+    });
+  }
+
+  /**
+   * Lagrer listen til én person. Feiler lagringen, settes ønskene tilbake
+   * til slik de var (before), så siden viser det som faktisk er lagret.
+   */
+  function savePerson(pid, before, what) {
+    var p = personById(pid);
+    var list = state.wishes.filter(function (w) { return w.person === pid; });
+    toast('Lagrer …');
+    return Jul.github.saveFile(
+      Jul.dataPath(state.list.id, pid),
+      Jul.serializeWishes(list),
+      what + ' (' + state.list.name + ', ' + p.name + ')'
+    ).then(function () {
+      toast('Lagret. Det kan ta et minutt før andre ser endringen.');
+    }, function (err) {
+      state.wishes = before;
+      render(false);
+      updateCounts();
+      toast(err && err.cancelled ? 'Ikke lagret' : 'Ble ikke lagret: ' + err.message);
+    });
+  }
+
+  function deleteWish(id) {
+    var w = wishById(id);
+    if (!w) return;
+    var p = personById(w.person);
+    var ok = global.confirm('Slette «' + (w.title || 'Uten navn') + '» fra ' + genitive(p.name) + ' liste i ' + state.list.name + '?\n\nDette kan ikke angres.');
+    if (!ok) return;
+    var before = state.wishes.slice();
+    state.wishes = state.wishes.filter(function (x) { return x !== w; });
+    render(false);
+    updateCounts();
+    savePerson(w.person, before, 'Slett «' + (w.title || 'Uten navn') + '»');
+  }
+
+  /** Ny rekkefølge for gjeldende person, ut fra kortene i rutenettet. */
+  function applyOrder(ids) {
+    var pid = state.current;
+    var mine = state.wishes.filter(function (w) { return w.person === pid; });
+    var same = mine.every(function (w, i) { return w.id === ids[i]; });
+    if (same) return;
+    var before = state.wishes.slice();
+    var sorted = ids.map(wishById);
+    // Bytt ut personens ønsker i samme plasser i den samlede listen
+    var k = 0;
+    state.wishes = state.wishes.map(function (w) { return w.person === pid ? sorted[k++] : w; });
+    savePerson(pid, before, 'Endre rekkefølge');
+  }
+
+  /**
+   * Dra og slipp med pekerhendelser (mus og berøring). Kortet flyttes i
+   * rutenettet mens du drar; rekkefølgen lagres når du slipper.
+   */
+  function initSorting() {
+    var grid = $('#grid');
+    var drag = null;
+
+    grid.addEventListener('pointerdown', function (ev) {
+      var grip = ev.target.closest('[data-admin="drag"]');
+      if (!grip || !state.admin || ev.button > 0) return;
+      ev.preventDefault();
+      var card = grip.closest('.card');
+      drag = { card: card, id: ev.pointerId, y: ev.clientY };
+      try { grip.setPointerCapture(ev.pointerId); } catch (e) { /* uten capture går det også */ }
+      card.classList.add('is-dragging');
+      document.body.classList.add('is-sorting');
+      requestAnimationFrame(autoScroll);
+    });
+
+    grid.addEventListener('pointermove', function (ev) {
+      if (!drag || ev.pointerId !== drag.id) return;
+      drag.y = ev.clientY;
+      var el = document.elementFromPoint(ev.clientX, ev.clientY);
+      var target = el && el.closest('.card');
+      if (!target || target === drag.card || target.parentNode !== grid) return;
+      var cards = $$('.card', grid);
+      var after = cards.indexOf(target) > cards.indexOf(drag.card);
+      grid.insertBefore(drag.card, after ? target.nextSibling : target);
+    });
+
+    function end(ev) {
+      if (!drag || ev.pointerId !== drag.id) return;
+      drag.card.classList.remove('is-dragging');
+      document.body.classList.remove('is-sorting');
+      var ids = cardIds();
+      drag = null;
+      applyOrder(ids);
+    }
+    grid.addEventListener('pointerup', end);
+    grid.addEventListener('pointercancel', end);
+
+    // Rull siden når du drar nær kanten av skjermen (over bunnmenyen på mobil)
+    function autoScroll() {
+      if (!drag) return;
+      var edge = 70;
+      var bottom = global.innerHeight - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bottom-nav')) || 0);
+      if (drag.y < edge) global.scrollBy(0, -12);
+      else if (drag.y > bottom - edge) global.scrollBy(0, 12);
+      requestAnimationFrame(autoScroll);
+    }
+
+    // Tastatur: piltaster på håndtaket flytter kortet ett steg
+    grid.addEventListener('keydown', function (ev) {
+      var grip = ev.target.closest('[data-admin="drag"]');
+      if (!grip) return;
+      var dir = { ArrowUp: -1, ArrowLeft: -1, ArrowDown: 1, ArrowRight: 1 }[ev.key];
+      if (!dir) return;
+      ev.preventDefault();
+      var card = grip.closest('.card');
+      var cards = $$('.card', grid);
+      var other = cards[cards.indexOf(card) + dir];
+      if (!other) return;
+      grid.insertBefore(card, dir > 0 ? other.nextSibling : other);
+      grip.focus();
+      applyOrder(cardIds());
+    });
+
+    function cardIds() {
+      return $$('.card', grid).map(function (c) { return c.getAttribute('data-id'); });
+    }
   }
 
   function giftArt() {
@@ -415,6 +567,11 @@
       var a = b.getAttribute('data-action');
       if (a === 'share') shareCurrent();
     });
+    $('#main').addEventListener('click', function (ev) {
+      var del = ev.target.closest('[data-admin="delete"]');
+      if (del && state.admin) deleteWish(del.closest('.card').getAttribute('data-id'));
+    });
+    initSorting();
 
     $('#logout').addEventListener('click', logout);
     $('#footer-logout').addEventListener('click', logout);

@@ -8,8 +8,8 @@
   <meta name="theme-color" content="#070b14">
   <title>Rediger ønskelister · Juleønsker 2026</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../assets/css/styles.css?v=12">
-  <link rel="stylesheet" href="editor.css?v=12">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=13">
+  <link rel="stylesheet" href="editor.css?v=13">
 </head>
 <body class="ed">
 
@@ -19,7 +19,7 @@
       <span class="ed-unlock__icon" data-icon="pencil"></span>
       <p class="eyebrow">Kun for administrator</p>
       <h1 class="ed-unlock__title">Rediger ønskelistene</h1>
-      <p class="ed-unlock__lead">Logg inn med administratorpassordet. Endringene lagres ikke før du laster ned filene og laster dem opp til GitHub.</p>
+      <p class="ed-unlock__lead">Logg inn med administratorpassordet. Endringene lagres rett til GitHub når du trykker <strong>Lagre</strong>.</p>
 
       <p class="ed-status" id="data-status">Leter etter ønskelistene …</p>
 
@@ -55,17 +55,20 @@
         <details class="ed-menu">
           <summary class="btn btn--ghost btn--sm" aria-label="Flere valg"><span data-icon="menu"></span><span class="hide-sm">Mer</span></summary>
           <div class="ed-menu__panel glass">
+            <button type="button" data-cmd="prices"><span data-icon="chart"></span>Oppdater priser nå</button>
+            <hr>
+            <button type="button" data-cmd="download"><span data-icon="download"></span>Last ned endrede filer</button>
+            <button type="button" data-cmd="help"><span data-icon="file"></span>Publisere filer for hånd</button>
             <button type="button" data-cmd="export"><span data-icon="download"></span>Eksporter backup (JSON)</button>
             <button type="button" data-cmd="import"><span data-icon="upload"></span>Importer backup (JSON)</button>
-            <button type="button" data-cmd="prices"><span data-icon="chart"></span>Oppdater priser nå</button>
-            <button type="button" data-cmd="help"><span data-icon="file"></span>Slik publiserer du</button>
+            <button type="button" data-cmd="disconnect"><span data-icon="key"></span>Glem GitHub-tokenet</button>
             <hr>
             <button type="button" data-cmd="lock"><span data-icon="logout"></span>Logg ut</button>
           </div>
         </details>
         <input type="file" id="import-file" accept=".json,application/json" hidden>
-        <button type="button" class="btn btn--gold btn--sm" id="download-btn" title="Ctrl/Cmd + S">
-          <span data-icon="download"></span><span>Last ned endrede filer</span>
+        <button type="button" class="btn btn--gold btn--sm" id="save-btn" title="Lagre til GitHub (Ctrl/Cmd + S)">
+          <span data-icon="save"></span><span class="btn__label">Lagre</span><span class="spinner" aria-hidden="true"></span>
         </button>
       </div>
     </header>
@@ -188,7 +191,7 @@
       <aside class="ed-preview" aria-label="Forhåndsvisning">
         <p class="eyebrow">Forhåndsvisning</p>
         <div id="preview" class="ed-preview__card"></div>
-        <p class="ed-hint">Slik ser kortet ut for familien. Endringer lagres automatisk her i verktøyet – husk å <strong>laste ned filene</strong> når du er ferdig.</p>
+        <p class="ed-hint">Slik ser kortet ut for familien. Husk å trykke <strong>Lagre</strong> når du er ferdig.</p>
       </aside>
     </div>
   </div>
@@ -210,29 +213,10 @@
     </form>
   </dialog>
 
-  <dialog id="sync-dialog" class="ed-dialog">
-    <form method="dialog" class="ed-dialog__inner glass" id="sync-form" novalidate>
-      <span class="ed-dialog__icon" data-icon="chart"></span>
-      <h2>Oppdater priser nå</h2>
-      <p>Starter jobben som henter laveste pris fra Prisjakt. Jobben kjører ellers av seg selv hver natt. Nettsiden er oppdatert etter noen minutter.</p>
-      <div class="ed-form-stack" id="sync-token-box">
-        <div class="field"><span class="field__icon" data-icon="key"></span><input id="sync-token" type="password" placeholder="GitHub-token" autocomplete="off" spellcheck="false" aria-label="GitHub-token"></div>
-        <p class="ed-hint">Første gang trenger du et <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained token</a> med tilgang til bare dette repoet og <strong>Actions: Read and write</strong>. Det lagres bare i denne nettleseren.</p>
-      </div>
-      <p class="ed-hint" id="sync-saved" hidden>Tokenet ditt er lagret i denne nettleseren. <button type="button" class="link-btn" id="sync-forget">Glem tokenet</button></p>
-      <p class="ed-hint">Uten token: <a id="sync-gh-link" href="#" target="_blank" rel="noopener noreferrer">åpne jobben på GitHub</a> og trykk <strong>Run workflow</strong>.</p>
-      <p class="ed-hint">Skal du laste opp endrede filer herfra, gjør det først. Filer som lastes opp etterpå, har med seg prisene fra da du åpnet verktøyet, frem til neste kjøring.</p>
-      <p class="login__error" id="sync-error" role="alert"></p>
-      <div class="ed-dialog__actions">
-        <button class="btn btn--ghost" value="cancel" formnovalidate>Avbryt</button>
-        <button class="btn btn--gold" value="run" id="sync-run">Oppdater priser</button>
-      </div>
-    </form>
-  </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="../assets/js/shared.js?v=12"></script>
-  <script src="editor.js?v=12"></script>
+  <script src="../assets/js/shared.js?v=13"></script>
+  <script src="editor.js?v=13"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 /*!
  * Juleønsker 2026 – redigeringsverktøy (kun administrator).
  * Leser data/personer.json og én fil per person, lar deg endre ønskene og
- * laster ned personfilene som er endret, slik at de kan lastes opp til GitHub.
+ * lagrer personfilene som er endret rett til GitHub (eller laster dem ned).
  */
 (function (global) {
   'use strict';
@@ -41,7 +41,7 @@
     state.dirty = on;
     var d = $('#dirty');
     d.setAttribute('data-state', on ? 'dirty' : 'clean');
-    d.textContent = on ? 'Ulagrede endringer – last ned filene' : 'Alt er lagret';
+    d.textContent = on ? 'Ulagrede endringer' : 'Alt er lagret';
   }
   function people() { return state.data.people; }
   function personById(id) {
@@ -159,8 +159,10 @@
     document.title = 'Rediger ' + data.list.name + ' · Juleønsker 2026';
     state.data = normalize(data);
     people().forEach(function (p) { state.saved[p.id] = personFile(p.id); });
-    state.person = people()[0].id;
-    var first = wishesFor(state.person)[0];
+    // ?onske=<id> (fra «Rediger» på et kort) åpner det ønsket direkte
+    var wanted = wishById(new URLSearchParams(global.location.search).get('onske'));
+    state.person = wanted ? wanted.person : people()[0].id;
+    var first = wanted || wishesFor(state.person)[0];
     state.selected = first ? first.id : null;
     $('#unlock').hidden = true;
     $('#workspace').hidden = false;
@@ -408,29 +410,73 @@
     }).catch(function (err) { toast(err.message); });
   }
 
-  /* ---------------- Lagring / nedlasting ---------------- */
-  // Feltene i personfilene, i fast rekkefølge (person ligger i filnavnet)
-  var FIELDS = ['id', 'title', 'description', 'image', 'imageFit', 'storeUrl', 'linkLabel', 'prisjaktUrl',
-    'hidePrisjakt', 'priceMin', 'priceMax', 'livePrice', 'createdAt'];
-
-  /** Innholdet i data/<id>.json for én person. */
+  /* ---------------- Lagring ---------------- */
+  /** Innholdet i data/<liste>/<person>.json for én person. */
   function personFile(pid) {
-    var wishes = wishesFor(pid).map(function (w) {
-      var o = {};
-      FIELDS.forEach(function (k) { if (w[k] !== undefined) o[k] = w[k]; });
-      return o;
-    });
-    return JSON.stringify({ wishes: wishes }, null, 2) + '\n';
+    return Jul.serializeWishes(wishesFor(pid));
   }
 
-  function downloadDataFile() {
-    var missing = state.data.wishes.filter(function (w) { return !w.title.trim(); }).length;
-    if (missing && !global.confirm(missing + ' ønske(r) mangler produktnavn. Laste ned likevel?')) return;
+  /** Personfilene som er endret siden de ble lastet eller lagret. */
+  function changedFiles() {
     var files = [];
     people().forEach(function (p) {
       var text = personFile(p.id);
       if (text !== state.saved[p.id]) files.push({ pid: p.id, name: p.id + '.json', text: text });
     });
+    return files;
+  }
+
+  function confirmMissingTitles(verb) {
+    var missing = state.data.wishes.filter(function (w) { return !w.title.trim(); }).length;
+    return !missing || global.confirm(missing + ' ønske(r) mangler produktnavn. ' + verb + ' likevel?');
+  }
+
+  /** Lagrer endrede personfiler rett til GitHub (én commit per fil). */
+  var saving = false;
+  function saveToGitHub() {
+    if (saving || !confirmMissingTitles('Lagre')) return;
+    var files = changedFiles();
+    if (!files.length) {
+      setDirty(false);
+      toast('Ingen endringer å lagre');
+      return;
+    }
+    saving = true;
+    var btn = $('#save-btn');
+    btn.classList.add('is-loading'); btn.disabled = true;
+    toast('Lagrer …');
+    files.reduce(function (p, f) {
+      return p.then(function () {
+        var who = personById(f.pid).name;
+        return Jul.github.saveFile(Jul.dataPath(state.list.id, f.pid), f.text, 'Oppdater ønsker (' + state.list.name + ', ' + who + ')')
+          .then(function () { state.saved[f.pid] = f.text; });
+      });
+    }, Promise.resolve()).then(function () {
+      setDirty(false);
+      toast('Lagret. Nettsiden er oppdatert om et minutt.');
+    }, function (err) {
+      // Det som ble lagret før feilen, er lagret; resten er fortsatt ulagret
+      setDirty(changedFiles().length > 0);
+      if (!err.cancelled) global.alert('Ble ikke lagret: ' + err.message);
+    }).then(function () {
+      saving = false;
+      btn.classList.remove('is-loading'); btn.disabled = false;
+    });
+  }
+
+  function runPrices() {
+    toast('Starter prisoppdateringen …');
+    Jul.github.runPrices().then(function () {
+      toast('Prisoppdateringen er startet. Nettsiden er oppdatert om noen minutter.');
+    }, function (err) {
+      if (!err.cancelled) global.alert('Kunne ikke starte prisoppdateringen: ' + err.message);
+    });
+  }
+
+  /** Reserve: last ned endrede filer og last dem opp til GitHub for hånd. */
+  function downloadDataFile() {
+    if (!confirmMissingTitles('Laste ned')) return;
+    var files = changedFiles();
     if (!files.length) {
       setDirty(false);
       toast('Ingen endringer å laste ned');
@@ -446,10 +492,10 @@
   }
 
   function showPublishDialog(names) {
-    $('#publish-title').textContent = names ? 'Filene er lastet ned' : 'Slik publiserer du';
+    $('#publish-title').textContent = names ? 'Filene er lastet ned' : 'Publisere filer for hånd';
     $('#publish-files').innerHTML = names
       ? 'Disse filene ligger i nedlastingsmappen din: ' + names.map(function (n) { return '<code>' + e(n) + '</code>'; }).join(', ') + '.'
-      : 'Klikk <strong>Last ned endrede filer</strong>. Du får én fil per person som er endret, for eksempel <code>ellie.json</code>.';
+      : 'Vanligvis lagrer du med <strong>Lagre</strong>. Uten GitHub-token kan du velge <strong>Mer → Last ned endrede filer</strong> og laste dem opp selv. Du får én fil per person som er endret, for eksempel <code>ellie.json</code>.';
     // Filene til hver liste ligger i sin egen mappe, f.eks. data/bergen
     $$('.publish-folder').forEach(function (el) { el.textContent = 'data/' + state.list.id; });
     $('#publish-list').textContent = state.list.name;
@@ -623,7 +669,7 @@
     });
 
     // Toppmeny
-    $('#download-btn').addEventListener('click', downloadDataFile);
+    $('#save-btn').addEventListener('click', saveToGitHub);
     // Bytt liste: last verktøyet på nytt med ?liste=… (innloggingen huskes i fanen)
     $('#list-select').addEventListener('change', function (ev) {
       if (state.dirty && !global.confirm('Du har ulagrede endringer i ' + state.list.name + '. Bytte liste likevel?')) {
@@ -640,8 +686,13 @@
       var cmd = b.getAttribute('data-cmd');
       if (cmd === 'export') exportBackup();
       if (cmd === 'import') $('#import-file').click();
-      if (cmd === 'prices') openSyncDialog();
+      if (cmd === 'prices') runPrices();
+      if (cmd === 'download') downloadDataFile();
       if (cmd === 'help') showPublishDialog(null);
+      if (cmd === 'disconnect') {
+        Jul.github.setToken('');
+        toast('GitHub-tokenet er glemt i denne nettleseren');
+      }
       if (cmd === 'lock') {
         if (state.dirty && !global.confirm('Du har ulagrede endringer. Logge ut likevel?')) return;
         state.dirty = false;
@@ -661,82 +712,12 @@
     document.addEventListener('keydown', function (ev) {
       if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's' && !$('#workspace').hidden) {
         ev.preventDefault();
-        downloadDataFile();
+        saveToGitHub();
       }
     });
 
     global.addEventListener('beforeunload', function (ev) {
       if (state.dirty) { ev.preventDefault(); ev.returnValue = ''; }
-    });
-  }
-
-  /* ---------------- Oppdater priser nå ----------------
-   * Starter GitHub Actions-jobben .github/workflows/priser.yml via GitHub-API-et.
-   * Krever et fine-grained token med «Actions: Read and write» for repoet. Tokenet
-   * lagres bare i denne nettleseren (localStorage), aldri i repoet.
-   */
-  var TOKEN_KEY = 'jul-gh-token';
-  function getToken() {
-    try { return global.localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
-  }
-  function setToken(v) {
-    try {
-      if (v) global.localStorage.setItem(TOKEN_KEY, v);
-      else global.localStorage.removeItem(TOKEN_KEY);
-    } catch (e) { /* lagring er av – tokenet må limes inn hver gang */ }
-  }
-  function openSyncDialog() {
-    var has = !!getToken();
-    $('#sync-token').value = '';
-    $('#sync-token-box').hidden = has;
-    $('#sync-saved').hidden = !has;
-    $('#sync-error').textContent = '';
-    $('#sync-dialog').showModal();
-  }
-  function initSync() {
-    $('#sync-gh-link').href = 'https://github.com/' + Jul.REPO + '/actions/workflows/priser.yml';
-    $('#sync-forget').addEventListener('click', function () {
-      setToken('');
-      $('#sync-token-box').hidden = false;
-      $('#sync-saved').hidden = true;
-      $('#sync-token').focus();
-    });
-    $('#sync-form').addEventListener('submit', function (ev) {
-      if (ev.submitter && ev.submitter.value === 'cancel') return;
-      ev.preventDefault();
-      var err = $('#sync-error'), btn = $('#sync-run');
-      var token = getToken() || $('#sync-token').value.trim();
-      if (!token) { err.textContent = 'Lim inn et GitHub-token, eller bruk lenken til GitHub.'; return; }
-      err.textContent = '';
-      btn.disabled = true;
-      fetch('https://api.github.com/repos/' + Jul.REPO + '/actions/workflows/priser.yml/dispatches', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/vnd.github+json',
-          'Authorization': 'Bearer ' + token,
-          'X-GitHub-Api-Version': '2022-11-28'
-        },
-        body: JSON.stringify({ ref: 'main' })
-      }).then(function (r) {
-        if (r.status === 204) {
-          setToken(token);
-          $('#sync-dialog').close();
-          toast('Prisoppdateringen er startet. Nettsiden er oppdatert om noen minutter.');
-          return;
-        }
-        if (r.status === 401) {
-          setToken('');
-          $('#sync-token-box').hidden = false;
-          $('#sync-saved').hidden = true;
-          throw new Error('Tokenet er ugyldig eller utløpt. Lim inn et nytt.');
-        }
-        if (r.status === 403 || r.status === 404) {
-          throw new Error('Tokenet mangler tilgang. Det trenger «Actions: Read and write» for ' + Jul.REPO + '.');
-        }
-        throw new Error('GitHub svarte med feil ' + r.status + '.');
-      }).catch(function (e) {
-        err.textContent = e instanceof TypeError ? 'Fikk ikke kontakt med GitHub. Er du på nett?' : e.message;
-      }).then(function () { btn.disabled = false; });
     });
   }
 
@@ -750,7 +731,6 @@
     }
     initUnlock();
     initWorkspace();
-    initSync();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
