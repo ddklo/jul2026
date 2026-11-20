@@ -8,8 +8,8 @@
   <meta name="theme-color" content="#070b14">
   <title>Rediger ønskelister · Juleønsker 2026</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../assets/css/styles.css?v=9">
-  <link rel="stylesheet" href="editor.css?v=9">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=11">
+  <link rel="stylesheet" href="editor.css?v=11">
 </head>
 <body class="ed">
 
@@ -19,9 +19,9 @@
       <span class="ed-unlock__icon" data-icon="pencil"></span>
       <p class="eyebrow">Kun for administrator</p>
       <h1 class="ed-unlock__title">Rediger ønskelistene</h1>
-      <p class="ed-unlock__lead">Alt skjer lokalt i nettleseren din. Ingenting lastes opp før du selv laster opp den nye datafilen til GitHub.</p>
+      <p class="ed-unlock__lead">Logg inn med administratorpassordet. Endringene lagres ikke før du laster ned filene og laster dem opp til GitHub.</p>
 
-      <p class="ed-status" id="data-status">Leter etter datafil …</p>
+      <p class="ed-status" id="data-status">Leter etter ønskelistene …</p>
 
       <form id="open-form" class="ed-form-stack" novalidate>
         <div class="field">
@@ -34,29 +34,6 @@
         </button>
         <p class="login__error" id="open-error" role="alert"></p>
       </form>
-
-      <form id="new-form" class="ed-form-stack" novalidate hidden>
-        <p class="ed-note">Lag en helt ny, tom ønskeliste. Velg et passord familien skal bruke.</p>
-        <div class="field">
-          <label for="new-pw" class="sr-only">Nytt passord</label>
-          <span class="field__icon" data-icon="key"></span>
-          <input id="new-pw" type="password" placeholder="Nytt passord" autocomplete="new-password" minlength="6" required>
-        </div>
-        <div class="field">
-          <label for="new-pw2" class="sr-only">Gjenta passord</label>
-          <span class="field__icon" data-icon="key"></span>
-          <input id="new-pw2" type="password" placeholder="Gjenta passord" autocomplete="new-password" required>
-        </div>
-        <button class="btn btn--gold btn--block btn--lg" type="submit">Start med tom liste</button>
-        <p class="login__error" id="new-error" role="alert"></p>
-      </form>
-
-      <div class="ed-unlock__alt">
-        <label class="link-btn" for="open-file">Åpne en annen datafil</label>
-        <input type="file" id="open-file" accept=".js,.json,application/json,text/javascript" hidden>
-        <span aria-hidden="true">·</span>
-        <button type="button" class="link-btn" id="toggle-new">Start helt på nytt</button>
-      </div>
     </div>
   </section>
 
@@ -74,17 +51,17 @@
         <details class="ed-menu">
           <summary class="btn btn--ghost btn--sm" aria-label="Flere valg"><span data-icon="menu"></span><span class="hide-sm">Mer</span></summary>
           <div class="ed-menu__panel glass">
-            <button type="button" data-cmd="export"><span data-icon="download"></span>Eksporter backup (ukryptert JSON)</button>
+            <button type="button" data-cmd="export"><span data-icon="download"></span>Eksporter backup (JSON)</button>
             <button type="button" data-cmd="import"><span data-icon="upload"></span>Importer backup (JSON)</button>
-            <button type="button" data-cmd="password"><span data-icon="key"></span>Bytt passord</button>
+            <button type="button" data-cmd="prices"><span data-icon="chart"></span>Oppdater priser nå</button>
             <button type="button" data-cmd="help"><span data-icon="file"></span>Slik publiserer du</button>
             <hr>
-            <button type="button" data-cmd="lock"><span data-icon="lock"></span>Lås og lukk</button>
+            <button type="button" data-cmd="lock"><span data-icon="logout"></span>Logg ut</button>
           </div>
         </details>
         <input type="file" id="import-file" accept=".json,application/json" hidden>
         <button type="button" class="btn btn--gold btn--sm" id="download-btn" title="Ctrl/Cmd + S">
-          <span data-icon="download"></span><span>Last ned datafil</span>
+          <span data-icon="download"></span><span>Last ned endrede filer</span>
         </button>
       </div>
     </header>
@@ -149,7 +126,7 @@
                     <label><input type="radio" name="imageFit" value="contain"><span>Vis hele bildet</span></label>
                     <label><input type="radio" name="imageFit" value="cover"><span>Fyll rammen</span></label>
                   </div>
-                  <p class="ed-hint">Tips: Høyreklikk på produktbildet i nettbutikken og velg «Kopier bildeadresse». Du kan også dra inn, lime inn (Ctrl/Cmd + V) eller laste opp et bilde – da krympes det og lagres kryptert sammen med listen.</p>
+                  <p class="ed-hint">Tips: Høyreklikk på produktbildet i nettbutikken og velg «Kopier bildeadresse». Du kan også dra inn, lime inn (Ctrl/Cmd + V) eller laste opp et bilde – da krympes det og lagres i listen.</p>
                 </div>
               </div>
             </fieldset>
@@ -207,7 +184,7 @@
       <aside class="ed-preview" aria-label="Forhåndsvisning">
         <p class="eyebrow">Forhåndsvisning</p>
         <div id="preview" class="ed-preview__card"></div>
-        <p class="ed-hint">Slik ser kortet ut for familien. Endringer lagres automatisk her i verktøyet – husk å <strong>laste ned datafilen</strong> når du er ferdig.</p>
+        <p class="ed-hint">Slik ser kortet ut for familien. Endringer lagres automatisk her i verktøyet – husk å <strong>laste ned filene</strong> når du er ferdig.</p>
       </aside>
     </div>
   </div>
@@ -216,38 +193,42 @@
   <dialog id="publish-dialog" class="ed-dialog">
     <form method="dialog" class="ed-dialog__inner glass">
       <span class="ed-dialog__icon" data-icon="check"></span>
-      <h2>Datafilen er lastet ned</h2>
-      <p>Filen <code>wishlist.enc.js</code> ligger i nedlastingsmappen din. Slik publiserer du den:</p>
+      <h2 id="publish-title">Filene er lastet ned</h2>
+      <p id="publish-files"></p>
+      <p>Slik publiserer du dem:</p>
       <ol class="ed-steps">
         <li>Gå til repoet ditt på <strong>github.com</strong> og åpne mappen <code>data</code>.</li>
-        <li>Klikk <strong>Add file → Upload files</strong> og dra inn <code>wishlist.enc.js</code>.</li>
+        <li>Klikk <strong>Add file → Upload files</strong> og dra inn filene. De erstatter filene med samme navn.</li>
         <li>Klikk <strong>Commit changes</strong>. Nettsiden oppdateres i løpet av et par minutter.</li>
       </ol>
-      <p class="ed-hint">Har nettleseren kalt filen <code>wishlist.enc (1).js</code>? Gi den nytt navn til <code>wishlist.enc.js</code> før du laster den opp.</p>
+      <p class="ed-hint">Har nettleseren kalt en fil for eksempel <code>ellie (1).json</code>? Gi den nytt navn til <code>ellie.json</code> før du laster den opp. Du kan også redigere filene direkte på GitHub.</p>
       <div class="ed-dialog__actions"><button class="btn btn--gold" value="ok">Den er grei</button></div>
     </form>
   </dialog>
 
-  <dialog id="password-dialog" class="ed-dialog">
-    <form method="dialog" class="ed-dialog__inner glass" id="password-form" novalidate>
-      <span class="ed-dialog__icon" data-icon="key"></span>
-      <h2>Bytt passord</h2>
-      <p>Etter at du har lastet opp den nye datafilen, må alle logge inn på nytt med det nye passordet.</p>
-      <div class="ed-form-stack">
-        <div class="field"><span class="field__icon" data-icon="key"></span><input id="chg-pw" type="password" placeholder="Nytt passord" autocomplete="new-password" aria-label="Nytt passord"></div>
-        <div class="field"><span class="field__icon" data-icon="key"></span><input id="chg-pw2" type="password" placeholder="Gjenta nytt passord" autocomplete="new-password" aria-label="Gjenta nytt passord"></div>
-        <p class="login__error" id="chg-error" role="alert"></p>
+  <dialog id="sync-dialog" class="ed-dialog">
+    <form method="dialog" class="ed-dialog__inner glass" id="sync-form" novalidate>
+      <span class="ed-dialog__icon" data-icon="chart"></span>
+      <h2>Oppdater priser nå</h2>
+      <p>Starter jobben som henter laveste pris fra Prisjakt. Jobben kjører ellers av seg selv hver natt. Nettsiden er oppdatert etter noen minutter.</p>
+      <div class="ed-form-stack" id="sync-token-box">
+        <div class="field"><span class="field__icon" data-icon="key"></span><input id="sync-token" type="password" placeholder="GitHub-token" autocomplete="off" spellcheck="false" aria-label="GitHub-token"></div>
+        <p class="ed-hint">Første gang trenger du et <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained token</a> med tilgang til bare dette repoet og <strong>Actions: Read and write</strong>. Det lagres bare i denne nettleseren.</p>
       </div>
+      <p class="ed-hint" id="sync-saved" hidden>Tokenet ditt er lagret i denne nettleseren. <button type="button" class="link-btn" id="sync-forget">Glem tokenet</button></p>
+      <p class="ed-hint">Uten token: <a id="sync-gh-link" href="#" target="_blank" rel="noopener noreferrer">åpne jobben på GitHub</a> og trykk <strong>Run workflow</strong>.</p>
+      <p class="ed-hint">Skal du laste opp endrede filer herfra, gjør det først. Filer som lastes opp etterpå, har med seg prisene fra da du åpnet verktøyet, frem til neste kjøring.</p>
+      <p class="login__error" id="sync-error" role="alert"></p>
       <div class="ed-dialog__actions">
         <button class="btn btn--ghost" value="cancel" formnovalidate>Avbryt</button>
-        <button class="btn btn--gold" value="save" id="chg-save">Bytt passord</button>
+        <button class="btn btn--gold" value="run" id="sync-run">Oppdater priser</button>
       </div>
     </form>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="../assets/js/shared.js?v=9"></script>
-  <script src="editor.js?v=9"></script>
+  <script src="../assets/js/shared.js?v=11"></script>
+  <script src="editor.js?v=11"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 /*!
  * Juleønsker – felles kode for nettsiden og redigeringsverktøyet.
- * Kryptering (Web Crypto: PBKDF2 + AES-GCM), ikoner og produktkort.
+ * Innlogging, lasting av data, ikoner og produktkort.
  * Ingen eksterne avhengigheter.
  */
 (function (global) {
@@ -9,166 +9,35 @@
   var Jul = (global.Jul = global.Jul || {});
 
   /* ------------------------------------------------------------------ *
-   * Base64-hjelpere (tåler store datamengder, f.eks. innebygde bilder)
+   * Stier
+   * ROOT er veien fra siden til nettstedets rot: '' for nettsiden,
+   * '../' for redigeringsverktøyet (settes av editor.js).
    * ------------------------------------------------------------------ */
-  function bytesToB64(bytes) {
-    var bin = '';
-    var chunk = 0x8000;
-    for (var i = 0; i < bytes.length; i += chunk) {
-      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-    }
-    return btoa(bin);
-  }
-  function b64ToBytes(str) {
-    var bin = atob(str);
-    var out = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-    return out;
-  }
+  Jul.ROOT = '';
 
   /* ------------------------------------------------------------------ *
-   * Kryptering
-   * Format på datafilen (window.JUL_WISHLIST):
-   * { v, alg, kdf, iter, salt, iv, data }  – alt binært som base64.
+   * Innlogging
+   * Passordet er bare en enkel sperre, ikke ekte sikkerhet: dataene ligger
+   * åpent i data/*.json. Passordene lagres som SHA-256 her, slik at de ikke
+   * står i klartekst i koden.
+   *   jul2026      → «view»  (se ønskelistene)
+   *   jul2026admin → «admin» (også redigere og oppdatere priser)
+   * Ny hash: node -e "console.log(require('crypto').createHash('sha256').update('passord').digest('hex'))"
    * ------------------------------------------------------------------ */
-  var ITERATIONS = 600000; // PBKDF2-SHA-256, OWASP-anbefaling
-  var te = new TextEncoder();
-  var td = new TextDecoder();
-
-  function hasCrypto() {
-    return !!(global.crypto && global.crypto.subtle);
-  }
-
-  function deriveKey(password, saltBytes, iterations) {
-    return global.crypto.subtle
-      .importKey('raw', te.encode(password), 'PBKDF2', false, ['deriveKey'])
-      .then(function (base) {
-        return global.crypto.subtle.deriveKey(
-          { name: 'PBKDF2', hash: 'SHA-256', salt: saltBytes, iterations: iterations || ITERATIONS },
-          base,
-          { name: 'AES-GCM', length: 256 },
-          true, // kan eksporteres slik at innloggingen kan huskes uten å lagre passordet
-          ['encrypt', 'decrypt']
-        );
-      });
-  }
-
-  function randomBytes(n) {
-    var b = new Uint8Array(n);
-    global.crypto.getRandomValues(b);
-    return b;
-  }
-
-  /** Krypterer et objekt med en ferdig nøkkel. */
-  function encryptWithKey(obj, key, saltB64, iterations) {
-    var iv = randomBytes(12);
-    var plain = te.encode(JSON.stringify(obj));
-    return global.crypto.subtle
-      .encrypt({ name: 'AES-GCM', iv: iv }, key, plain)
-      .then(function (ct) {
-        return {
-          v: 1,
-          alg: 'AES-256-GCM',
-          kdf: 'PBKDF2-SHA-256',
-          iter: iterations || ITERATIONS,
-          salt: saltB64,
-          iv: bytesToB64(iv),
-          data: bytesToB64(new Uint8Array(ct))
-        };
-      });
-  }
-
-  /** Krypterer med passord. Ny salt lages hvis ingen oppgis. */
-  function encryptWithPassword(obj, password, saltB64) {
-    var salt = saltB64 ? b64ToBytes(saltB64) : randomBytes(16);
-    var sB64 = saltB64 || bytesToB64(salt);
-    return deriveKey(password, salt, ITERATIONS).then(function (key) {
-      return encryptWithKey(obj, key, sB64, ITERATIONS).then(function (payload) {
-        return { payload: payload, key: key };
-      });
-    });
-  }
-
-  function decryptWithKey(payload, key) {
-    return global.crypto.subtle
-      .decrypt({ name: 'AES-GCM', iv: b64ToBytes(payload.iv) }, key, b64ToBytes(payload.data))
-      .then(function (buf) {
-        return JSON.parse(td.decode(buf));
-      });
-  }
-
-  function decryptWithPassword(payload, password) {
-    return deriveKey(password, b64ToBytes(payload.salt), payload.iter || ITERATIONS).then(function (key) {
-      return decryptWithKey(payload, key).then(function (data) {
-        return { data: data, key: key };
-      });
-    });
-  }
-
-  /**
-   * Prøver passordet slik det er skrevet, så uten mellomrom foran/bak og til
-   * slutt med små bokstaver. Mobiltastaturer legger ofte til et mellomrom
-   * eller gjør første bokstav stor. Gir feil med wrongPassword = true hvis
-   * ingen av variantene passer; andre feil sendes videre uendret.
-   */
-  function unlockWithPassword(payload, password) {
-    var tries = [];
-    [password, password.trim(), password.trim().toLowerCase()].forEach(function (p) {
-      if (p && tries.indexOf(p) === -1) tries.push(p);
-    });
-    var i = 0;
-    function next() {
-      if (i >= tries.length) {
-        var err = new Error('Feil passord');
-        err.wrongPassword = true;
-        return Promise.reject(err);
-      }
-      return decryptWithPassword(payload, tries[i++]).catch(function (err) {
-        // Feil nøkkel gir OperationError fra AES-GCM; alt annet er en ekte feil
-        if (err && err.name === 'OperationError') return next();
-        throw err;
-      });
-    }
-    return next();
-  }
-
-  function exportKey(key) {
-    return global.crypto.subtle.exportKey('raw', key).then(function (raw) {
-      return bytesToB64(new Uint8Array(raw));
-    });
-  }
-  function importKey(b64) {
-    return global.crypto.subtle.importKey('raw', b64ToBytes(b64), { name: 'AES-GCM' }, true, [
-      'encrypt',
-      'decrypt'
-    ]);
-  }
-
-  Jul.crypto = {
-    ITERATIONS: ITERATIONS,
-    hasCrypto: hasCrypto,
-    deriveKey: deriveKey,
-    encryptWithKey: encryptWithKey,
-    encryptWithPassword: encryptWithPassword,
-    decryptWithKey: decryptWithKey,
-    decryptWithPassword: decryptWithPassword,
-    unlockWithPassword: unlockWithPassword,
-    exportKey: exportKey,
-    importKey: importKey,
-    randomSalt: function () {
-      return bytesToB64(randomBytes(16));
-    },
-    /** Avleder nøkkel fra passord og salt (base64). */
-    keyFromPassword: function (password, saltB64, iterations) {
-      return deriveKey(password, b64ToBytes(saltB64), iterations || ITERATIONS);
-    }
+  var PASSWORDS = {
+    ccd5c56ba634a45001b947000dd469de84e68e7a4b37f992dcc5b8673067a4ac: 'view',
+    '1a298537be786c591ffb5e2da84f11c13ad7e1af5737d29677430d8c7f488e25': 'admin'
   };
 
-  /* ------------------------------------------------------------------ *
-   * Husket innlogging: lagrer den avledede nøkkelen (ikke passordet).
-   * «Husk meg» → localStorage, ellers sessionStorage (gjelder fanen).
-   * ------------------------------------------------------------------ */
-  var SESSION_KEY = 'juleonsker:key';
+  function sha256hex(text) {
+    return global.crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) {
+        return ('0' + b.toString(16)).slice(-2);
+      }).join('');
+    });
+  }
+
+  var ROLE_KEY = 'juleonsker:role';
   function safeStore(type) {
     try {
       var s = global[type];
@@ -180,75 +49,81 @@
       return null;
     }
   }
-  Jul.session = {
-    save: function (salt, keyB64, persistent) {
-      var value = JSON.stringify({ salt: salt, key: keyB64 });
+
+  Jul.auth = {
+    available: function () {
+      return !!(global.crypto && global.crypto.subtle);
+    },
+    /**
+     * Gir rollen ('view' eller 'admin') for passordet, eller null.
+     * Prøver også uten mellomrom foran/bak og med små bokstaver, fordi
+     * mobiltastaturer ofte legger til mellomrom eller stor forbokstav.
+     */
+    check: function (password) {
+      var tries = [];
+      [password, password.trim(), password.trim().toLowerCase()].forEach(function (p) {
+        if (p && tries.indexOf(p) === -1) tries.push(p);
+      });
+      return Promise.all(tries.map(sha256hex)).then(function (hashes) {
+        for (var i = 0; i < hashes.length; i++) if (PASSWORDS[hashes[i]]) return PASSWORDS[hashes[i]];
+        return null;
+      });
+    },
+    /** «Husk meg» → localStorage, ellers sessionStorage (gjelder fanen). */
+    save: function (role, persistent) {
       var ls = safeStore('localStorage');
       var ss = safeStore('sessionStorage');
-      if (persistent && ls) ls.setItem(SESSION_KEY, value);
-      if (ss) ss.setItem(SESSION_KEY, value);
+      if (persistent && ls) ls.setItem(ROLE_KEY, role);
+      if (ss) ss.setItem(ROLE_KEY, role);
     },
     load: function () {
       var stores = [safeStore('sessionStorage'), safeStore('localStorage')];
       for (var i = 0; i < stores.length; i++) {
-        if (!stores[i]) continue;
-        try {
-          var v = JSON.parse(stores[i].getItem(SESSION_KEY) || 'null');
-          if (v && v.salt && v.key) return v;
-        } catch (e) { /* ignorer */ }
+        var r = stores[i] && stores[i].getItem(ROLE_KEY);
+        if (r === 'view' || r === 'admin') return r;
       }
       return null;
     },
     clear: function () {
       ['localStorage', 'sessionStorage'].forEach(function (t) {
         var s = safeStore(t);
-        if (s) s.removeItem(SESSION_KEY);
+        if (s) {
+          s.removeItem(ROLE_KEY);
+          s.removeItem('juleonsker:key'); // fra da listen var kryptert
+        }
       });
     }
   };
 
   /* ------------------------------------------------------------------ *
-   * Laster den krypterte datafilen som <script> (fungerer også fra
-   * file:// uten webserver). Cache-buster sikrer ferske data.
+   * Data
+   * data/personer.json  { title, people: [{ id, name, accent }] }
+   * data/<id>.json      { wishes: [...] }  – én fil per person, i visningsrekkefølge
+   * Ønskene får feltet `person` når de lastes inn; det lagres ikke i filene.
    * ------------------------------------------------------------------ */
-  Jul.loadDataScript = function (src) {
-    return new Promise(function (resolve) {
-      global.JUL_WISHLIST = undefined;
-      var s = document.createElement('script');
-      s.src = src + (src.indexOf('?') === -1 ? '?' : '&') + 't=' + Date.now();
-      s.onload = function () {
-        resolve(global.JUL_WISHLIST || null);
-        s.remove();
-      };
-      s.onerror = function () {
-        resolve(null);
-        s.remove();
-      };
-      document.head.appendChild(s);
+  function getJSON(path) {
+    return fetch(Jul.ROOT + path + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error(path + ' (' + r.status + ')');
+      return r.json();
     });
-  };
+  }
 
-  /** Lager innholdet i datafilen wishlist.enc.js */
-  Jul.buildDataFile = function (payload) {
-    return (
-      '/*\n' +
-      ' * Juleønsker – kryptert ønskelistedata (AES-256-GCM, PBKDF2-SHA-256).\n' +
-      ' * Generert av redigeringsverktøyet. Ikke rediger for hånd.\n' +
-      ' */\n' +
-      'window.JUL_WISHLIST = ' +
-      JSON.stringify(payload) +
-      ';\n'
-    );
-  };
-
-  /** Leser en datafil (.js eller .json) som tekst og returnerer payload-objektet. */
-  Jul.parseDataFile = function (text) {
-    var start = text.indexOf('{');
-    var end = text.lastIndexOf('}');
-    if (start === -1 || end === -1) throw new Error('Fant ingen data i filen');
-    var obj = JSON.parse(text.slice(start, end + 1));
-    if (!obj.salt || !obj.iv || !obj.data) throw new Error('Filen er ikke en kryptert ønskeliste');
-    return obj;
+  Jul.loadData = function () {
+    return getJSON('data/personer.json').then(function (meta) {
+      var people = meta.people && meta.people.length ? meta.people : Jul.DEFAULT_PEOPLE;
+      return Promise.all(people.map(function (p) {
+        return getJSON('data/' + p.id + '.json');
+      })).then(function (files) {
+        var wishes = [];
+        files.forEach(function (f, i) {
+          (f.wishes || []).forEach(function (w) {
+            w.person = people[i].id;
+            wishes.push(w);
+          });
+        });
+        return { title: meta.title, people: people, wishes: wishes };
+      });
+    });
   };
 
   /* ------------------------------------------------------------------ *
@@ -326,6 +201,30 @@
     return '';
   };
 
+  /** GitHub-repoet nettsiden publiseres fra (brukes av «Oppdater priser nå» for administrator). */
+  Jul.REPO = 'ddklo/jul2026';
+
+  /** Produkt-ID fra en Prisjakt-produktlenke (product.php?p=…), ellers null. */
+  Jul.prisjaktId = function (url) {
+    var m = /^https:\/\/(?:www\.)?prisjakt\.no\/product\.php\?(?:.*&)?p=(\d+)(?:&|#|$)/.exec(url || '');
+    return m ? m[1] : null;
+  };
+
+  /**
+   * Laveste pris hentet fra Prisjakt av den nattlige jobben (tools/priser.mjs).
+   * Vises bare når den hører til produktet ønsket lenker til nå, og er ferskere enn en uke.
+   */
+  var LIVE_MAX_AGE = 8 * 864e5;
+  var df = new Intl.DateTimeFormat('nb-NO', { day: 'numeric', month: 'short' });
+  Jul.livePrice = function (w) {
+    var lp = w && w.livePrice;
+    if (!lp || w.hidePrisjakt || !(lp.amount > 0)) return null;
+    if (lp.productId !== Jul.prisjaktId(w.prisjaktUrl)) return null;
+    var t = Date.parse(lp.checkedAt);
+    if (!t || Date.now() - t > LIVE_MAX_AGE) return null;
+    return { amount: lp.amount, offers: lp.offers || 0, text: n(lp.amount) + ' kr', date: df.format(t) };
+  };
+
   Jul.escape = function (s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;')
@@ -346,6 +245,8 @@
     if (!url) return '';
     url = String(url).trim();
     if (/^data:image\/(png|jpe?g|webp|gif|avif|svg\+xml)[;,]/i.test(url)) return url;
+    // Bilder i repoet (data/bilder/…) – relativt til nettstedets rot
+    if (/^data\/bilder\/[\w.-]+\.(png|jpe?g|webp|gif|avif)$/i.test(url)) return Jul.ROOT + url;
     return Jul.safeUrl(url);
   };
 
@@ -379,6 +280,7 @@
     var store = Jul.safeUrl(w.storeUrl);
     var pj = w.hidePrisjakt ? '' : Jul.safeUrl(w.prisjaktUrl);
     var price = Jul.formatPrice(+w.priceMin, +w.priceMax);
+    var live = Jul.livePrice(w);
     var fit = w.imageFit === 'cover' ? ' card__media--cover' : '';
 
     var media = img
@@ -405,6 +307,10 @@
       '<h3 class="card__title">' + e(w.title || 'Uten navn') + '</h3>' +
       (w.description ? '<p class="card__desc">' + e(w.description) + '</p>' : '') +
       '<div class="card__bottom">' +
+      (live
+        ? '<p class="card__price card__price--live" title="Laveste pris på Prisjakt' + (live.offers ? ' blant ' + live.offers + ' butikker' : '') + ', sjekket ' + e(live.date) + '">' +
+          '<span>Laveste pris nå<small>Prisjakt · ' + e(live.date) + '</small></span><strong>' + e(live.text) + '</strong></p>'
+        : '') +
       (price ? '<p class="card__price"><span>Prisantydning</span><strong>' + price + '</strong></p>' : '') +
       (actions ? '<div class="card__actions">' + actions + '</div>' : '') +
       '</div></div></article>'

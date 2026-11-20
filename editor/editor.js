@@ -1,22 +1,21 @@
 /*!
- * Juleønsker 2026 – lokalt redigeringsverktøy.
- * Dekrypterer datafilen i nettleseren, lar deg endre ønskene og
- * lager en ny kryptert datafil (wishlist.enc.js) som lastes opp til GitHub.
+ * Juleønsker 2026 – redigeringsverktøy (kun administrator).
+ * Leser data/personer.json og én fil per person, lar deg endre ønskene og
+ * laster ned personfilene som er endret, slik at de kan lastes opp til GitHub.
  */
 (function (global) {
   'use strict';
 
   var Jul = global.Jul;
+  Jul.ROOT = '../';
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var e = Jul.escape;
 
   var state = {
-    payload: null,   // kryptert innhold som ble lastet
-    key: null,       // AES-nøkkel
-    salt: null,
-    iter: Jul.crypto.ITERATIONS,
-    data: null,      // { version, title, people, wishes }
+    loading: null,   // Promise med dataene fra data/
+    saved: {},       // person-id → filinnholdet slik det ligger publisert
+    data: null,      // { title, people, wishes } – ønskene har feltet person
     person: null,
     selected: null,
     filter: '',
@@ -41,7 +40,7 @@
     state.dirty = on;
     var d = $('#dirty');
     d.setAttribute('data-state', on ? 'dirty' : 'clean');
-    d.textContent = on ? 'Ulagrede endringer – last ned datafilen' : 'Alt er lagret';
+    d.textContent = on ? 'Ulagrede endringer – last ned filene' : 'Alt er lagret';
   }
   function people() { return state.data.people; }
   function personById(id) {
@@ -78,7 +77,6 @@
   function normalize(data) {
     data = data || {};
     var out = {
-      version: 1,
       title: data.title || 'Juleønsker 2026',
       people: (data.people && data.people.length ? data.people : Jul.DEFAULT_PEOPLE).map(function (p) {
         return { id: p.id, name: p.name, accent: p.accent };
@@ -97,6 +95,8 @@
           linkLabel: w.linkLabel || '',
           priceMin: w.priceMin ? +w.priceMin : null,
           priceMax: w.priceMax ? +w.priceMax : null,
+          // Settes av den nattlige prisjobben (tools/priser.mjs). Tas vare på uendret.
+          livePrice: w.livePrice || undefined,
           createdAt: w.createdAt || new Date().toISOString()
         };
       })
@@ -106,87 +106,48 @@
 
   /* ---------------- Åpning ---------------- */
   function initUnlock() {
-    Jul.loadDataScript('../data/wishlist.enc.js').then(function (payload) {
-      var st = $('#data-status');
-      if (payload) {
-        state.payload = payload;
-        st.innerHTML = Jul.icon('check') + 'Fant den krypterte datafilen <code>data/wishlist.enc.js</code>';
-        st.className = 'ed-status is-ok';
-        if (!matchMedia('(pointer: coarse)').matches) $('#ed-password').focus();
-      } else {
-        st.innerHTML = Jul.icon('file') + 'Fant ingen datafil. Velg «Åpne en annen datafil» eller «Start helt på nytt».';
-        st.className = 'ed-status is-warn';
-      }
+    var st = $('#data-status');
+    state.loading = Jul.loadData();
+    state.loading.then(function (data) {
+      st.innerHTML = Jul.icon('check') + 'Fant ønskelistene (' + data.wishes.length + ' ønsker)';
+      st.className = 'ed-status is-ok';
+      if (Jul.auth.load() === 'admin') openWorkspace(data);
+      else if (!matchMedia('(pointer: coarse)').matches) $('#ed-password').focus();
+    }, function (err) {
+      if (global.console) console.error(err);
+      st.innerHTML = Jul.icon('file') + 'Fant ikke ønskelistene i <code>data/</code>. Åpne verktøyet fra nettsiden, eller via en lokal webserver.';
+      st.className = 'ed-status is-warn';
     });
 
     $('#open-form').addEventListener('submit', function (ev) {
       ev.preventDefault();
       var pw = $('#ed-password').value;
       var err = $('#open-error');
-      if (!state.payload) { err.textContent = 'Ingen datafil er valgt.'; return; }
       if (!pw) { err.textContent = 'Skriv inn passordet.'; return; }
       var btn = $('#open-btn');
       btn.classList.add('is-loading'); btn.disabled = true;
       err.textContent = '';
-      Jul.crypto.unlockWithPassword(state.payload, pw).then(function (res) {
-        state.key = res.key;
-        state.salt = state.payload.salt;
-        state.iter = state.payload.iter || Jul.crypto.ITERATIONS;
-        openWorkspace(res.data);
-      }).catch(function () {
-        err.textContent = 'Feil passord, eller filen er skadet.';
-        $('#ed-password').select();
+      Jul.auth.check(pw).then(function (role) {
+        if (role !== 'admin') {
+          err.textContent = role === 'view'
+            ? 'Dette passordet gir bare lesetilgang. Bruk administratorpassordet.'
+            : 'Feil passord.';
+          $('#ed-password').select();
+          return;
+        }
+        Jul.auth.save('admin', false);
+        return state.loading.then(openWorkspace, function () {
+          err.textContent = 'Passordet er riktig, men ønskelistene ble ikke funnet.';
+        });
       }).then(function () {
         btn.classList.remove('is-loading'); btn.disabled = false;
       });
     });
-
-    $('#open-file').addEventListener('change', function (ev) {
-      var f = ev.target.files[0];
-      if (!f) return;
-      readText(f).then(function (text) {
-        try {
-          state.payload = Jul.parseDataFile(text);
-          var st = $('#data-status');
-          st.innerHTML = Jul.icon('check') + 'Valgt fil: <code>' + e(f.name) + '</code>';
-          st.className = 'ed-status is-ok';
-          showNewForm(false);
-          $('#ed-password').focus();
-        } catch (err) {
-          $('#open-error').textContent = 'Kunne ikke lese filen: ' + err.message;
-        }
-      });
-      ev.target.value = '';
-    });
-
-    $('#toggle-new').addEventListener('click', function () {
-      showNewForm($('#new-form').hidden);
-    });
-
-    $('#new-form').addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      var a = $('#new-pw').value, b = $('#new-pw2').value, err = $('#new-error');
-      if (a.length < 6) { err.textContent = 'Passordet må ha minst 6 tegn.'; return; }
-      if (a !== b) { err.textContent = 'Passordene er ikke like.'; return; }
-      if (state.payload && !global.confirm('Dette erstatter dagens ønskeliste når du laster opp den nye filen. Fortsette?')) return;
-      var salt = Jul.crypto.randomSalt();
-      Jul.crypto.keyFromPassword(a, salt).then(function (key) {
-        state.key = key; state.salt = salt; state.iter = Jul.crypto.ITERATIONS;
-        openWorkspace({ people: Jul.DEFAULT_PEOPLE, wishes: [] });
-        setDirty(true);
-      });
-    });
-  }
-
-  function showNewForm(show) {
-    $('#new-form').hidden = !show;
-    $('#open-form').hidden = show;
-    $('#toggle-new').textContent = show ? 'Åpne eksisterende liste' : 'Start helt på nytt';
-    if (show) $('#new-pw').focus();
   }
 
   function openWorkspace(data) {
     state.data = normalize(data);
+    people().forEach(function (p) { state.saved[p.id] = personFile(p.id); });
     state.person = people()[0].id;
     var first = wishesFor(state.person)[0];
     state.selected = first ? first.id : null;
@@ -437,31 +398,51 @@
   }
 
   /* ---------------- Lagring / nedlasting ---------------- */
-  function buildFile() {
-    var data = JSON.parse(JSON.stringify(state.data));
-    data.updatedAt = new Date().toISOString();
-    return Jul.crypto.encryptWithKey(data, state.key, state.salt, state.iter).then(function (payload) {
-      state.payload = payload;
-      return Jul.buildDataFile(payload);
+  // Feltene i personfilene, i fast rekkefølge (person ligger i filnavnet)
+  var FIELDS = ['id', 'title', 'description', 'image', 'imageFit', 'storeUrl', 'linkLabel', 'prisjaktUrl',
+    'hidePrisjakt', 'priceMin', 'priceMax', 'livePrice', 'createdAt'];
+
+  /** Innholdet i data/<id>.json for én person. */
+  function personFile(pid) {
+    var wishes = wishesFor(pid).map(function (w) {
+      var o = {};
+      FIELDS.forEach(function (k) { if (w[k] !== undefined) o[k] = w[k]; });
+      return o;
     });
+    return JSON.stringify({ wishes: wishes }, null, 2) + '\n';
   }
 
   function downloadDataFile() {
     var missing = state.data.wishes.filter(function (w) { return !w.title.trim(); }).length;
     if (missing && !global.confirm(missing + ' ønske(r) mangler produktnavn. Laste ned likevel?')) return;
-    var btn = $('#download-btn');
-    btn.disabled = true;
-    buildFile().then(function (text) {
-      download('wishlist.enc.js', text, 'text/javascript');
+    var files = [];
+    people().forEach(function (p) {
+      var text = personFile(p.id);
+      if (text !== state.saved[p.id]) files.push({ pid: p.id, name: p.id + '.json', text: text });
+    });
+    if (!files.length) {
       setDirty(false);
-      $('#publish-dialog').showModal();
-    }).catch(function (err) {
-      global.alert('Noe gikk galt: ' + err.message);
-    }).then(function () { btn.disabled = false; });
+      toast('Ingen endringer å laste ned');
+      return;
+    }
+    // Litt mellomrom, ellers stopper noen nettlesere flere nedlastinger på rad
+    files.forEach(function (f, i) {
+      setTimeout(function () { download(f.name, f.text, 'application/json'); }, i * 350);
+      state.saved[f.pid] = f.text;
+    });
+    setDirty(false);
+    showPublishDialog(files.map(function (f) { return f.name; }));
+  }
+
+  function showPublishDialog(names) {
+    $('#publish-title').textContent = names ? 'Filene er lastet ned' : 'Slik publiserer du';
+    $('#publish-files').innerHTML = names
+      ? 'Disse filene ligger i nedlastingsmappen din: ' + names.map(function (n) { return '<code>' + e(n) + '</code>'; }).join(', ') + '.'
+      : 'Klikk <strong>Last ned endrede filer</strong>. Du får én fil per person som er endret, for eksempel <code>ellie.json</code>.';
+    $('#publish-dialog').showModal();
   }
 
   function exportBackup() {
-    if (!global.confirm('Backupen er IKKE kryptert. Ta vare på den lokalt og ikke last den opp til GitHub. Fortsette?')) return;
     var d = new Date().toISOString().slice(0, 10);
     download('onskeliste-backup-' + d + '.json', JSON.stringify(state.data, null, 2), 'application/json');
   }
@@ -636,11 +617,12 @@
       var cmd = b.getAttribute('data-cmd');
       if (cmd === 'export') exportBackup();
       if (cmd === 'import') $('#import-file').click();
-      if (cmd === 'password') openPasswordDialog();
-      if (cmd === 'help') $('#publish-dialog').showModal();
+      if (cmd === 'prices') openSyncDialog();
+      if (cmd === 'help') showPublishDialog(null);
       if (cmd === 'lock') {
-        if (state.dirty && !global.confirm('Du har ulagrede endringer. Lukke likevel?')) return;
+        if (state.dirty && !global.confirm('Du har ulagrede endringer. Logge ut likevel?')) return;
         state.dirty = false;
+        Jul.auth.clear();
         global.location.reload();
       }
     });
@@ -663,43 +645,89 @@
     global.addEventListener('beforeunload', function (ev) {
       if (state.dirty) { ev.preventDefault(); ev.returnValue = ''; }
     });
-
-    // Bytt passord
-    $('#password-form').addEventListener('submit', function (ev) {
-      var dlg = $('#password-dialog');
-      if (ev.submitter && ev.submitter.value === 'cancel') return;
-      ev.preventDefault();
-      var a = $('#chg-pw').value, b = $('#chg-pw2').value, err = $('#chg-error');
-      if (a.length < 6) { err.textContent = 'Passordet må ha minst 6 tegn.'; return; }
-      if (a !== b) { err.textContent = 'Passordene er ikke like.'; return; }
-      var salt = Jul.crypto.randomSalt();
-      $('#chg-save').disabled = true;
-      Jul.crypto.keyFromPassword(a, salt).then(function (key) {
-        state.key = key; state.salt = salt; state.iter = Jul.crypto.ITERATIONS;
-        setDirty(true);
-        dlg.close();
-        toast('Passordet er byttet – last ned og last opp datafilen');
-      }).then(function () { $('#chg-save').disabled = false; });
-    });
   }
 
-  function openPasswordDialog() {
-    $('#chg-pw').value = '';
-    $('#chg-pw2').value = '';
-    $('#chg-error').textContent = '';
-    $('#password-dialog').showModal();
+  /* ---------------- Oppdater priser nå ----------------
+   * Starter GitHub Actions-jobben .github/workflows/priser.yml via GitHub-API-et.
+   * Krever et fine-grained token med «Actions: Read and write» for repoet. Tokenet
+   * lagres bare i denne nettleseren (localStorage), aldri i repoet.
+   */
+  var TOKEN_KEY = 'jul-gh-token';
+  function getToken() {
+    try { return global.localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+  }
+  function setToken(v) {
+    try {
+      if (v) global.localStorage.setItem(TOKEN_KEY, v);
+      else global.localStorage.removeItem(TOKEN_KEY);
+    } catch (e) { /* lagring er av – tokenet må limes inn hver gang */ }
+  }
+  function openSyncDialog() {
+    var has = !!getToken();
+    $('#sync-token').value = '';
+    $('#sync-token-box').hidden = has;
+    $('#sync-saved').hidden = !has;
+    $('#sync-error').textContent = '';
+    $('#sync-dialog').showModal();
+  }
+  function initSync() {
+    $('#sync-gh-link').href = 'https://github.com/' + Jul.REPO + '/actions/workflows/priser.yml';
+    $('#sync-forget').addEventListener('click', function () {
+      setToken('');
+      $('#sync-token-box').hidden = false;
+      $('#sync-saved').hidden = true;
+      $('#sync-token').focus();
+    });
+    $('#sync-form').addEventListener('submit', function (ev) {
+      if (ev.submitter && ev.submitter.value === 'cancel') return;
+      ev.preventDefault();
+      var err = $('#sync-error'), btn = $('#sync-run');
+      var token = getToken() || $('#sync-token').value.trim();
+      if (!token) { err.textContent = 'Lim inn et GitHub-token, eller bruk lenken til GitHub.'; return; }
+      err.textContent = '';
+      btn.disabled = true;
+      fetch('https://api.github.com/repos/' + Jul.REPO + '/actions/workflows/priser.yml/dispatches', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'Authorization': 'Bearer ' + token,
+          'X-GitHub-Api-Version': '2022-11-28'
+        },
+        body: JSON.stringify({ ref: 'main' })
+      }).then(function (r) {
+        if (r.status === 204) {
+          setToken(token);
+          $('#sync-dialog').close();
+          toast('Prisoppdateringen er startet. Nettsiden er oppdatert om noen minutter.');
+          return;
+        }
+        if (r.status === 401) {
+          setToken('');
+          $('#sync-token-box').hidden = false;
+          $('#sync-saved').hidden = true;
+          throw new Error('Tokenet er ugyldig eller utløpt. Lim inn et nytt.');
+        }
+        if (r.status === 403 || r.status === 404) {
+          throw new Error('Tokenet mangler tilgang. Det trenger «Actions: Read and write» for ' + Jul.REPO + '.');
+        }
+        throw new Error('GitHub svarte med feil ' + r.status + '.');
+      }).catch(function (e) {
+        err.textContent = e instanceof TypeError ? 'Fikk ikke kontakt med GitHub. Er du på nett?' : e.message;
+      }).then(function () { btn.disabled = false; });
+    });
   }
 
   /* ---------------- Oppstart ---------------- */
   function init() {
     hydrateIcons(document);
     Jul.installImageFallback(document);
-    if (!Jul.crypto.hasCrypto()) {
-      $('#data-status').textContent = 'Nettleseren støtter ikke Web Crypto her. Bruk en oppdatert Chrome, Edge, Firefox eller Safari.';
+    if (!Jul.auth.available()) {
+      $('#data-status').textContent = 'Nettleseren støtter ikke innloggingen her. Bruk en oppdatert nettleser og åpne verktøyet via https.';
       return;
     }
     initUnlock();
     initWorkspace();
+    initSync();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

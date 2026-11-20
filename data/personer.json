@@ -1,0 +1,25 @@
+{
+  "title": "Juleønsker 2026",
+  "people": [
+    {
+      "id": "dagfinn",
+      "name": "Dagfinn",
+      "accent": "#d9b26a"
+    },
+    {
+      "id": "kristin",
+      "name": "Kristin",
+      "accent": "#e06a7b"
+    },
+    {
+      "id": "ellie",
+      "name": "Ellie",
+      "accent": "#5cbf95"
+    },
+    {
+      "id": "sidney",
+      "name": "Sidney",
+      "accent": "#8cb8e6"
+    }
+  ]
+}

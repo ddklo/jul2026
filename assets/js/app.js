@@ -5,7 +5,6 @@
   'use strict';
 
   var Jul = global.Jul;
-  var DATA_URL = 'data/wishlist.enc.js';
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
@@ -13,7 +12,7 @@
   function rm() { return !!(reducedMotion && reducedMotion.matches); }
 
   var state = {
-    payload: null,
+    data: null,      // Promise med { title, people, wishes }
     people: [],
     wishes: [],
     current: null,
@@ -111,40 +110,26 @@
         pw.focus();
         return;
       }
-      if (!state.payload) {
-        setLoginError('Fant ikke ønskelistedataene. Prøv å laste siden på nytt.');
-        return;
-      }
       setLoginError('');
       setLoading(true);
-      Jul.crypto
-        .unlockWithPassword(state.payload, value)
-        .then(
-          function (res) {
-            // Husk innloggingen. Feiler det (f.eks. privat modus), går vi likevel videre.
-            Jul.crypto
-              .exportKey(res.key)
-              .then(function (raw) { Jul.session.save(state.payload.salt, raw, $('#remember').checked); })
-              .catch(function (err) { if (global.console) console.warn('Kunne ikke huske innloggingen', err); });
-            try {
-              unlock(res.data, true);
-            } catch (err) {
-              if (global.console) console.error(err);
-              setLoading(false);
-              setLoginError('Passordet er riktig, men siden kunne ikke vises: ' + (err && err.message ? err.message : err));
-            }
-          },
-          function (err) {
+      Promise.all([Jul.auth.check(value), state.data]).then(
+        function (res) {
+          var role = res[0];
+          if (!role) {
             setLoading(false);
-            if (err && err.wrongPassword) {
-              setLoginError('Feil passord – prøv igjen.');
-              pw.select();
-            } else {
-              if (global.console) console.error(err);
-              setLoginError('Noe gikk galt under opplåsingen: ' + (err && err.message ? err.message : err));
-            }
+            setLoginError('Feil passord – prøv igjen.');
+            pw.select();
+            return;
           }
-        );
+          Jul.auth.save(role, $('#remember').checked);
+          unlock(res[1], role, true);
+        },
+        function (err) {
+          if (global.console) console.error(err);
+          setLoading(false);
+          setLoginError('Fant ikke ønskelistene. Prøv å laste siden på nytt.');
+        }
+      );
     });
   }
 
@@ -155,9 +140,10 @@
     }, 50);
   }
 
-  function unlock(data, animate) {
+  function unlock(data, role, animate) {
     state.people = (data.people && data.people.length ? data.people : Jul.DEFAULT_PEOPLE).slice();
     state.wishes = (data.wishes || []).slice();
+    $('#admin-link').hidden = role !== 'admin';
 
     var login = $('#login');
     var app = $('#app');
@@ -181,7 +167,7 @@
   }
 
   function logout() {
-    Jul.session.clear();
+    Jul.auth.clear();
     global.location.hash = '';
     global.location.reload();
   }
@@ -481,36 +467,27 @@
     initLogin();
     initControls();
 
-    if (!Jul.crypto.hasCrypto()) {
+    if (!Jul.auth.available()) {
       showLogin();
-      setLoginError('Nettleseren din støtter ikke kryptering her. Åpne siden via https i en oppdatert nettleser.');
+      setLoginError('Nettleseren din støtter ikke innloggingen her. Åpne siden via https i en oppdatert nettleser.');
       $('#login-btn').disabled = true;
       return;
     }
 
     document.body.classList.add('is-checking');
-    Jul.loadDataScript(DATA_URL).then(function (payload) {
-      state.payload = payload;
-      if (!payload) {
+    state.data = Jul.loadData();
+    var role = Jul.auth.load();
+    state.data.then(
+      function (data) {
+        if (role) unlock(data, role, false);
+        else showLogin();
+      },
+      function (err) {
+        if (global.console) console.error(err);
         showLogin();
-        setLoginError('Fant ikke ønskelistedataene (data/wishlist.enc.js).');
-        return;
+        setLoginError('Fant ikke ønskelistene (data/personer.json).');
       }
-      var saved = Jul.session.load();
-      if (!saved || saved.salt !== payload.salt) {
-        if (saved) Jul.session.clear();
-        showLogin();
-        return;
-      }
-      Jul.crypto
-        .importKey(saved.key)
-        .then(function (key) { return Jul.crypto.decryptWithKey(payload, key); })
-        .then(function (data) { unlock(data, false); })
-        .catch(function () {
-          Jul.session.clear();
-          showLogin();
-        });
-    });
+    );
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

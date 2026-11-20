@@ -529,6 +529,11 @@ a { color: inherit; }
 }
 .card__price span { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.04em; }
 .card__price strong { font-size: 1.12rem; font-weight: 700; color: var(--gold-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.card__price + .card__price { border-top: 0; padding-top: 2px; }
+.card__price + .card__price strong { font-size: 0.92rem; font-weight: 600; color: var(--text-2); }
+.card__price--live span { display: flex; flex-direction: column; gap: 1px; color: var(--text-2); }
+.card__price--live small { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.02em; }
+.card__price--live strong { color: var(--green-2); }
 .card__actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
 .card__actions .btn:only-child { grid-column: 1 / -1; }
 
