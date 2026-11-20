@@ -38,8 +38,8 @@
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/product.php?p=15949728",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 200,
+      "priceMax": 300,
       "livePrice": {
         "productId": "15949728",
         "amount": 207,
