@@ -30,7 +30,7 @@
   }
 
   function resizePile() {
-    maxH = w < 720 ? 18 : 34; // lavt nok til at innholdet bak synes
+    maxH = w < 720 ? 26 : 44; // fonnen ligger bak innholdet, så den kan være litt høyere
     pileH = maxH + 10;
     pile.width = Math.round(w * dpr);
     pile.height = Math.round(pileH * dpr);
