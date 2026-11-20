@@ -336,13 +336,41 @@ a { color: inherit; }
 .brand__text { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 0.01em; }
 .brand__text em { font-style: normal; color: var(--gold); }
 .topbar__right { display: flex; align-items: center; gap: 10px; }
+/* Nedtelling til julaften: et festlig merke i overskriften */
 .countdown {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 14px; border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border);
-  font-size: 0.85rem; color: var(--text-2); white-space: nowrap;
+  position: relative; overflow: hidden; isolation: isolate;
+  display: inline-flex; align-items: center; gap: 14px;
+  margin-top: clamp(16px, 3vw, 24px); padding: 10px 24px 10px 18px; border-radius: 22px;
+  background: linear-gradient(135deg, #7d1629, #4a0c19); /* tett, så snø og stjerner bak ikke skinner gjennom teksten */
+  border: 1px solid rgba(242, 216, 155, 0.5);
+  box-shadow: 0 0 0 1px rgba(242, 216, 155, 0.08) inset, 0 16px 40px -18px rgba(201, 68, 90, 0.8), 0 0 34px -12px rgba(242, 216, 155, 0.55);
+  color: var(--text); white-space: nowrap;
+  animation: countdownGlow 4s ease-in-out infinite;
 }
-.countdown .icon { color: var(--frost); width: 16px; height: 16px; animation: spinSlow 14s linear infinite; }
+/* Glans som sveiper over merket */
+.countdown::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 240, 200, 0.22) 50%, transparent 70%);
+  transform: translateX(-120%); animation: countdownShine 5s ease-in-out infinite 1.5s;
+}
+.countdown .icon { flex: none; width: 26px; height: 26px; color: var(--frost); animation: spinSlow 14s linear infinite; }
+.countdown__num {
+  font-family: var(--font-display); font-weight: 600; font-size: clamp(2.5rem, 6vw, 3.3rem); line-height: 1;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+  background: linear-gradient(180deg, #fff6da, #f0cd84 55%, #c99545);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(242, 216, 155, 0.35));
+}
+.countdown__text {
+  text-align: left; line-height: 1.35; font-weight: 700;
+  font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-2);
+}
+.countdown__big { font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.1rem); color: var(--gold-2); }
+@keyframes countdownGlow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(242, 216, 155, 0.08) inset, 0 16px 40px -18px rgba(201, 68, 90, 0.8), 0 0 30px -12px rgba(242, 216, 155, 0.45); }
+  50% { box-shadow: 0 0 0 1px rgba(242, 216, 155, 0.12) inset, 0 16px 44px -16px rgba(201, 68, 90, 0.95), 0 0 44px -10px rgba(242, 216, 155, 0.75); }
+}
+@keyframes countdownShine { 0%, 60% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
 @keyframes spinSlow { to { transform: rotate(360deg); } }
 
 .hero {
@@ -696,10 +724,6 @@ a { color: inherit; }
 /* ---------------- Administrator ---------------- */
 .admin-btn { box-shadow: 0 0 0 3px rgba(217, 178, 106, 0.2), 0 8px 24px -10px rgba(217, 178, 106, 0.7); }
 .admin-btn .icon { width: 16px; height: 16px; }
-/* Smal skjerm: Rediger-knappen er viktigere enn nedtellingen */
-@media (max-width: 640px) {
-  .can-edit .countdown { display: none; }
-}
 .ph__admin { margin: 6px 0 0; font-size: 0.8rem; color: var(--gold-2); display: inline-flex; align-items: center; gap: 6px; }
 .ph__admin .icon { width: 14px; height: 14px; }
 .card__admin {
@@ -865,7 +889,6 @@ a { color: inherit; }
 @media (max-width: 719px) {
   :root { --bottom-nav: 76px; }
   .tabs__share { display: none; } /* på mobil ligger «Del lenke» i overskriften */
-  .countdown span { font-size: 0.8rem; }
   .brand__text { font-size: 1.08rem; }
   .tabs, .is-scrolled .tabs {
     position: fixed; top: auto; left: 0; right: 0; bottom: 0;
@@ -908,8 +931,8 @@ a { color: inherit; }
   .hero__lead { display: none; }
   .hero { padding-top: 14px; padding-bottom: 10px; }
   .eyebrow { font-size: 0.68rem; letter-spacing: 0.18em; }
-  .countdown { padding: 7px 11px; }
-  .countdown .icon { display: none; }
+  .countdown { padding: 8px 18px 8px 14px; gap: 11px; }
+  .countdown .icon { width: 22px; height: 22px; }
   .ph__action span { display: none; }
   .ph__action { width: 42px; padding: 0; }
   .card__media { aspect-ratio: 16 / 11; }

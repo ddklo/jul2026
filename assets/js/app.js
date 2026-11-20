@@ -63,14 +63,16 @@
     var y = now.getFullYear();
     var today = new Date(y, now.getMonth(), now.getDate());
     var eve = new Date(y, 11, 24);
-    var text;
-    if (now.getMonth() === 11 && now.getDate() === 24) text = 'God jul!';
-    else if (now.getMonth() === 11 && now.getDate() > 24) text = 'God jul og godt nyttår';
-    else {
-      var days = Math.round((eve - today) / 86400000);
-      text = plural(days, 'dag', 'dager') + ' til julaften';
+    if (now.getMonth() === 11 && now.getDate() >= 24) {
+      el.innerHTML = Jul.icon('tree') + '<span class="countdown__big">' + (now.getDate() === 24 ? 'God jul!' : 'God jul og godt nyttår') + '</span>';
+      el.setAttribute('aria-label', el.textContent);
+      return;
     }
-    el.innerHTML = Jul.icon('snowflake') + '<span>' + text + '</span>';
+    var days = Math.round((eve - today) / 86400000);
+    el.innerHTML = Jul.icon('snowflake') +
+      '<span class="countdown__num">' + days + '</span>' +
+      '<span class="countdown__text">' + (days === 1 ? 'dag' : 'dager') + '<br>til julaften</span>';
+    el.setAttribute('aria-label', plural(days, 'dag', 'dager') + ' til julaften');
   }
 
   /* ---------------- Innlogging ---------------- */
