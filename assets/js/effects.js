@@ -34,12 +34,15 @@
   }
 
   /* ---------------- Stjerneskudd ---------------- */
-  function shootingStar() {
-    var st = el('fx-shoot');
-    st.style.left = rand(8, 70) + 'vw';
-    st.style.top = rand(4, 32) + 'vh';
-    st.style.setProperty('--angle', rand(12, 28).toFixed(1) + 'deg');
-    setTimeout(function () { st.remove(); }, 1600);
+  // Vanlige skudd er små og raske. Omtrent hvert tredje er et stort, lysende skudd med glødende hode.
+  function shootingStar(big) {
+    if (big === undefined) big = Math.random() < 0.35;
+    var st = el('fx-shoot' + (big ? ' fx-shoot--big' : ''));
+    st.style.left = rand(4, big ? 55 : 70) + 'vw';
+    st.style.top = rand(3, big ? 26 : 34) + 'vh';
+    st.style.setProperty('--angle', rand(10, 30).toFixed(1) + 'deg');
+    st.innerHTML = '<i></i>';
+    setTimeout(function () { st.remove(); }, big ? 2000 : 1600);
   }
 
   /* ---------------- Julenissen i sleden ---------------- */
@@ -265,7 +268,14 @@
   /* ---------------- Planlegging ---------------- */
   var shootTimer = null;
   function scheduleShoot() {
-    shootTimer = setTimeout(function () { if (!doc.hidden) shootingStar(); scheduleShoot(); }, rand(7000, 16000));
+    shootTimer = setTimeout(function () {
+      if (!doc.hidden) {
+        shootingStar();
+        // Av og til kommer to like etter hverandre
+        if (Math.random() < 0.25) setTimeout(function () { shootingStar(false); }, rand(250, 700));
+      }
+      scheduleShoot();
+    }, rand(3000, 7500));
   }
   function scheduleSleigh(first) {
     sleighTimer = setTimeout(function () { flySleigh(); scheduleSleigh(false); }, first ? rand(5000, 9000) : rand(45000, 80000));
