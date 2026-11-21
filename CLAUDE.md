@@ -1,31 +1,31 @@
 # Juleønsker 2026 – instruks for Claude
 
-Statisk ønskeliste på GitHub Pages (`https://ddklo.github.io/jul2026/`). Se README.md for detaljer.
+Statisk ønskeliste på GitHub Pages (`https://ddklo.github.io/jul2026/`). Se README.md.
 
-- To lister med de samme personene: `bergen.html` og `sorumsand.html`. Sidene er like bortsett fra `data-list` og tittel. Endrer du den ene, endre den andre likt.
-- Data: `data/personer.json` (lister og personer), `data/<liste>/<person>.json` (ønskene, i visningsrekkefølge) og `data/bilder/` (produktbilder).
-- Nettsiden lagrer selv endringer som commits på `main`. Kjør derfor alltid `git pull --rebase` før du pusher.
-- Lagring fra nettsiden fletter: `Jul.github.saveWishes(path, base, mine, melding)` henter siste versjon og bruker `Jul.mergeWishes(base, mine, theirs)`, så bare egne endringer skrives. Bruk den (ikke `saveFile`) for personfiler. GitHub-jobbene publiserer med `tools/publiser.sh`, som kjører skriptet på nytt ved konflikt.
-- Bump `?v=` i alle fire HTML-filene (`index.html`, `bergen.html`, `sorumsand.html`, `editor/index.html`) når CSS eller JS endres.
-- Lokal test: `python -m http.server 8000` og åpne `/bergen.html` (adressen uten `.html` virker bare på GitHub Pages).
-- Feltrekkefølgen i ønskene må være lik `WISH_FIELDS` i `assets/js/shared.js` og `FIELDS` i `tools/felles.mjs`. Filene skrives som JSON med 2 mellomrom og linjeskift til slutt.
-- NB: I JavaScripts `String.replace` blir `$$` i erstatningsteksten til `$`. Bruk en funksjon som erstatning (`s.replace(a, () => b)`) når du endrer kode med skript.
+## Regler
 
-## Når brukeren ber om å legge til et ønske
+- `bergen.html` og `sorumsand.html` er like bortsett fra `data-list` og tittel. Endre begge likt.
+- Nettsiden committer selv til `main`: kjør `git pull --rebase` før push.
+- Personfiler lagres med `Jul.github.saveWishes(path, base, mine, melding)` (fletter via `Jul.mergeWishes`), ikke `saveFile`. Jobbene publiserer med `tools/publiser.sh`.
+- Bump `?v=` i `index.html`, `bergen.html`, `sorumsand.html` og `editor/index.html` når CSS/JS endres.
+- Feltrekkefølge: `WISH_FIELDS` i `assets/js/shared.js` = `FIELDS` i `tools/felles.mjs`. JSON med 2 mellomrom og linjeskift til slutt.
+- Lokal test: `python -m http.server 8000`, åpne `/bergen.html`.
+- Skript som endrer kode: bruk `s.replace(a, () => b)`, ellers blir `$$` til `$`.
+- Følg minnenotatene (hjemmestrikket hjullasterbukse, ingen «kjøpt»-markering).
 
-Gjør alt dette uten å spørre, med mindre noe er helt uklart:
+## Legge til et ønske
 
-1. **Person og liste.** «Begge steder» betyr både `data/bergen/` og `data/sorumsand/`. Er det uklart hvilken liste, spør.
-2. **Riktig produkt.** Finn den konkrete modellen og varianten. Velg den mest sannsynlige når det er flere (for eksempel herre/dame, passform eller størrelse), og si i svaret hva du valgte og hvorfor.
-3. **Prisjakt-produktside** (`https://www.prisjakt.no/product.php?p=…`). Prisjakts søk blokkerer skript (403), så søk i nettleseren på `https://www.prisjakt.no/search?query=…`. Bekreft navn, laveste pris og antall butikker fra produktsidens JSON-LD (`offers.lowPrice`, `offerCount`). Finnes produktet ikke på Prisjakt: sett `hidePrisjakt: true`, så blir nettbutikken hovedknapp.
-4. **Nettbutikk-lenke** (`storeUrl`): direkte produktside i en kjent norsk butikk, gjerne en fra Prisjakt-listen (Fjellsport, Anton Sport, XXL, Lekekassen, Panduro …). Sjekk at siden svarer 200.
-5. **Bilde.** Hent produktbildet (butikkens `og:image` eller `cdn.pji.nu/product/standard/800/<id>.jpg`) og se på det før du bruker det. Konverter til WebP (maks 900 px, kvalitet 80, hvit bakgrunn) med sharp, lagre som `data/bilder/<ønske-id>.webp`, og sett `image` til `data/bilder/<ønske-id>.webp`. Bruk `imageFit: "contain"` for produktbilder med hvit bakgrunn og `"cover"` for stemningsbilder.
-6. **Prisantydning** (`priceMin`, `priceMax`): ut fra Prisjakt (lav–høy), avrundet til nærmeste 50.
-7. **Beskrivelse** på norsk, kort: variant, størrelse og farge, og ting som må kjøpes i tillegg (for eksempel batterier).
-8. **Id:** `"w" + Date.now().toString(36) + 5 tilfeldige base36-tegn`. Samme ønske i begge lister kan ha samme id.
-9. Legg ønsket sist i personens liste, og kjør `node tools/priser.mjs` så det får `livePrice`.
-10. Sjekk kortet lokalt (bilde, «Se på Prisjakt», butikk-knapp, laveste pris) før du foreslår commit.
+Gjør alt uten å spørre, med mindre noe er helt uklart:
 
-Jobben «Fyll inn manglende» (`tools/fyll-inn.mjs`) fyller inn bilde og prisantydning hvis noe er glemt, og melder ønsker uten Prisjakt-produktlenke i en GitHub-sak. Den er et sikkerhetsnett, ikke en erstatning for sjekklisten: den kan ikke finne Prisjakt-siden eller velge riktig variant. Ser du den saken, kan du tilby å finne Prisjakt-sidene.
+1. **Liste:** «begge steder» = `data/bergen/` og `data/sorumsand/`. Uklart: spør.
+2. **Produkt:** konkret modell og variant. Velg den mest sannsynlige og si hvorfor.
+3. **Prisjakt:** søk i nettleseren på `https://www.prisjakt.no/search?query=…` (skript får 403). Bruk produktsiden `product.php?p=…`, bekreft navn, `lowPrice` og `offerCount` i JSON-LD. Ikke på Prisjakt: `hidePrisjakt: true`.
+4. **`storeUrl`:** produktside i kjent norsk butikk, helst fra Prisjakt-listen. Må svare 200.
+5. **Bilde:** butikkens `og:image` eller `cdn.pji.nu/product/standard/800/<id>.jpg`. Se på det. WebP med sharp (maks 900 px, kvalitet 80, hvit bakgrunn) → `data/bilder/<id>.webp`. `imageFit`: `contain` for produktbilder, `cover` for stemningsbilder.
+6. **`priceMin`/`priceMax`:** Prisjakt lav–høy, avrundet til nærmeste 50.
+7. **Beskrivelse:** kort, norsk: variant, størrelse, farge, ting som må kjøpes i tillegg.
+8. **Id:** `"w" + Date.now().toString(36)` + 5 tilfeldige base36-tegn (samme id i begge lister er greit).
+9. Legg sist i listen og kjør `node tools/priser.mjs`.
+10. Sjekk kortet lokalt (bilde, Prisjakt-knapp, butikk-knapp, pris) før du foreslår commit.
 
-Følg også notatene i minnet (for eksempel at hjullasterbuksa er hjemmestrikket og at det ikke skal være noen «kjøpt»-markering).
+Jobben «Fyll inn manglende» er bare et sikkerhetsnett. Den finner ikke Prisjakt-sider. Ser du saken den lager, tilby å finne dem.
