@@ -99,7 +99,6 @@ a { color: inherit; }
   background:
     radial-gradient(40% 50% at 30% 30%, rgba(79, 174, 134, 0.10), transparent 70%),
     radial-gradient(35% 45% at 70% 20%, rgba(217, 178, 106, 0.08), transparent 70%);
-  filter: blur(20px);
   animation: aurora 18s ease-in-out infinite alternate;
 }
 @keyframes aurora {
@@ -130,7 +129,8 @@ a { color: inherit; }
   background: linear-gradient(100deg, var(--gold-2) 0%, var(--gold) 45%, #f7e6bd 60%, var(--gold) 80%);
   background-size: 220% 100%;
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: goldShine 9s ease-in-out infinite;
+  /* Glansen tegner teksten på nytt i hvert bilde, så den går to ganger etter innlasting og stopper */
+  animation: goldShine 9s ease-in-out 2;
 }
 @keyframes goldShine { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
 .muted { color: var(--muted); font-weight: 500 !important; }
@@ -505,8 +505,8 @@ a { color: inherit; }
   .is-scrolled .tabs::before { opacity: 1; }
   .tabs__inner, .tabs__share { transition: background-color 0.35s, box-shadow 0.35s, border-color 0.35s; }
   .is-scrolled .tabs__inner, .is-scrolled .tabs__share {
-    background-color: rgba(14, 20, 34, 0.72);
-    -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
+    background-color: rgba(14, 20, 34, 0.82);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
     border-color: color-mix(in srgb, var(--person) 35%, rgba(255, 255, 255, 0.12));
     box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.9), 0 0 32px -12px color-mix(in srgb, var(--person) 70%, transparent);
   }
@@ -1190,8 +1190,8 @@ button.card__price:focus-visible { outline: 2px solid var(--gold-2); outline-off
     display: block; margin-top: 0;
     position: fixed; top: auto; left: 0; right: 0; bottom: 0;
     padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
-    background: rgba(8, 12, 22, 0.86);
-    -webkit-backdrop-filter: blur(20px) saturate(150%); backdrop-filter: blur(20px) saturate(150%);
+    /* Nesten dekkende i stedet for blur: snøen bak ville tvunget telefonen til å regne ut blur i hvert bilde */
+    background: rgba(8, 12, 22, 0.97);
     border-top: 1px solid var(--border);
     box-shadow: 0 -12px 40px -12px rgba(0, 0, 0, 0.8);
   }

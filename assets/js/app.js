@@ -340,7 +340,9 @@
     // følger med av seg selv. Ellers den gamle overgangen.
     if (document.startViewTransition) {
       document.documentElement.style.setProperty('--vt-dir', next > prev ? '1' : '-1');
-      document.startViewTransition(function () { render(false); });
+      var vt = document.startViewTransition(function () { render(false); });
+      // Hoppes over (f.eks. når fanen er skjult): innholdet byttes likevel, så avvisningen kan ignoreres
+      vt.ready.catch(function () {});
       keepTabsInView();
       return;
     }
