@@ -336,6 +336,14 @@
       render(true);
       return;
     }
+    // Nettlesere med View Transitions: kortene glir ut og de nye inn, og høyden
+    // følger med av seg selv. Ellers den gamle overgangen.
+    if (document.startViewTransition) {
+      document.documentElement.style.setProperty('--vt-dir', next > prev ? '1' : '-1');
+      document.startViewTransition(function () { render(false); });
+      keepTabsInView();
+      return;
+    }
     transition(next > prev ? 1 : -1, function () {
       render(true);
     });

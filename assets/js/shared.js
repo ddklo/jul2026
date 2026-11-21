@@ -846,6 +846,30 @@
    * opts: { index, personName, accent, editUrl, isNew }
    * Med editUrl får kortet administratorverktøy: dra-håndtak, rediger og slett.
    * ------------------------------------------------------------------ */
+  /**
+   * Prisen nå (Prisjakt eller nettbutikken) som en knapp. Trykk viser en liten
+   * boble med kilde, antall butikker og dato (popover, plassert ved prisen med
+   * anchor positioning der nettleseren støtter det, ellers midt på skjermen).
+   */
+  function livePriceHTML(w, live) {
+    var e = Jul.escape;
+    var pop = 'pp-' + String(w.id).replace(/[^\w-]/g, '');
+    var label = live.store ? 'Pris hos ' + live.store : 'Laveste pris nå';
+    var small = live.store
+      ? 'Sjekket ' + live.date
+      : 'Prisjakt' + (live.offers > 1 ? ' · ' + live.offers + ' butikker' : '') + ' · ' + live.date;
+    var details = live.store
+      ? '<strong>' + e(live.text) + ' hos ' + e(live.store) + '</strong>' +
+        '<span>Prisen står på butikkens side</span><span>Sjekket ' + e(live.date) + ', oppdateres hver natt</span>'
+      : '<strong>' + e(live.text) + ' på Prisjakt</strong>' +
+        '<span>Laveste pris' + (live.offers > 1 ? ' blant ' + live.offers + ' butikker' : '') + '</span>' +
+        '<span>Sjekket ' + e(live.date) + ', oppdateres hver natt</span>';
+    return '<button type="button" class="card__price card__price--live" popovertarget="' + pop + '" aria-label="' + e(label + ': ' + live.text + '. Vis detaljer') + '">' +
+      '<span>' + e(label) + '<small>' + e(small) + '</small></span>' +
+      '<strong>' + e(live.text) + '</strong></button>' +
+      '<div class="price-pop" id="' + pop + '" popover>' + details + '</div>';
+  }
+
   Jul.cardHTML = function (w, opts) {
     opts = opts || {};
     var e = Jul.escape;
@@ -897,6 +921,7 @@
 
     return (
       '<article class="card" style="--i:' + (opts.index || 0) + '" data-id="' + e(w.id) + '">' + admin +
+      (opts.isNew ? '<span class="card__ring" aria-hidden="true"></span>' : '') +
       // Bilde og tittel er også lenker til hovedknappen – større trykkflate på mobil
       '<div class="card__media' + (img ? fit : ' card__media--art') + '">' + media +
       (mainUrl ? '<a class="card__media-link" href="' + e(mainUrl) + '"' + ext + ' tabindex="-1" aria-hidden="true"></a>' : '') +
@@ -907,16 +932,7 @@
       '<h3 class="card__title">' + (mainUrl ? '<a href="' + e(mainUrl) + '"' + ext + '>' + name + '</a>' : name) + '</h3>' +
       (w.description ? '<p class="card__desc">' + e(w.description) + '</p>' : '') +
       '<div class="card__bottom">' +
-      (live && live.store
-        ? '<p class="card__price card__price--live" title="Pris hos ' + e(live.store) + ', sjekket ' + e(live.date) + '">' +
-          '<span>Pris hos ' + e(live.store) + '<small>Sjekket ' + e(live.date) + '</small></span>' +
-          '<strong>' + e(live.text) + '</strong></p>'
-        : '') +
-      (live && !live.store
-        ? '<p class="card__price card__price--live" title="Laveste pris på Prisjakt' + (live.offers > 1 ? ' blant ' + live.offers + ' butikker' : '') + ', sjekket ' + e(live.date) + '">' +
-          '<span>Laveste pris nå<small>Prisjakt' + (live.offers > 1 ? ' · ' + live.offers + ' butikker' : '') + ' · ' + e(live.date) + '</small></span>' +
-          '<strong>' + e(live.text) + '</strong></p>'
-        : '') +
+      (live ? livePriceHTML(w, live) : '') +
       (price ? '<p class="card__price"><span>Prisantydning</span><strong>' + price + '</strong></p>' : '') +
       (actions ? '<div class="card__actions">' + actions + '</div>' : '') +
       '</div></div></article>'
