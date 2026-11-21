@@ -151,6 +151,7 @@
     state.canEdit = !!role;
     document.body.classList.toggle('can-edit', state.canEdit);
     $('#list-name').textContent = data.list.name;
+    $('#brand-list').textContent = data.list.name;
     var admin = $('#admin-link');
     admin.hidden = !state.canEdit;
     admin.href = editUrl();

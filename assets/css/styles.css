@@ -385,6 +385,40 @@ a { color: inherit; }
 }
 .hero__lead { margin: 0 auto; max-width: 52ch; color: var(--text-2); font-size: clamp(0.98rem, 2.2vw, 1.08rem); }
 
+/* Listenavnet ved logoen vises bare på desktop (på mobil står det over tittelen) */
+.brand__list { display: none; }
+
+/* ---------------- Kompakt topp på desktop ----------------
+   Ønskene skal synes uten å scrolle: tittel og nedtelling krymper til én linje,
+   ingressen og linjen over tittelen skjules. Fra 1240 px står de midt i topplinjen. */
+@media (min-width: 720px) {
+  .brand__list {
+    display: inline-block; margin-left: 4px; padding-left: 12px; border-left: 1px solid var(--border-strong);
+    font-size: 0.74rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+  }
+  .hero {
+    display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px 22px;
+    padding: 8px var(--gutter) 14px;
+  }
+  .hero .eyebrow, .hero__lead { display: none; }
+  .hero__title { margin: 0; font-size: clamp(1.5rem, 2.3vw, 2.05rem); white-space: nowrap; }
+  .countdown { margin: 0; padding: 6px 16px 6px 12px; gap: 10px; border-radius: 16px; }
+  .countdown .icon { width: 18px; height: 18px; }
+  .countdown__num { font-size: 1.75rem; }
+  .countdown__text { font-size: 0.64rem; letter-spacing: 0.14em; }
+  .countdown__big { font-size: 1.35rem; }
+}
+@media (min-width: 1240px) {
+  /* Legg tittel og nedtelling inn i topplinjen, mellom logoen og knappene.
+     Selve flaten slipper klikk gjennom til knappene under. */
+  .hero {
+    flex-wrap: nowrap; height: 62px; margin-top: -62px; padding-top: 0; padding-bottom: 0;
+    pointer-events: none; position: relative; z-index: 1;
+  }
+  .hero > * { pointer-events: auto; }
+  .topbar { min-height: 62px; }
+}
+
 /* ---------------- Faner ---------------- */
 .tabs {
   position: sticky; top: 0; z-index: 20;
@@ -447,14 +481,14 @@ a { color: inherit; }
 /* Desktop: den valgte personen vokser i fanen (i stedet for en stor overskrift).
    Raden har fast høyde, så innholdet under ikke hopper mens én fane krymper og en annen vokser. */
 @media (min-width: 720px) {
-  .tabs__inner { height: 106px; transition: height 0.5s var(--ease-smooth); } /* 94 px fane + 2 × 5 px luft + kant */
+  .tabs__inner { height: 86px; transition: height 0.5s var(--ease-smooth); } /* 74 px fane + 2 × 5 px luft + kant */
   .tab { transition: color 0.25s, height 0.5s var(--ease-smooth), padding 0.5s var(--ease-smooth), font-size 0.5s var(--ease-smooth), gap 0.5s var(--ease-smooth); }
   .tab__avatar { transition: width 0.5s var(--ease-smooth), height 0.5s var(--ease-smooth), transform 0.3s var(--ease-smooth), box-shadow 0.3s; }
   .tab__count { transition: background-color 0.25s, color 0.25s, min-width 0.5s var(--ease-smooth), height 0.5s var(--ease-smooth), font-size 0.5s var(--ease-smooth); }
   .tabs__indicator { transition: transform 0.5s var(--ease-smooth), width 0.5s var(--ease-smooth), height 0.5s var(--ease-smooth), box-shadow 0.4s; }
-  .tab.is-active { height: 94px; padding: 0 26px 0 10px; gap: 14px; font-size: 1.5rem; font-weight: 700; }
-  .tab.is-active .tab__avatar { width: 78px; height: 78px; transform: none; }
-  .tab.is-active .tab__count { min-width: 32px; height: 28px; font-size: 0.92rem; }
+  .tab.is-active { height: 74px; padding: 0 22px 0 8px; gap: 12px; font-size: 1.3rem; font-weight: 700; }
+  .tab.is-active .tab__avatar { width: 60px; height: 60px; transform: none; }
+  .tab.is-active .tab__count { min-width: 30px; height: 26px; font-size: 0.86rem; }
   /* Når fanelinjen har lagt seg fast øverst, krymper den til middels størrelse */
   .is-stuck .tabs__inner { height: 74px; }
   .is-stuck .tab.is-active { height: 62px; padding: 0 20px 0 8px; gap: 10px; font-size: 1.15rem; }
