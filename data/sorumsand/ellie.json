@@ -10,8 +10,8 @@
       "linkLabel": "",
       "prisjaktUrl": "",
       "hidePrisjakt": true,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 199,
+      "priceMax": 199,
       "createdAt": "2026-11-20T18:00:52.203Z"
     },
     {
@@ -64,8 +64,8 @@
       "linkLabel": "",
       "prisjaktUrl": "",
       "hidePrisjakt": true,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 99,
+      "priceMax": 99,
       "createdAt": "2026-11-20T18:08:14.811Z"
     },
     {
@@ -98,8 +98,8 @@
       "linkLabel": "",
       "prisjaktUrl": "",
       "hidePrisjakt": true,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 71,
+      "priceMax": 71,
       "createdAt": "2026-11-20T17:56:39.555Z"
     },
     {

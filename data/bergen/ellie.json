@@ -110,8 +110,8 @@
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/s/sjokoladefondue/",
       "hidePrisjakt": true,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 179,
+      "priceMax": 179,
       "createdAt": "2026-11-19T22:49:04.657Z"
     },
     {
@@ -124,8 +124,8 @@
       "linkLabel": "",
       "prisjaktUrl": "https://www.prisjakt.no/s/squishy-toys/",
       "hidePrisjakt": true,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 39,
+      "priceMax": 39,
       "createdAt": "2026-11-19T22:49:04.657Z"
     },
     {

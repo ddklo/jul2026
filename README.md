@@ -6,6 +6,7 @@ Juleønskeliste for Dagfinn, Kristin, Ellie og Sidney på GitHub Pages: <https:/
 - Statisk side uten backend. Ønskene er JSON-filer i repoet.
 - Laveste pris fra Prisjakt (eller nettbutikken) hentes hver natt.
 - «Nytt» på ønsker lagt til siden du var her sist (per enhet).
+- Kan legges til på hjemskjermen som app (eget ikon per liste: `bergen.webmanifest`, `sorumsand.webmanifest`).
 
 ## Filer
 

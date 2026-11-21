@@ -854,6 +854,8 @@
     var pj = w.hidePrisjakt ? '' : Jul.safeUrl(w.prisjaktUrl);
     var price = Jul.formatPrice(+w.priceMin, +w.priceMax);
     var live = Jul.livePrice(w);
+    // Samme tall to ganger er bare støy: skjul prisantydningen når den er lik prisen nå
+    if (live && +w.priceMin === live.amount && +w.priceMax === live.amount) price = '';
     var fit = w.imageFit === 'cover' ? ' card__media--cover' : '';
 
     var media = img

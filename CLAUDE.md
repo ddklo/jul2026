@@ -4,7 +4,7 @@ Statisk ønskeliste på GitHub Pages (`https://ddklo.github.io/jul2026/`). Se RE
 
 ## Regler
 
-- `bergen.html` og `sorumsand.html` er like bortsett fra `data-list` og tittel. Endre begge likt.
+- `bergen.html` og `sorumsand.html` er like bortsett fra `data-list`, tittel og manifest (`bergen.webmanifest`, `sorumsand.webmanifest`). Endre begge likt.
 - Nettsiden committer selv til `main`: kjør `git pull --rebase` før push.
 - Personfiler lagres med `Jul.github.saveWishes(path, base, mine, melding)` (fletter via `Jul.mergeWishes`), ikke `saveFile`. Jobbene publiserer med `tools/publiser.sh`.
 - Bump `?v=` i `index.html`, `bergen.html`, `sorumsand.html` og `editor/index.html` når CSS/JS endres.
