@@ -9,7 +9,7 @@
       "storeUrl": "https://squishyfabrikken.no/products/jumbo-sticky-cheese-squishy?variant=46559450202248&country=NO&currency=NOK&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic&gad_source=1&gad_campaignid=24335395645&gbraid=0AAAABEapeEBdPA__RUkuCcfyUrRQCoDKb&gclid=Cj0KCQiA_P_XBhDvARIsALHjSUWjD1UDxJM5UH_QK22E7Mg-baoo5kDZN4QViVDtu1Oj39jA9uOUFkIaAjt4EALw_wcB",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T18:00:52.203Z"
@@ -23,7 +23,7 @@
       "storeUrl": "https://www.ikea.com/no/no/p/grejsimojs-toyleke-bjorn-beige-80602083/",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T16:53:04.738Z"
@@ -37,7 +37,7 @@
       "storeUrl": "https://lekekassen.no/slimey-sugar-pop-sensorisk-klemmeball-7-cm-assortert-stressleke-12-32112?utm_term=&device=m&matchtype=&location=9047247&gad_source=1&gad_campaignid=22519338940&gbraid=0AAAAADw_mBt9sep3nMWZAGVJm68cQn63F&gclid=Cj0KCQiA_P_XBhDvARIsALHjSUW5sZl3G5zsCQ_oTdu9njNp0aB4AbjJRKvj4FNCe5HbDJYxsjuJv0caAsTXEALw_wcB",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T17:54:22.143Z"
@@ -51,7 +51,7 @@
       "storeUrl": "https://squishyfabrikken.no/products/slow-rise-sjokolade-squishy",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T18:08:14.811Z"
@@ -68,6 +68,12 @@
       "hidePrisjakt": false,
       "priceMin": 750,
       "priceMax": 1300,
+      "livePrice": {
+        "productId": "15076227",
+        "amount": 799,
+        "offers": 13,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T17:43:03.644Z"
     },
     {
@@ -79,7 +85,7 @@
       "storeUrl": "https://www.proshop.no/Smaa-gaver-til-barn/Trend-Toys-Jumbo-Squeeze-jordbaer-15cm/3490914?utm_source=google&utm_medium=cpc&utm_campaign=searchengine&gad_source=1&gad_campaignid=20271606369&gbraid=0AAAAADuUrFF1i6x_S2E0DR6XJxy_DRm5U&gclid=Cj0KCQiA_P_XBhDvARIsALHjSUW-1XtK6aVZxc9KCGXZ_W4afFwuxuhRu1MmhyF7M3SPPe-Zw8lGctMaAmMSEALw_wcB",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T17:56:39.555Z"
@@ -93,7 +99,7 @@
       "storeUrl": "https://sportoutlet.no/product/01k6a8e52q3qqft3wctntpjht7?c=3283",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T16:56:26.314Z"
@@ -107,7 +113,7 @@
       "storeUrl": "https://www.bakerenogkokken.no/p/ariete-party-time-sukkerspinn-maskin_44974/?utm_source=google&utm_medium=cpc&utm_campaign=p-no-shopping-low-low_bids&shopping_id_click=1067-21916-44974&gad_source=1&gad_campaignid=1527273590&gbraid=0AAAAADlaFKkgI5LY46-9nPzyWEjYt0zk5&gclid=Cj0KCQiA_P_XBhDvARIsALHjSUXURUhAA5PeQR7hYx74ZaXMXDQiziv1eg7WNQieQKA1VBKjcX3e1xsaAkDVEALw_wcB",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T18:13:04.016Z"

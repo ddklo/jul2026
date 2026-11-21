@@ -8,10 +8,16 @@
       "imageFit": "contain",
       "storeUrl": "",
       "linkLabel": "",
-      "prisjaktUrl": "https://www.prisjakt.no/search?query=Marvel+Spider-Man+Crawl+%E2%80%98N+Blast+Spider+Toy",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=12315576",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 600,
+      "priceMax": 1050,
+      "livePrice": {
+        "productId": "12315576",
+        "amount": 637,
+        "offers": 3,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T17:02:59.579Z"
     },
     {
@@ -26,6 +32,12 @@
       "hidePrisjakt": false,
       "priceMin": 750,
       "priceMax": 900,
+      "livePrice": {
+        "productId": "12578120",
+        "amount": 768,
+        "offers": 3,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T17:20:10.034Z"
     },
     {
@@ -36,10 +48,16 @@
       "imageFit": "contain",
       "storeUrl": "https://lekekassen.no/lego-city-60478-betongbil",
       "linkLabel": "",
-      "prisjaktUrl": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=15883655",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 300,
+      "priceMax": 550,
+      "livePrice": {
+        "productId": "15883655",
+        "amount": 320,
+        "offers": 16,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T17:23:35.681Z"
     },
     {
@@ -50,10 +68,16 @@
       "imageFit": "contain",
       "storeUrl": "https://lekekassen.no/lego-city-60497-bilvask-med-biler",
       "linkLabel": "",
-      "prisjaktUrl": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=16561364",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 400,
+      "priceMax": 700,
+      "livePrice": {
+        "productId": "16561364",
+        "amount": 428,
+        "offers": 17,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T17:27:16.588Z"
     },
     {
@@ -65,7 +89,7 @@
       "storeUrl": "https://sportoutlet.no/product/01k6a8e52q3qqft3wctntpjht7?c=3283",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T17:04:14.492Z"
@@ -79,7 +103,7 @@
       "storeUrl": "https://www.ikea.com/no/no/p/sportslig-sengesett-fotballmonster-30491327/",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T17:15:09.168Z"
@@ -93,7 +117,7 @@
       "storeUrl": "https://www.ikea.com/no/no/p/pelarboj-led-bordlampe-flerfarget-20401515/",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T17:17:36.636Z"
@@ -106,10 +130,16 @@
       "imageFit": "contain",
       "storeUrl": "https://lekekassen.no/hex-bots-skitter-bot-robotinsekt-6072914",
       "linkLabel": "",
-      "prisjaktUrl": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=16154111",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 100,
+      "priceMax": 200,
+      "livePrice": {
+        "productId": "16154111",
+        "amount": 100,
+        "offers": 9,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T17:10:50.792Z"
     },
     {
@@ -120,10 +150,16 @@
       "imageFit": "contain",
       "storeUrl": "https://lekekassen.no/zuru-robo-alive-raptor-interaktiv-dinosaur-71152",
       "linkLabel": "",
-      "prisjaktUrl": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=15852769",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 100,
+      "priceMax": 200,
+      "livePrice": {
+        "productId": "15852769",
+        "amount": 113,
+        "offers": 7,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T17:13:05.813Z"
     },
     {
@@ -135,7 +171,7 @@
       "storeUrl": "https://www.proshop.no/Rollelek/Theo-Klein-Police-backpack/3057865?utm_source=google&utm_medium=cpc&utm_campaign=searchengine&gad_source=1&gad_campaignid=20271606369&gbraid=0AAAAADuUrFF1i6x_S2E0DR6XJxy_DRm5U&gclid=Cj0KCQiA_P_XBhDvARIsALHjSUVr7snp00njIi3GD0fj_hs_azQxUS0RV98j5lQK1iPQ734AjhNih6QaAvObEALw_wcB",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T17:37:46.963Z"

@@ -44,7 +44,7 @@
         "productId": "15949728",
         "amount": 207,
         "offers": 3,
-        "checkedAt": "2026-11-20T13:03:30.659Z"
+        "checkedAt": "2026-11-21T09:19:17.674Z"
       },
       "createdAt": "2026-11-19T22:49:04.657Z"
     },
@@ -112,10 +112,16 @@
       "imageFit": "contain",
       "storeUrl": "https://www.proshop.no/Streamingutstyr/Nedis-selfie-ring-light/3333343?utm_source=prisradar&utm_medium=cpc",
       "linkLabel": "",
-      "prisjaktUrl": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=8556931",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 200,
+      "priceMax": 400,
+      "livePrice": {
+        "productId": "8556931",
+        "amount": 249,
+        "offers": 7,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T14:28:40.998Z"
     }
   ]

@@ -9,7 +9,7 @@
       "storeUrl": "https://www.sandnesgarn.no/petiteknit-print-jenny-jacket-1",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T14:20:07.796Z"

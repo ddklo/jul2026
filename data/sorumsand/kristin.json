@@ -9,7 +9,7 @@
       "storeUrl": "https://www.magasinet.no/haven-tent-lounge-xl-komplett-hengekoyepakke-valgfri",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T17:47:11.502Z"
@@ -22,10 +22,16 @@
       "imageFit": "contain",
       "storeUrl": "https://rodastjarnan.com/no/vannrensing/diverse/steripen-ultralight-uv-vannrenser-43410",
       "linkLabel": "",
-      "prisjaktUrl": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=6010111",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 1000,
+      "priceMax": 1050,
+      "livePrice": {
+        "productId": "6010111",
+        "amount": 1040,
+        "offers": 1,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T21:57:39.054Z"
     },
     {
@@ -36,10 +42,16 @@
       "imageFit": "contain",
       "storeUrl": "https://www.outnorth.com/no/varemerker/klymit/klymit-large-pump-sack-flip-valve-grey-323-8861?variantId=323-8861&utm_source=google&utm_medium=cpc&utm_content=shopping&utm_campaign=02%3A%20%5BNO%5D%20PLA%20-%20Shopping%20CSS%20-%20Focus&gclsrc=aw.ds&gad_source=1&gad_campaignid=21501009736&gbraid=0AAAAADnlm9IGj7m6e54u8bcS84soOSAZ7&gclid=Cj0KCQiA_P_XBhDvARIsALHjSUXN0qs8Vl2M7pQa4ChRSdKB-m239ROYdoyTUpp15bzrVcLC3j7Edv0aAlsAEALw_wcB",
       "linkLabel": "",
-      "prisjaktUrl": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=14680350",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 350,
+      "priceMax": 400,
+      "livePrice": {
+        "productId": "14680350",
+        "amount": 374,
+        "offers": 1,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T22:53:45.927Z"
     },
     {
@@ -50,10 +62,16 @@
       "imageFit": "contain",
       "storeUrl": "https://www.antonsport.no/johaug-207-ignite-pants-warm-p45633/black-l-v347938",
       "linkLabel": "",
-      "prisjaktUrl": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=20330614",
       "hidePrisjakt": false,
-      "priceMin": null,
-      "priceMax": null,
+      "priceMin": 750,
+      "priceMax": 1250,
+      "livePrice": {
+        "productId": "20330614",
+        "amount": 777,
+        "offers": 7,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T22:33:00.746Z"
     },
     {
@@ -65,7 +83,7 @@
       "storeUrl": "https://www.zalando.no/ragwear-hesty-vest-dark-green-r5921u037-m12.html",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T22:38:29.872Z"
@@ -79,7 +97,7 @@
       "storeUrl": "https://www.ikea.com/no/no/p/nattjasmin-laken-fasongsydd-mork-gra-10442677/",
       "linkLabel": "",
       "prisjaktUrl": "",
-      "hidePrisjakt": false,
+      "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
       "createdAt": "2026-11-20T22:14:17.753Z"
@@ -96,6 +114,12 @@
       "hidePrisjakt": false,
       "priceMin": 1350,
       "priceMax": 2250,
+      "livePrice": {
+        "productId": "5899600",
+        "amount": 1399,
+        "offers": 5,
+        "checkedAt": "2026-11-21T09:19:17.674Z"
+      },
       "createdAt": "2026-11-20T22:20:20.826Z"
     }
   ]
