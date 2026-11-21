@@ -271,7 +271,9 @@
 
   function goTo(id) {
     if (id === state.current) {
-      render(false);
+      // Trykk på den valgte personen igjen: til toppen (som i vanlige mobilapper)
+      if (global.scrollY > 0 && Jul.scrollTop) Jul.scrollTop();
+      else render(false);
       return;
     }
     if (('#' + id) === global.location.hash) route(false);
@@ -722,7 +724,6 @@
     initSorting();
 
     $('#logout').addEventListener('click', logout);
-    $('#footer-logout').addEventListener('click', logout);
     $('#brand').addEventListener('click', function (ev) {
       ev.preventDefault();
       scrollTop();
@@ -731,7 +732,22 @@
     var toTop = $('#to-top');
     function scrollTop() { global.scrollTo({ top: 0, behavior: rm() ? 'auto' : 'smooth' }); }
     toTop.addEventListener('click', scrollTop);
-    $('#footer-top').addEventListener('click', scrollTop);
+    Jul.scrollTop = scrollTop;
+
+    // Til toppen: på desktop når du har scrollet et stykke ned. På mobil bare når
+    // du scroller oppover igjen (eller er helt nederst), så knappen ikke dekker kortene.
+    var mobile = global.matchMedia('(max-width: 719px)');
+    var lastY = global.scrollY;
+    function updateToTop(y) {
+      var show = y > 600;
+      if (show && mobile.matches) {
+        var atBottom = y + global.innerHeight >= document.documentElement.scrollHeight - 80;
+        var shown = toTop.classList.contains('is-visible');
+        show = atBottom || (y < lastY - 6 ? true : y > lastY + 6 ? false : shown);
+      }
+      toTop.classList.toggle('is-visible', show);
+      lastY = y;
+    }
 
     var ticking = false;
     global.addEventListener('scroll', function () {
@@ -740,7 +756,7 @@
       requestAnimationFrame(function () {
         ticking = false;
         var y = global.scrollY;
-        toTop.classList.toggle('is-visible', y > 600);
+        updateToTop(y);
         document.body.classList.toggle('is-scrolled', y > 8);
         // Fanelinjen ligger fast når siden er scrollet forbi overskriften. Slingringsmonnet
         // hindrer at den vipper frem og tilbake når krympingen flytter innholdet litt.
