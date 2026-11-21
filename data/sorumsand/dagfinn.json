@@ -15,7 +15,7 @@
         "productId": "537780",
         "amount": 1069,
         "offers": 6,
-        "checkedAt": "2026-11-21T09:32:55.116Z"
+        "checkedAt": "2026-11-21T17:44:07.958Z"
       },
       "createdAt": "2026-11-19T22:28:29.581Z"
     },
@@ -34,7 +34,7 @@
         "productId": "18706564",
         "amount": 1179,
         "offers": 9,
-        "checkedAt": "2026-11-21T09:32:55.116Z"
+        "checkedAt": "2026-11-21T17:44:07.958Z"
       },
       "createdAt": "2026-11-19T22:42:12.386Z"
     },
@@ -52,9 +52,9 @@
       "priceMax": 1400,
       "livePrice": {
         "productId": "11750545",
-        "amount": 834,
+        "amount": 1043,
         "offers": 5,
-        "checkedAt": "2026-11-21T09:32:55.116Z"
+        "checkedAt": "2026-11-21T17:44:07.958Z"
       },
       "createdAt": "2026-11-20T13:51:27.790Z"
     },
@@ -74,9 +74,27 @@
         "productId": "13841794",
         "amount": 2190,
         "offers": 3,
-        "checkedAt": "2026-11-21T09:32:55.116Z"
+        "checkedAt": "2026-11-21T17:44:07.958Z"
       },
       "createdAt": "2026-11-21T09:32:55.018Z"
+    },
+    {
+      "id": "wmwqp69949yvro",
+      "title": "Black Diamond Solution klatresele (herre)",
+      "description": "2026-modellen, str. XL, farge Desert Sky (blå).",
+      "image": "data/bilder/wmwqp69949yvro.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://www.outdoorexperten.no/no/articles/2.768.78006/black-diamond-m-solution-harness-desert-sky",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=13866739",
+      "priceMin": 800,
+      "priceMax": 1250,
+      "livePrice": {
+        "productId": "13866739",
+        "amount": 799,
+        "offers": 7,
+        "checkedAt": "2026-11-21T17:44:07.958Z"
+      },
+      "createdAt": "2026-11-21T17:44:07.810Z"
     }
   ]
 }
