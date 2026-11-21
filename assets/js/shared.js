@@ -20,8 +20,8 @@
    * Passordet er bare en enkel sperre, ikke ekte sikkerhet: dataene ligger
    * åpent i data/*.json. Passordene lagres som SHA-256 her, slik at de ikke
    * står i klartekst i koden.
-   *   jul2026      → «view»  (se, redigere, flytte og slette ønsker og oppdatere priser)
-   *   jul2026admin → «admin» (det samme, og sette opp lagring: Del lagring med familien)
+   *   jul2026      → «view»  (bare se ønskelistene)
+   *   jul2026admin → «admin» (redigere, flytte og slette ønsker, oppdatere priser og sette opp lagring)
    * Navnet «view» er beholdt så huskede innlogginger fortsatt virker.
    * Ny hash: node -e "console.log(require('crypto').createHash('sha256').update('passord').digest('hex'))"
    * ------------------------------------------------------------------ */
@@ -76,14 +76,16 @@
       });
     },
     /**
-     * Logger inn: sjekker passordet, husker rollen og låser opp det felles
-     * GitHub-tokenet (se Jul.access), slik at alle kan lagre endringer.
+     * Logger inn: sjekker passordet og husker rollen. Administrator får også
+     * låst opp GitHub-tokenet (se Jul.access), så endringer kan lagres.
      * Gir rollen, eller null ved feil passord.
      */
     login: function (password, persistent) {
       return Jul.auth.check(password).then(function (role) {
         if (!role) return null;
         Jul.auth.save(role, persistent);
+        // Familiepassordet gir bare visning: glem et token fra en tidligere innlogging
+        if (role !== 'admin') { Jul.github.setToken(''); return role; }
         return Jul.access.unlock(password).then(function (token) {
           if (token) Jul.github.setToken(token, persistent);
           return role;
@@ -183,12 +185,11 @@
 
   /* ------------------------------------------------------------------ *
    * Lagring til GitHub
-   * Endringer committes rett til repoet med GitHub-API-et. Alle bruker ett
-   * felles fine-grained token for dette repoet («Contents» og «Actions»:
-   * Read and write). Administrator legger det inn én gang
-   * (redigeringsverktøyet → Mer → Del lagring med familien). Tokenet lagres
-   * kryptert med passordene i data/tilgang.json og låses opp i nettleseren
-   * når noen logger inn. Passordet er en enkel sperre, ikke ekte sikkerhet:
+   * Endringer committes rett til repoet med GitHub-API-et, med ett
+   * fine-grained token for dette repoet («Contents» og «Actions»: Read and
+   * write). Administrator legger det inn én gang (redigeringsverktøyet →
+   * Mer → Sett opp lagring). Tokenet lagres kryptert med administratorpassordet
+   * i data/tilgang.json og låses opp i nettleseren når administrator logger inn. Passordet er en enkel sperre, ikke ekte sikkerhet:
    * se «Om passordet» i README.
    * ------------------------------------------------------------------ */
   var TOKEN_KEY = 'jul-gh-token';
@@ -378,6 +379,9 @@
      * inn et token direkte.
      */
     token: function () {
+      if (Jul.auth.load() !== 'admin') {
+        return Promise.reject(new Error('Bare administrator kan lagre endringer.'));
+      }
       var saved = Jul.github.getToken();
       if (saved) return Promise.resolve(saved);
       return Jul.access.load().then(function (file) {
@@ -385,7 +389,7 @@
           passwordDialog = passwordDialog || makeDialog({
             icon: 'lock', title: 'Skriv passordet', ok: 'Lagre',
             placeholder: 'Passord', autocomplete: 'current-password',
-            body: '<p>For å lagre endringer må du skrive passordet ditt én gang til.</p>'
+            body: '<p>For å lagre endringer må du skrive administratorpassordet én gang til.</p>'
           });
           return askInDialog(passwordDialog, function (pw) {
             return Jul.access.unlock(pw).then(function (t) {
@@ -394,9 +398,6 @@
               return t;
             });
           });
-        }
-        if (Jul.auth.load() !== 'admin') {
-          throw new Error('Lagring er ikke satt opp ennå. Be administrator om å velge «Del lagring med familien» i redigeringsverktøyet.');
         }
         return Jul.github.askToken();
       });
@@ -407,12 +408,12 @@
       tokenDialog = tokenDialog || makeDialog({
         icon: 'key', title: 'Koble til GitHub', ok: 'Koble til', placeholder: 'github_pat_…',
         body:
-          '<p>Lagring er ikke satt opp ennå. Lag ett token som hele familien kan bruke:</p>' +
+          '<p>Lagring er ikke satt opp ennå. Lag et token for repoet:</p>' +
           '<ol class="ed-steps">' +
           '<li>Lag et <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained token</a> med tilgang til bare <strong>' + Jul.escape(Jul.REPO) + '</strong>.</li>' +
           '<li>Under <strong>Permissions</strong>: <strong>Contents: Read and write</strong> og <strong>Actions: Read and write</strong>.</li>' +
           '<li>Lim inn tokenet her.</li></ol>',
-        hint: 'Del det med familien etterpå med <strong>Mer → Del lagring med familien</strong> i redigeringsverktøyet.'
+        hint: 'Vil du kunne lagre fra andre enheter, velg <strong>Mer → Sett opp lagring</strong> i redigeringsverktøyet.'
       });
       return askInDialog(tokenDialog, function (t) {
         return verifyToken(t).then(function () {

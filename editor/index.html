@@ -8,8 +8,8 @@
   <meta name="theme-color" content="#070b14">
   <title>Rediger ønskelister · Juleønsker 2026</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../assets/css/styles.css?v=30">
-  <link rel="stylesheet" href="editor.css?v=30">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=31">
+  <link rel="stylesheet" href="editor.css?v=31">
 </head>
 <body class="ed">
 
@@ -19,7 +19,7 @@
       <span class="ed-unlock__icon" data-icon="pencil"></span>
       <p class="eyebrow">Juleønsker 2026</p>
       <h1 class="ed-unlock__title">Rediger ønskelistene</h1>
-      <p class="ed-unlock__lead">Logg inn med passordet. Endringene lagres når du trykker <strong>Lagre</strong>.</p>
+      <p class="ed-unlock__lead">Logg inn med administratorpassordet. Endringene lagres når du trykker <strong>Lagre</strong>.</p>
 
       <p class="ed-status" id="data-status">Leter etter ønskelistene …</p>
 
@@ -61,7 +61,7 @@
             <button type="button" data-cmd="help"><span data-icon="file"></span>Publisere filer for hånd</button>
             <button type="button" data-cmd="export"><span data-icon="download"></span>Eksporter backup (JSON)</button>
             <button type="button" data-cmd="import"><span data-icon="upload"></span>Importer backup (JSON)</button>
-            <button type="button" data-cmd="share-access" data-admin-only hidden><span data-icon="key"></span>Del lagring med familien</button>
+            <button type="button" data-cmd="share-access" data-admin-only hidden><span data-icon="key"></span>Sett opp lagring</button>
             <hr>
             <button type="button" data-cmd="lock"><span data-icon="logout"></span>Logg ut</button>
           </div>
@@ -217,30 +217,29 @@
   <dialog id="access-dialog" class="ed-dialog">
     <form method="dialog" class="ed-dialog__inner glass" id="access-form" novalidate>
       <span class="ed-dialog__icon" data-icon="key"></span>
-      <h2>Del lagring med familien</h2>
-      <p>Legg inn ett GitHub-token som alle som logger inn kan bruke. Det lagres kryptert med passordene i <code>data/tilgang.json</code>.</p>
+      <h2>Sett opp lagring</h2>
+      <p>Legg inn et GitHub-token, så kan du lagre fra alle enheter når du logger inn som administrator. Det lagres kryptert med administratorpassordet i <code>data/tilgang.json</code>.</p>
       <ol class="ed-steps">
         <li>Lag et <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained token</a> med tilgang til bare <strong>ddklo/jul2026</strong>, og gjerne utløpsdato i januar.</li>
         <li>Under <strong>Permissions</strong>: <strong>Contents: Read and write</strong> og <strong>Actions: Read and write</strong>.</li>
-        <li>Lim inn tokenet og skriv begge passordene.</li>
+        <li>Lim inn tokenet og skriv administratorpassordet.</li>
       </ol>
       <div class="ed-form-stack">
         <div class="field"><span class="field__icon" data-icon="key"></span><input name="token" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false" aria-label="GitHub-token"></div>
-        <div class="field"><span class="field__icon" data-icon="lock"></span><input name="family" type="password" placeholder="Familiepassordet" autocomplete="off" aria-label="Familiepassordet"></div>
         <div class="field"><span class="field__icon" data-icon="lock"></span><input name="admin" type="password" placeholder="Administratorpassordet" autocomplete="off" aria-label="Administratorpassordet"></div>
       </div>
-      <p class="ed-hint">Passordene brukes bare til å kryptere tokenet. Bytter du et passord, må du gjøre dette på nytt.</p>
+      <p class="ed-hint">Passordet brukes bare til å kryptere tokenet. Bytter du administratorpassordet, må du gjøre dette på nytt.</p>
       <p class="login__error" id="access-error" role="alert"></p>
       <div class="ed-dialog__actions">
         <button class="btn btn--ghost" value="cancel" formnovalidate>Avbryt</button>
-        <button class="btn btn--gold" value="save" id="access-save">Del lagring</button>
+        <button class="btn btn--gold" value="save" id="access-save">Lagre tokenet</button>
       </div>
     </form>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="../assets/js/shared.js?v=30"></script>
-  <script src="editor.js?v=30"></script>
+  <script src="../assets/js/shared.js?v=31"></script>
+  <script src="editor.js?v=31"></script>
 </body>
 </html>

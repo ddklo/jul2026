@@ -147,8 +147,8 @@
     state.people = (data.people && data.people.length ? data.people : Jul.DEFAULT_PEOPLE).slice();
     state.wishes = (data.wishes || []).slice();
     state.list = data.list;
-    // Alle som er logget inn kan redigere; passordet er bare en liten sperre
-    state.canEdit = !!role;
+    // Familiepassordet gir bare visning. Administrator kan redigere, flytte og slette.
+    state.canEdit = role === 'admin';
     document.body.classList.toggle('can-edit', state.canEdit);
     $('#list-name').textContent = data.list.name;
     $('#brand-list').textContent = data.list.name;

@@ -27,8 +27,8 @@ tools/                                    Pris- og utfyllingsjobben (Node)
 
 | Passord | Kan |
 |---|---|
-| Familie | Se og redigere alt, og oppdatere priser |
-| Administrator | Det samme, og sette opp lagring |
+| Familie | Bare se ønskelistene |
+| Administrator | Redigere, flytte og slette ønsker, oppdatere priser og sette opp lagring |
 
 Passordene står ikke her. Hashene ligger i `PASSWORDS` i `assets/js/shared.js`. Ny hash:
 
@@ -38,7 +38,7 @@ node -e "console.log(require('crypto').createHash('sha256').update('nytt-passord
 
 ## Redigere
 
-Alt lagres som en commit rett til GitHub. Siden er oppdatert etter et minutt.
+Krever administratorpassordet. Alt lagres som en commit rett til GitHub, og siden er oppdatert etter et minutt.
 
 - **På listen:** dra ⠿ for å flytte (også med piltaster), blyant for å redigere, søppelbøtte for å slette.
 - **I verktøyet** (`…/editor/`): velg liste og person, rediger, trykk **Lagre** (Ctrl/Cmd + S).
@@ -49,9 +49,9 @@ Lagring fletter: siden henter nyeste versjon og skriver bare dine endringer, så
 **Oppsett av lagring (administrator, én gang):**
 
 1. Lag et [fine-grained token](https://github.com/settings/personal-access-tokens/new) for bare dette repoet: **Contents** og **Actions**, read and write. Utløp i januar.
-2. Verktøyet → **Mer → Del lagring med familien** → lim inn tokenet og skriv begge passordene.
+2. Verktøyet → **Mer → Sett opp lagring** → lim inn tokenet og skriv administratorpassordet.
 
-Gjenta når tokenet utløper eller passordene byttes. Uten token: **Mer → Last ned endrede filer** og last dem opp på GitHub.
+Gjenta når tokenet utløper eller administratorpassordet byttes. Uten token: **Mer → Last ned endrede filer** og last dem opp på GitHub.
 
 ## Felter per ønske
 
@@ -79,7 +79,7 @@ Prisjakt har ikke API. Endrer de siden, blir prisjobben rød, og prisene forsvin
 
 ## Sikkerhet
 
-Passordet er en liten sperre, ikke sikkerhet. Repoet er offentlig, og passordsjekken skjer i nettleseren. Tokenet i `data/tilgang.json` er kryptert med passordene, men kan knekkes. Gi det derfor minst mulig tilgang, kort levetid, og slett det etter jul. Alt kan hentes tilbake fra git-historikken.
+Passordet er en liten sperre, ikke sikkerhet. Repoet er offentlig, og passordsjekken skjer i nettleseren. Tokenet i `data/tilgang.json` er kryptert med administratorpassordet, men kan knekkes. Gi det derfor minst mulig tilgang, kort levetid, og slett det etter jul. Alt kan hentes tilbake fra git-historikken.
 
 ## Lokalt
 

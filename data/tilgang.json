@@ -5,11 +5,6 @@
   "iter": 100000,
   "entries": [
     {
-      "salt": "gcHfuCNqpwTYj+XR2NnpKw==",
-      "iv": "KjrxMnK3bwPRL8Ac",
-      "data": "3+bD5H2XjmHUcSohjnWB8zgzMC6W9ZjlBXuwohrBnwGSYzrKGej7DMusi/OZnNVl+0gkGorGPfyxTrhbT91E4m/UipNzFjVhVkjPDmiDO64yBrmFZwBYxAOPz2wgQ3nQWnZrtNXwB8nm0QV3qw=="
-    },
-    {
       "salt": "UqzYUc7pvp6bMWPHVbR6Pg==",
       "iv": "Wb66s+SouHSHiqnz",
       "data": "hCRwQAXgi+/HP+sxJNyqxEI2GRBW0KUfv06aSBPOS6zaQjuvdCIKyV5Ujifb0IzPfqmUm3uIijuQq0XByHe3JqDyb1EYyRk0PXf1jTflwjYWEW7jfLiRRy9l2ppHtEa6mkcfQu5y/ijtP/xdng=="
