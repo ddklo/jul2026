@@ -385,39 +385,88 @@ a { color: inherit; }
 }
 .hero__lead { margin: 0 auto; max-width: 52ch; color: var(--text-2); font-size: clamp(0.98rem, 2.2vw, 1.08rem); }
 
-/* Listenavnet ved logoen vises bare på desktop (på mobil står det over tittelen) */
-.brand__list { display: none; }
+/* Deler av topplinjen som bare vises på desktop (på mobil står listenavnet over tittelen) */
+.brand__in, .brand__list, .brand__sub, .topcount { display: none; }
 
-/* ---------------- Kompakt topp på desktop ----------------
-   Ønskene skal synes uten å scrolle: tittel og nedtelling krymper til én linje,
-   ingressen og linjen over tittelen skjules. Fra 1240 px står de midt i topplinjen. */
+/* ---------------- Topplinje på desktop ----------------
+   Listenavnet er overskriften («Juleønsker i Sørumsand»), med personene i
+   egen farge under. Nedtellingen er et stort tall i en ring som fylles mot
+   julaften. Den store tittelflaten (.hero) brukes bare på mobil. */
 @media (min-width: 720px) {
+  .hero { display: none; }
+  .topbar { padding: 12px var(--gutter) 2px; min-height: 78px; }
+  .brand { gap: 14px; }
+  .brand__star { width: 34px; height: 34px; flex: none; }
+  .brand:hover .brand__star svg { animation: starSpin 0.9s var(--ease-out), starPulse 4s ease-in-out infinite 0.9s; }
+  .brand__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .brand__title {
+    font-family: var(--font-display); font-size: clamp(1.45rem, 2.3vw, 1.95rem); line-height: 1.05;
+    white-space: nowrap; color: var(--text);
+  }
+  .brand__text { font-size: inherit; letter-spacing: -0.005em; }
+  .brand__text em { display: none; }
+  .brand__in { display: inline; color: var(--text-2); font-style: italic; }
+  /* Listenavnet i glitrende gull */
   .brand__list {
-    display: inline-block; margin-left: 4px; padding-left: 12px; border-left: 1px solid var(--border-strong);
-    font-size: 0.74rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+    display: inline; font-style: normal;
+    background: linear-gradient(100deg, #c99545 0%, #f0cd84 25%, #fff6da 40%, #f0cd84 55%, #e25a6f 75%, #c99545 100%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 2px 10px rgba(242, 216, 155, 0.25));
+    animation: shimmer 7s linear infinite;
   }
-  .hero {
-    display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px 22px;
-    padding: 8px var(--gutter) 14px;
+  /* Personene, hver i sin farge */
+  .brand__sub {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px;
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em; color: var(--muted);
   }
-  .hero .eyebrow, .hero__lead { display: none; }
-  .hero__title { margin: 0; font-size: clamp(1.5rem, 2.3vw, 2.05rem); white-space: nowrap; }
-  .countdown { margin: 0; padding: 6px 16px 6px 12px; gap: 10px; border-radius: 16px; }
-  .countdown .icon { width: 18px; height: 18px; }
-  .countdown__num { font-size: 1.75rem; }
-  .countdown__text { font-size: 0.64rem; letter-spacing: 0.14em; }
-  .countdown__big { font-size: 1.35rem; }
+  .brand__sub b { font-weight: 600; color: var(--accent); display: inline-flex; align-items: center; gap: 5px; }
+  .brand__sub b::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 8px var(--accent); animation: dotBlink 3s ease-in-out infinite; animation-delay: var(--d);
+  }
+
+  /* Nedtelling: tall i en ring som fylles fra 1. november til julaften */
+  .topcount { display: flex; align-items: center; gap: 10px; margin-right: 6px; }
+  .topcount__dial { position: relative; width: 58px; height: 58px; flex: none; display: grid; place-items: center; }
+  .topcount__ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+  .topcount__track { fill: none; stroke: rgba(255, 255, 255, 0.08); stroke-width: 4; }
+  .topcount__arc {
+    fill: none; stroke: url(#countGrad); stroke-width: 4; stroke-linecap: round;
+    stroke-dasharray: var(--p) 100; animation: ringIn 1.8s var(--ease-out) both 0.3s;
+    filter: drop-shadow(0 0 4px rgba(242, 216, 155, 0.55));
+  }
+  .topcount__num {
+    position: relative; font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(180deg, #fff6da, #f0cd84 55%, #c99545);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: numGlow 3.2s ease-in-out infinite;
+  }
+  .topcount__orbit { position: absolute; inset: -5px; animation: orbit 14s linear infinite; pointer-events: none; }
+  .topcount__orbit .icon { position: absolute; left: 50%; top: 0; width: 13px; height: 13px; margin-left: -6.5px; color: var(--frost); animation: spinSlow 4s linear infinite reverse; }
+  .topcount__text {
+    line-height: 1.3; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-2);
+  }
+  .topcount__text em { font-style: normal; color: #ff8fa0; }
+  .topcount--eve .topcount__num { font-size: 1.15rem; }
+
+  /* Rediger: rund gullknapp med blyant som vipper ved hover */
+  .admin-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; justify-content: center; }
+  .admin-btn span:last-child { display: none; }
+  .admin-btn .icon { width: 18px; height: 18px; }
+  .admin-btn:hover .icon { animation: wiggle 0.6s ease-in-out; }
 }
-@media (min-width: 1240px) {
-  /* Legg tittel og nedtelling inn i topplinjen, mellom logoen og knappene.
-     Selve flaten slipper klikk gjennom til knappene under. */
-  .hero {
-    flex-wrap: nowrap; height: 62px; margin-top: -62px; padding-top: 0; padding-bottom: 0;
-    pointer-events: none; position: relative; z-index: 1;
-  }
-  .hero > * { pointer-events: auto; }
-  .topbar { height: 62px; padding-top: 0; } /* samme høyde og start som tittelflaten, så alt står på én midtlinje */
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+@keyframes starSpin { from { transform: rotate(0) scale(1); } to { transform: rotate(360deg) scale(1.1); } }
+@keyframes dotBlink { 0%, 100% { opacity: 0.55; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.15); } }
+@keyframes ringIn { from { stroke-dasharray: 0 100; } }
+@keyframes numGlow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(242, 216, 155, 0.3)); }
+  50% { filter: drop-shadow(0 0 12px rgba(242, 216, 155, 0.75)); }
 }
+@keyframes orbit { to { transform: rotate(360deg); } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-14deg); } 60% { transform: rotate(10deg); } }
 
 /* ---------------- Faner ---------------- */
 .tabs {

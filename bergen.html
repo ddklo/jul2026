@@ -17,7 +17,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Jul Bergen">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <link rel="stylesheet" href="assets/css/styles.css?v=33">
+  <link rel="stylesheet" href="assets/css/styles.css?v=34">
 </head>
 <!-- Samme side som sorumsand.html, bortsett fra data-list, tittelen og manifestet. Hold dem like. -->
 <body class="is-locked" data-list="bergen">
@@ -89,10 +89,13 @@
         <span class="brand__star" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 1.8l2.4 7.1 7.4.2-5.9 4.5 2.1 7.2L12 16.6l-6 4.2 2.1-7.2-5.9-4.5 7.4-.2z"/></svg>
         </span>
-        <span class="brand__text">Juleønsker <em>2026</em></span>
-        <span class="brand__list" id="brand-list"></span>
+        <span class="brand__body">
+          <span class="brand__title"><span class="brand__text">Juleønsker <em>2026</em></span><span class="brand__in"> i </span><span class="brand__list" id="brand-list"></span></span>
+          <span class="brand__sub" id="brand-sub"></span>
+        </span>
       </a>
       <div class="topbar__right">
+        <div class="topcount" id="countdown-top" role="timer"></div>
         <a class="btn btn--gold btn--sm admin-btn" id="admin-link" href="editor/" hidden title="Rediger ønskene og oppdater priser">
           <span data-icon="pencil"></span><span>Rediger</span>
         </a>
@@ -132,10 +135,10 @@
 
   <noscript><p class="noscript">Denne siden trenger JavaScript for å vise ønskelistene.</p></noscript>
 
-  <script src="assets/js/shared.js?v=33"></script>
-  <script src="assets/js/snow.js?v=33"></script>
-  <script src="assets/js/effects.js?v=33"></script>
-  <script src="assets/js/music.js?v=33"></script>
-  <script src="assets/js/app.js?v=33"></script>
+  <script src="assets/js/shared.js?v=34"></script>
+  <script src="assets/js/snow.js?v=34"></script>
+  <script src="assets/js/effects.js?v=34"></script>
+  <script src="assets/js/music.js?v=34"></script>
+  <script src="assets/js/app.js?v=34"></script>
 </body>
 </html>

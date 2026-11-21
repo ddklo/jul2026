@@ -59,13 +59,31 @@
 
   function countdown() {
     var el = $('#countdown');
+    var top = $('#countdown-top');
     var now = new Date();
     var y = now.getFullYear();
     var today = new Date(y, now.getMonth(), now.getDate());
     var eve = new Date(y, 11, 24);
+    // Ringen på desktop fylles fra 1. november til julaften
+    var seasonStart = new Date(y, 10, 1);
+    function dial(inner, p) {
+      return '<span class="topcount__dial">' +
+        '<svg class="topcount__ring" viewBox="0 0 60 60" aria-hidden="true">' +
+        '<defs><linearGradient id="countGrad" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="#e25a6f"/><stop offset=".55" stop-color="#f0cd84"/><stop offset="1" stop-color="#fff6da"/></linearGradient></defs>' +
+        '<circle class="topcount__track" cx="30" cy="30" r="26"/>' +
+        '<circle class="topcount__arc" cx="30" cy="30" r="26" pathLength="100" style="--p:' + p.toFixed(1) + '"/></svg>' +
+        '<span class="topcount__orbit">' + Jul.icon('snowflake') + '</span>' + inner + '</span>';
+    }
     if (now.getMonth() === 11 && now.getDate() >= 24) {
-      el.innerHTML = Jul.icon('tree') + '<span class="countdown__big">' + (now.getDate() === 24 ? 'God jul!' : 'God jul og godt nyttår') + '</span>';
+      var greet = now.getDate() === 24 ? 'God jul!' : 'God jul og godt nyttår';
+      el.innerHTML = Jul.icon('tree') + '<span class="countdown__big">' + greet + '</span>';
       el.setAttribute('aria-label', el.textContent);
+      if (top) {
+        top.className = 'topcount topcount--eve';
+        top.innerHTML = dial('<span class="topcount__num">🎄</span>', 100) + '<span class="topcount__text">' + greet + '</span>';
+        top.setAttribute('aria-label', greet);
+      }
       return;
     }
     var days = Math.round((eve - today) / 86400000);
@@ -73,6 +91,12 @@
       '<span class="countdown__num">' + days + '</span>' +
       '<span class="countdown__text">' + (days === 1 ? 'dag' : 'dager') + '<br>til julaften</span>';
     el.setAttribute('aria-label', plural(days, 'dag', 'dager') + ' til julaften');
+    if (top) {
+      var p = Math.max(3, Math.min(100, (today - seasonStart) / (eve - seasonStart) * 100));
+      top.innerHTML = dial('<span class="topcount__num">' + days + '</span>', p) +
+        '<span class="topcount__text">' + (days === 1 ? 'dag' : 'dager') + ' igjen<br><em>til julaften</em></span>';
+      top.setAttribute('aria-label', plural(days, 'dag', 'dager') + ' til julaften');
+    }
   }
 
   /* ---------------- Innlogging ---------------- */
@@ -152,6 +176,10 @@
     document.body.classList.toggle('can-edit', state.canEdit);
     $('#list-name').textContent = data.list.name;
     $('#brand-list').textContent = data.list.name;
+    // Personene under tittelen, hver med sin farge og en blinkende prikk (desktop)
+    $('#brand-sub').innerHTML = state.people.map(function (p, i) {
+      return '<b style="--accent:' + Jul.escape(p.accent || '#d9b26a') + ';--d:' + (i * 0.6).toFixed(1) + 's">' + Jul.escape(p.name) + '</b>';
+    }).join('');
     var admin = $('#admin-link');
     admin.hidden = !state.canEdit;
     admin.href = editUrl();
@@ -760,7 +788,9 @@
         document.body.classList.toggle('is-scrolled', y > 8);
         // Fanelinjen ligger fast når siden er scrollet forbi overskriften. Slingringsmonnet
         // hindrer at den vipper frem og tilbake når krympingen flytter innholdet litt.
+        // På desktop er tittelflaten skjult; da er det topplinjen fanene ligger under
         var hero = $('.hero');
+        if (!hero || !hero.offsetHeight) hero = $('.topbar');
         var stickAt = hero ? hero.offsetTop + hero.offsetHeight : 0;
         var stuck = document.body.classList.contains('is-stuck');
         var next = y > stickAt + 40 ? true : y < stickAt - 40 ? false : stuck;
