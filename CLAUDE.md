@@ -5,6 +5,7 @@ Statisk ønskeliste på GitHub Pages (`https://ddklo.github.io/jul2026/`). Se RE
 - To lister med de samme personene: `bergen.html` og `sorumsand.html`. Sidene er like bortsett fra `data-list` og tittel. Endrer du den ene, endre den andre likt.
 - Data: `data/personer.json` (lister og personer), `data/<liste>/<person>.json` (ønskene, i visningsrekkefølge) og `data/bilder/` (produktbilder).
 - Nettsiden lagrer selv endringer som commits på `main`. Kjør derfor alltid `git pull --rebase` før du pusher.
+- Lagring fra nettsiden fletter: `Jul.github.saveWishes(path, base, mine, melding)` henter siste versjon og bruker `Jul.mergeWishes(base, mine, theirs)`, så bare egne endringer skrives. Bruk den (ikke `saveFile`) for personfiler. GitHub-jobbene publiserer med `tools/publiser.sh`, som kjører skriptet på nytt ved konflikt.
 - Bump `?v=` i alle fire HTML-filene (`index.html`, `bergen.html`, `sorumsand.html`, `editor/index.html`) når CSS eller JS endres.
 - Lokal test: `python -m http.server 8000` og åpne `/bergen.html` (adressen uten `.html` virker bare på GitHub Pages).
 - Feltrekkefølgen i ønskene må være lik `WISH_FIELDS` i `assets/js/shared.js` og `FIELDS` i `tools/felles.mjs`. Filene skrives som JSON med 2 mellomrom og linjeskift til slutt.

@@ -76,6 +76,8 @@ Alle endringer lagres **rett til GitHub** som en commit. Ingen i familien trenge
 
 Når tokenet utløper eller passordene byttes, gjentar du dette. Er man allerede innlogget fra før, ber siden om passordet én gang til første gang man lagrer.
 
+**Flere som lagrer samtidig:** Når du lagrer, henter siden først den nyeste versjonen fra GitHub og fletter inn bare det *du* har endret (lagt til, endret, slettet eller flyttet). Det andre har lagret i mellomtiden, og prisene fra prisjobben, blir stående. Har du og en annen endret det samme ønsket, vinner den som lagrer sist. Lagrer to akkurat samtidig, prøver siden på nytt av seg selv. En side som har stått åpen lenge, henter også ønskene på nytt når du kommer tilbake til fanen (men ikke mens du har ulagrede endringer).
+
 ### Rett på ønskelisten
 
 Når du er logget inn, har hvert kort tre knapper:
@@ -144,7 +146,7 @@ En GitHub Actions-jobb ([`.github/workflows/priser.yml`](.github/workflows/prise
 
 **Kjøre manuelt:** Velg **Mer → Oppdater priser nå** i redigeringsverktøyet. Det bruker det samme felles tokenet som lagringen. Du kan også åpne **Actions → Oppdater priser** på GitHub og trykke **Run workflow**.
 
-> Lagrer du en person etter at prisene er oppdatert, har filen med seg prisene fra da du åpnet siden. De blir riktige igjen ved neste kjøring.
+> Jobbene (priser og utfylling) publiserer med [`tools/publiser.sh`](tools/publiser.sh). Har noen lagret på nettsiden mens jobben gikk, og det gir konflikt, hentes den nyeste versjonen og jobben kjøres på nytt på den, så ingenting som er lagret på nettsiden overskrives.
 
 > Prisjakt har ikke noe åpent API. Jobben leser den offentlige produktsiden, og Prisjakt kan når som helst endre siden eller stenge for slike oppslag. Da blir jobben rød i Actions, og prisene forsvinner fra kortene etter en uke. Resten av siden virker som før.
 

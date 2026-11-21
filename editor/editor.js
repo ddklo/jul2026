@@ -423,6 +423,32 @@
     return Jul.serializeWishes(wishesFor(pid));
   }
 
+  /**
+   * Bytter personens ønsker fra «sent» (det som ble lagret) til «target» (den
+   * flettede versjonen fra GitHub), men beholder endringer gjort mens lagringen
+   * pågikk. Gir true hvis noe på skjermen ble endret.
+   */
+  function rebasePerson(pid, sent, target) {
+    var current = wishesFor(pid);
+    var next = normalize({ people: people(), wishes: Jul.mergeWishes(sent, current, target) }).wishes
+      .map(function (w) { w.person = pid; return w; });
+    if (Jul.serializeWishes(next) === Jul.serializeWishes(current)) return false;
+    // Behold objektene som ikke er endret, så skjemaet ikke mister fokus
+    var old = {};
+    current.forEach(function (w) { old[w.id] = w; });
+    next = next.map(function (w) {
+      var o = old[w.id];
+      return o && Jul.serializeWishes([o]) === Jul.serializeWishes([w]) ? o : w;
+    });
+    state.data.wishes = state.data.wishes.filter(function (w) { return w.person !== pid; }).concat(next);
+    if (!wishById(state.selected)) {
+      var first = wishesFor(state.person)[0];
+      state.selected = first ? first.id : null;
+    }
+    renderAll();
+    return true;
+  }
+
   /** Personfilene som er endret siden de ble lastet eller lagret. */
   function changedFiles() {
     var files = [];
@@ -458,24 +484,38 @@
       return;
     }
     saving = true;
+    var mergedFromOthers = false;
     var btn = $('#save-btn');
     btn.classList.add('is-loading'); btn.disabled = true;
     toast('Lagrer …');
     files.reduce(function (p, f) {
       return p.then(function () {
         var who = personById(f.pid).name;
-        return Jul.github.saveFile(Jul.dataPath(state.list.id, f.pid), f.text, 'Oppdater ønsker (' + state.list.name + ', ' + who + ')')
-          .then(function () { state.saved[f.pid] = f.text; });
+        var base = JSON.parse(state.saved[f.pid]).wishes;
+        var sent = JSON.parse(f.text).wishes;
+        // Henter siste versjon fra GitHub og fletter inn bare det som er endret her,
+        // så vi ikke overskriver det andre har lagret siden redigereren ble åpnet.
+        return Jul.github.saveWishes(Jul.dataPath(state.list.id, f.pid), base, sent, 'Oppdater ønsker (' + state.list.name + ', ' + who + ')')
+          .then(function (res) {
+            // Samme form som skjemaet bruker (normaliseres én gang, siden manglende
+            // felt som createdAt fylles inn), så «Ulagrede endringer» blir riktig
+            var target = normalize({ people: people(), wishes: res.wishes }).wishes;
+            state.saved[f.pid] = Jul.serializeWishes(target);
+            if (rebasePerson(f.pid, sent, target)) mergedFromOthers = true;
+          });
       });
     }, Promise.resolve()).then(function () {
-      setDirty(false);
-      toast('Lagret. Nettsiden er oppdatert om et minutt.');
+      setDirty(changedFiles().length > 0);
+      toast(mergedFromOthers
+        ? 'Lagret. Listen er også oppdatert med endringer andre har gjort.'
+        : 'Lagret. Nettsiden er oppdatert om et minutt.');
     }, function (err) {
       // Det som ble lagret før feilen, er lagret; resten er fortsatt ulagret
       setDirty(changedFiles().length > 0);
       if (!err.cancelled) Jul.ui.alert({ title: 'Ble ikke lagret', message: err.message });
     }).then(function () {
       saving = false;
+      sync.savedAt = Date.now();
       btn.classList.remove('is-loading'); btn.disabled = false;
     });
   }
@@ -793,6 +833,49 @@
     global.addEventListener('beforeunload', function (ev) {
       if (state.dirty) { ev.preventDefault(); ev.returnValue = ''; }
     });
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') refreshData();
+    });
+    global.addEventListener('focus', refreshData);
+  }
+
+  /**
+   * Henter ønskelisten på nytt når du kommer tilbake til fanen og ikke har
+   * ulagrede endringer, så redigereren viser det andre har lagret. Med ulagrede
+   * endringer gjør ikke det noe: «Lagre» fletter inn andres endringer uansett.
+   */
+  var sync = { loadedAt: Date.now(), savedAt: 0, busy: false };
+  var REFRESH_AFTER = 2 * 60 * 1000;
+  var SETTLE_AFTER_SAVE = 3 * 60 * 1000; // GitHub Pages bruker litt tid på å vise ny versjon
+  function canRefresh() {
+    var now = Date.now();
+    return !$('#workspace').hidden && !state.dirty && !saving && !sync.busy && !$('dialog[open]') &&
+      now - sync.loadedAt >= REFRESH_AFTER && now - sync.savedAt >= SETTLE_AFTER_SAVE;
+  }
+  function refreshData() {
+    if (!canRefresh()) return;
+    sync.busy = true;
+    Jul.loadData(state.list.id).then(function (data) {
+      sync.busy = false;
+      if (!canRefresh()) return;
+      sync.loadedAt = Date.now();
+      var fresh = normalize(data);
+      var changed = people().some(function (p) {
+        var own = function (w) { return w.person === p.id; };
+        return Jul.serializeWishes(fresh.wishes.filter(own)) !== state.saved[p.id];
+      });
+      if (!changed) return;
+      state.data.wishes = fresh.wishes;
+      people().forEach(function (p) { state.saved[p.id] = personFile(p.id); });
+      if (!wishById(state.selected)) {
+        var first = wishesFor(state.person)[0];
+        state.selected = first ? first.id : null;
+      }
+      renderAll();
+      setDirty(false);
+      toast('Oppdatert med endringer andre har gjort');
+    }, function () { sync.busy = false; });
   }
 
   /* ---------------- Oppstart ---------------- */

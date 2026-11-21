@@ -430,20 +430,82 @@
    */
   function savePerson(pid, before, what) {
     var p = personById(pid);
-    var list = state.wishes.filter(function (w) { return w.person === pid; });
+    var mine = function (w) { return w.person === pid; };
+    var base = before.filter(mine);
+    var list = state.wishes.filter(mine);
     toast('Lagrer …');
-    return Jul.github.saveFile(
+    sync.pending++;
+    // Henter siste versjon fra GitHub og fletter inn bare denne endringen, så vi
+    // ikke overskriver det andre har lagret siden siden ble lastet.
+    return Jul.github.saveWishes(
       Jul.dataPath(state.list.id, pid),
-      Jul.serializeWishes(list),
+      base, list,
       what + ' (' + state.list.name + ', ' + p.name + ')'
-    ).then(function () {
-      toast('Lagret. Det kan ta et minutt før andre ser endringen.');
+    ).then(function (res) {
+      // Andre har endret noe i mellomtiden: vis den flettede listen
+      var differs = rebasePerson(pid, list, res.wishes);
+      toast(differs
+        ? 'Lagret. Listen er også oppdatert med endringer andre har gjort.'
+        : 'Lagret. Det kan ta et minutt før andre ser endringen.');
     }, function (err) {
-      state.wishes = before;
+      // Angre bare denne endringen (andre endringer som lagres samtidig, beholdes)
+      rebasePerson(pid, list, base);
+      toast(err && err.cancelled ? 'Ikke lagret' : 'Ble ikke lagret: ' + err.message);
+    }).then(function () {
+      sync.pending--;
+      sync.savedAt = Date.now();
+    });
+  }
+
+  /**
+   * Henter ønskelisten på nytt når du kommer tilbake til fanen, så en side som
+   * har stått åpen lenge viser det andre har endret. Hoppes over mens noe lagres
+   * eller dras, og en stund etter egen lagring (GitHub Pages bruker opptil et
+   * par minutter på å vise den nye versjonen).
+   */
+  var sync = { pending: 0, savedAt: 0, loadedAt: Date.now(), busy: false };
+  var REFRESH_AFTER = 2 * 60 * 1000;
+  var SETTLE_AFTER_SAVE = 3 * 60 * 1000;
+  function idle() {
+    return !sync.pending && !document.body.classList.contains('is-sorting');
+  }
+  function refreshData() {
+    countdown(); // dagen kan ha skiftet
+    if ($('#app').hidden || sync.busy || !idle()) return;
+    var now = Date.now();
+    if (now - sync.loadedAt < REFRESH_AFTER || now - sync.savedAt < SETTLE_AFTER_SAVE) return;
+    sync.busy = true;
+    Jul.loadData(state.list.id).then(function (data) {
+      sync.loadedAt = Date.now();
+      if (!idle() || Date.now() - sync.savedAt < SETTLE_AFTER_SAVE) return;
+      var changed = false;
+      state.people.forEach(function (p) {
+        var own = function (w) { return w.person === p.id; };
+        if (Jul.serializeWishes(data.wishes.filter(own)) !== Jul.serializeWishes(state.wishes.filter(own))) changed = true;
+      });
+      if (!changed) return;
+      state.wishes = data.wishes.slice();
       render(false);
       updateCounts();
-      toast(err && err.cancelled ? 'Ikke lagret' : 'Ble ikke lagret: ' + err.message);
+    }, function () { /* prøver igjen neste gang */ }).then(function () { sync.busy = false; });
+  }
+
+  /**
+   * Bytter personens ønsker fra «sent» (det vi prøvde å lagre) til «target»,
+   * men beholder endringer som er gjort på siden mens lagringen pågikk.
+   * Gir true hvis visningen ble endret.
+   */
+  function rebasePerson(pid, sent, target) {
+    var own = function (w) { return w.person === pid; };
+    var current = state.wishes.filter(own);
+    var next = Jul.mergeWishes(sent, current, target).map(function (w) {
+      return w.person === pid ? w : Object.assign({}, w, { person: pid });
     });
+    if (Jul.serializeWishes(next) === Jul.serializeWishes(current)) return false;
+    state.wishes = state.wishes.filter(function (w) { return !own(w); }).concat(next);
+    if (state.current === pid) render(false);
+    updateCounts();
+    return true;
   }
 
   function deleteWish(id) {
@@ -692,6 +754,11 @@
       $('#login-btn').disabled = true;
       return;
     }
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') refreshData();
+    });
+    global.addEventListener('focus', refreshData);
 
     document.body.classList.add('is-checking');
     state.data = Jul.loadData(document.body.getAttribute('data-list'));

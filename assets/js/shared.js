@@ -454,6 +454,22 @@
       return job;
     },
 
+    /**
+     * Lagrer ønskene til én person trygt, selv om filen er endret av andre
+     * (en annen fane, prisjobben eller utfyllingsjobben) siden siden ble lastet.
+     *
+     * Henter siste versjon fra GitHub, fletter inn bare det som er endret her
+     * (base → mine), og lagrer med versjonsnummeret (sha) den hentet. Har filen
+     * endret seg igjen i mellomtiden, prøves det på nytt. Gir { wishes, changed }:
+     * den flettede listen, som siden bør vise, og om noe faktisk ble lagret.
+     */
+    saveWishes: function (path, base, mine, message) {
+      var prev = queue[path] || Promise.resolve();
+      var job = prev.catch(function () {}).then(function () { return mergeAndPut(path, base, mine, message, 3); });
+      queue[path] = job;
+      return job;
+    },
+
     /** Starter prisjobben (.github/workflows/priser.yml). */
     runPrices: function () {
       return Jul.github.request('POST', '/actions/workflows/priser.yml/dispatches', { ref: BRANCH }).then(function (r) {
@@ -489,6 +505,104 @@
       return r.json().then(function (j) { shas[path] = j.content && j.content.sha; });
     });
   }
+
+  /** Siste versjon av en JSON-fil i repoet: { sha, data } (data er null hvis filen ikke finnes). */
+  function getJSONFile(path) {
+    return Jul.github.request('GET', '/contents/' + path + '?ref=' + BRANCH).then(function (r) {
+      if (r.status === 404) return { sha: null, data: null };
+      if (!r.ok) throw ghError(r.status, 'Contents');
+      return r.json().then(function (j) {
+        if (j.content) {
+          var text = new TextDecoder().decode(b64ToBytes(j.content.replace(/\s/g, '')));
+          return { sha: j.sha, data: JSON.parse(text) };
+        }
+        // Filer over 1 MB kommer uten innhold; hent dem fra download_url
+        return fetch(j.download_url, { cache: 'no-store' }).then(function (res) { return res.json(); })
+          .then(function (data) { return { sha: j.sha, data: data }; });
+      });
+    });
+  }
+
+  function mergeAndPut(path, base, mine, message, attempts) {
+    return getJSONFile(path).then(function (file) {
+      var theirs = (file.data && file.data.wishes) || [];
+      var merged = Jul.mergeWishes(base, mine, theirs);
+      var text = Jul.serializeWishes(merged);
+      // Ingenting nytt å lagre (for eksempel samme endring er gjort et annet sted)
+      if (file.data && text === Jul.serializeWishes(theirs)) return { wishes: merged, changed: false };
+      var body = { message: message, content: b64utf8(text), branch: BRANCH };
+      if (file.sha) body.sha = file.sha;
+      return Jul.github.request('PUT', '/contents/' + path, body).then(function (r) {
+        // Noen lagret samtidig: hent på nytt og flett igjen
+        if ((r.status === 409 || r.status === 422) && attempts > 1) return mergeAndPut(path, base, mine, message, attempts - 1);
+        if (!r.ok) throw ghError(r.status, 'Contents');
+        return r.json().then(function (j) {
+          shas[path] = j.content && j.content.sha;
+          return { wishes: merged, changed: true };
+        });
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Fletting av ønskelister (tre-veis: base = slik siden lastet den,
+   * mine = slik den er nå her, theirs = siste versjon på GitHub)
+   *  - Ønsker jeg har endret eller lagt til: min versjon vinner.
+   *  - Ønsker jeg har slettet: fjernes.
+   *  - Alt annet (andres nye ønsker, endringer og prisoppdateringer): beholdes.
+   *  - Rekkefølge: har jeg endret rekkefølgen, brukes min, ellers deres.
+   * ------------------------------------------------------------------ */
+  function wishKey(w) {
+    var o = {};
+    WISH_FIELDS.forEach(function (k) { if (w[k] !== undefined) o[k] = w[k]; });
+    return JSON.stringify(o);
+  }
+  function byId(list) {
+    var m = {};
+    list.forEach(function (w) { m[w.id] = w; });
+    return m;
+  }
+  Jul.mergeWishes = function (base, mine, theirs) {
+    var B = byId(base), M = byId(mine), T = byId(theirs);
+    var changedByMe = function (id) {
+      if (!B[id]) return !!M[id];               // lagt til her
+      if (!M[id]) return true;                  // slettet her
+      return wishKey(M[id]) !== wishKey(B[id]); // endret her
+    };
+    var R = {};
+    theirs.forEach(function (w) {
+      if (B[w.id] && !M[w.id]) return;                      // jeg slettet det
+      R[w.id] = M[w.id] && changedByMe(w.id) ? M[w.id] : w;
+    });
+    mine.forEach(function (w) {
+      if (T[w.id]) return;
+      if (!B[w.id] || changedByMe(w.id)) R[w.id] = w;       // nytt her, eller endret her mens det ble slettet der
+    });
+    // Rekkefølge
+    var inBoth = function (id) { return B[id] && M[id]; };
+    var baseOrder = base.map(function (w) { return w.id; }).filter(inBoth).join(',');
+    var mineOrder = mine.map(function (w) { return w.id; }).filter(inBoth).join(',');
+    var primary = baseOrder !== mineOrder ? mine : theirs;
+    var secondary = primary === mine ? theirs : mine;
+    var order = [], seen = {};
+    primary.forEach(function (w) {
+      if (R[w.id] && !seen[w.id]) { seen[w.id] = true; order.push(R[w.id]); }
+    });
+    // Resten settes inn etter samme nabo som i listen de kom fra. Står de sist der,
+    // legges de sist; står de først, legges de først.
+    var prevId = null;
+    secondary.forEach(function (w, idx) {
+      if (R[w.id] && !seen[w.id]) {
+        var atEnd = !secondary.slice(idx + 1).some(function (x) { return seen[x.id]; });
+        var at = atEnd ? order.length : 0;
+        if (!atEnd && prevId) for (var i = 0; i < order.length; i++) if (order[i].id === prevId) { at = i + 1; break; }
+        order.splice(at, 0, R[w.id]);
+        seen[w.id] = true;
+      }
+      if (R[w.id]) prevId = w.id;
+    });
+    return order;
+  };
 
   /* ------------------------------------------------------------------ *
    * Ikoner (egne, linjebaserte SVG-ikoner)

@@ -42,21 +42,12 @@ jobs:
       - name: Fyll inn manglende bilder og priser
         run: node tools/fyll-inn.mjs --mangler "$RUNNER_TEMP/mangler.md"
 
+      # Ved konflikt med en lagring fra nettsiden hentes siste versjon og
+      # utfyllingen kjøres på nytt (se tools/publiser.sh).
       - name: Commit og publiser
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ -z "$(git status --porcelain -- data)" ]; then
-            echo "Ingen endringer å publisere"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data
-          git commit -m "Fyll inn manglende bilder og priser"
-          git pull --rebase
-          git push
-          gh api -X POST "repos/${{ github.repository }}/pages/builds" --silent || echo "Kunne ikke be om nytt Pages-bygg"
+        run: bash tools/publiser.sh "Fyll inn manglende bilder og priser" node tools/fyll-inn.mjs --mangler "$RUNNER_TEMP/mangler.md"
 
       - name: Oppdater saken om ønsker som mangler noe
         env:
