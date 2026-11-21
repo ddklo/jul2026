@@ -15,7 +15,7 @@
         "productId": "18706564",
         "amount": 1179,
         "offers": 9,
-        "checkedAt": "2026-11-21T17:44:07.958Z"
+        "checkedAt": "2026-11-21T17:56:46.702Z"
       },
       "createdAt": "2026-11-19T22:42:12.386Z"
     },
@@ -34,14 +34,14 @@
         "productId": "537780",
         "amount": 1069,
         "offers": 6,
-        "checkedAt": "2026-11-21T17:44:07.958Z"
+        "checkedAt": "2026-11-21T17:56:46.702Z"
       },
       "createdAt": "2026-11-19T22:28:29.581Z"
     },
     {
       "id": "wmwp1f6wl4hk3q",
       "title": "Lenz Heat Sock 5.1 Toe Cap",
-      "description": "Varmestrømper, Regular Fit (ikke Slim Fit), str. L. Batteripakken selges separat, for eksempel Lenz rcB 1200.",
+      "description": "Varmestrømper, Regular Fit (ikke Slim Fit), str. L. Batteripakken selges separat (eget ønske ved siden av).",
       "image": "data/bilder/wmwp1f6wl4hk3q.webp",
       "imageFit": "contain",
       "storeUrl": "https://www.fjellsport.no/merker/lenz/lenz-heat-sock-5-1-tc-grey-237793",
@@ -54,9 +54,27 @@
         "productId": "11750545",
         "amount": 1043,
         "offers": 5,
-        "checkedAt": "2026-11-21T17:44:07.958Z"
+        "checkedAt": "2026-11-21T17:56:46.702Z"
       },
       "createdAt": "2026-11-20T13:51:27.790Z"
+    },
+    {
+      "id": "wmwqpmipripkq6",
+      "title": "Lenz Lithium Pack rcB 1400 (USB-C)",
+      "description": "Batteripakker til Lenz Heat Sock 5.1 (ett par, med lader). Styres på batteriet eller med Lenz-appen.",
+      "image": "data/bilder/wmwqpmipripkq6.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://www.fjellsport.no/herreklaer/hansker-votter/lenz-lithium-pack-rcb-1400-usb-c-black-P478-8865",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=15876661",
+      "priceMin": 1600,
+      "priceMax": 2000,
+      "livePrice": {
+        "productId": "15876661",
+        "amount": 1596,
+        "offers": 3,
+        "checkedAt": "2026-11-21T17:56:46.702Z"
+      },
+      "createdAt": "2026-11-21T17:56:46.593Z"
     },
     {
       "id": "wmwq7mjw61gmai",
@@ -74,7 +92,7 @@
         "productId": "13841794",
         "amount": 2190,
         "offers": 3,
-        "checkedAt": "2026-11-21T17:44:07.958Z"
+        "checkedAt": "2026-11-21T17:56:46.702Z"
       },
       "createdAt": "2026-11-21T09:32:55.018Z"
     },
@@ -92,7 +110,7 @@
         "productId": "13866739",
         "amount": 799,
         "offers": 7,
-        "checkedAt": "2026-11-21T17:44:07.958Z"
+        "checkedAt": "2026-11-21T17:56:46.702Z"
       },
       "createdAt": "2026-11-21T17:44:07.810Z"
     }
