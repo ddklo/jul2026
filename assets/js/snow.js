@@ -105,7 +105,8 @@
 
   /* ---------------- Snøfallet ---------------- */
   function resize() {
-    dpr = Math.min(global.devicePixelRatio || 1, 2);
+    // Snøfnugg er små prikker: 1,5× oppløsning er skarpt nok, og sparer mye på telefoner med 3× skjerm
+    dpr = Math.min(global.devicePixelRatio || 1, 1.5);
     w = global.innerWidth;
     h = global.innerHeight;
     canvas.width = Math.round(w * dpr);
@@ -136,6 +137,11 @@
 
   function frame(t) {
     if (!running) return;
+    // Maks ~60 bilder i sekundet, også på skjermer som oppdaterer 120 ganger i sekundet
+    if (last && t - last < 15) {
+      raf = global.requestAnimationFrame(frame);
+      return;
+    }
     var dt = Math.min(0.05, (t - (last || t)) / 1000);
     last = t;
     var floor = ground();
