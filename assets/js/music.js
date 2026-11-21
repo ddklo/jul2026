@@ -204,6 +204,21 @@
     document.body.appendChild(btn);
     render();
 
+    // Mobil: når listen vises, ligger knappen i topplinjen, så den ikke dekker kortene.
+    // På innloggingen og på desktop flyter den nede til venstre.
+    var bar = document.querySelector('.topbar__right');
+    var mobile = global.matchMedia && global.matchMedia('(max-width: 719px)');
+    function place() {
+      var inline = bar && mobile && mobile.matches && !document.body.classList.contains('is-locked');
+      if (inline && btn.parentNode !== bar) bar.insertBefore(btn, bar.firstChild);
+      if (!inline && btn.parentNode !== document.body) document.body.appendChild(btn);
+    }
+    if (bar && mobile) {
+      place();
+      if (mobile.addEventListener) mobile.addEventListener('change', place);
+      new MutationObserver(place).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    }
+
     // Start ved første klikk eller tastetrykk, hvis musikken ikke er skrudd av
     function first(ev) {
       if (btn.contains(ev.target)) return; // knappen håndterer seg selv

@@ -159,7 +159,9 @@
     var login = $('#login');
     var app = $('#app');
     app.hidden = false;
+    initLastVisit();
     buildTabs();
+    markNewTabs();
     route(true);
 
     document.body.classList.remove('is-checking');
@@ -184,6 +186,40 @@
   }
 
   /* ---------------- Faner og ruting ---------------- */
+  /**
+   * «Nytt»: ønsker lagt til siden forrige besøk på denne enheten. Tidspunktet for
+   * forrige besøk holdes fast resten av økten, så merkene ikke forsvinner når du
+   * bytter person eller laster siden på nytt. Første besøk viser ingen merker.
+   */
+  var lastVisit = null;
+  function webStorage(name) {
+    try { return global[name]; } catch (e) { return null; }
+  }
+  function initLastVisit() {
+    var key = 'jul-sist-' + state.list.id;
+    var local = webStorage('localStorage'), session = webStorage('sessionStorage');
+    try {
+      var held = session && session.getItem(key);
+      if (held === null || held === undefined) {
+        held = (local && local.getItem(key)) || '';
+        if (session) session.setItem(key, held);
+      }
+      if (local) local.setItem(key, new Date().toISOString());
+      lastVisit = held ? Date.parse(held) : null;
+    } catch (e) { lastVisit = null; }
+  }
+  var NEW_MAX_AGE = 30 * 864e5;
+  function isNew(w) {
+    var t = Date.parse(w && w.createdAt);
+    return !!(lastVisit && t > lastVisit && Date.now() - t < NEW_MAX_AGE);
+  }
+  function markNewTabs() {
+    $$('.tab').forEach(function (t) {
+      var id = t.getAttribute('data-person');
+      t.classList.toggle('has-new', state.wishes.some(function (w) { return w.person === id && isNew(w); }));
+    });
+  }
+
   function countFor(id) {
     var n = 0;
     state.wishes.forEach(function (w) { if (w.person === id) n++; });
@@ -358,8 +394,10 @@
     if (!p) { head.innerHTML = ''; return; }
     var min = 0, max = 0;
     scope.forEach(function (w) {
-      var a = +w.priceMin || +w.priceMax || 0;
-      var b = +w.priceMax || +w.priceMin || 0;
+      // Prisantydning, ellers prisen fra Prisjakt eller nettbutikken
+      var live = Jul.livePrice(w);
+      var a = +w.priceMin || +w.priceMax || (live ? live.amount : 0);
+      var b = +w.priceMax || +w.priceMin || (live ? live.amount : 0);
       if (a && (!min || a < min)) min = a;
       if (b && b > max) max = b;
     });
@@ -396,13 +434,13 @@
     }
     var html = '';
     list.forEach(function (w, i) {
-      html += Jul.cardHTML(w, { index: Math.min(i, 12), editUrl: state.canEdit ? editUrl(w.id) : '' });
+      html += Jul.cardHTML(w, { index: Math.min(i, 12), editUrl: state.canEdit ? editUrl(w.id) : '', isNew: isNew(w) });
     });
     grid.innerHTML = html;
   }
 
   /* ---------------- Administrator: rediger, flytt og slett ----------------
-   * Flytting og sletting lagres med en gang til GitHub (Jul.github.saveFile).
+   * Flytting og sletting lagres med en gang til GitHub (Jul.github.saveWishes).
    * Redigering skjer i redigeringsverktøyet.
    */
   function editUrl(wishId) {
@@ -422,6 +460,7 @@
       c.textContent = n;
       c.setAttribute('aria-label', plural(n, 'ønske', 'ønsker'));
     });
+    markNewTabs();
   }
 
   /**

@@ -26,6 +26,12 @@
       "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
+      "livePrice": {
+        "source": "store",
+        "url": "https://www.ikea.com/no/no/p/grejsimojs-toyleke-bjorn-beige-80602083/",
+        "amount": 499,
+        "checkedAt": "2026-11-21T13:00:27.427Z"
+      },
       "createdAt": "2026-11-20T16:53:04.738Z"
     },
     {
@@ -40,6 +46,12 @@
       "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
+      "livePrice": {
+        "source": "store",
+        "url": "https://lekekassen.no/slimey-sugar-pop-sensorisk-klemmeball-7-cm-assortert-stressleke-12-32112?utm_term=&device=m&matchtype=&location=9047247&gad_source=1&gad_campaignid=22519338940&gbraid=0AAAAADw_mBt9sep3nMWZAGVJm68cQn63F&gclid=Cj0KCQiA_P_XBhDvARIsALHjSUW5sZl3G5zsCQ_oTdu9njNp0aB4AbjJRKvj4FNCe5HbDJYxsjuJv0caAsTXEALw_wcB",
+        "amount": 80,
+        "checkedAt": "2026-11-21T13:00:27.427Z"
+      },
       "createdAt": "2026-11-20T17:54:22.143Z"
     },
     {
@@ -72,7 +84,7 @@
         "productId": "15076227",
         "amount": 799,
         "offers": 13,
-        "checkedAt": "2026-11-21T09:19:17.674Z"
+        "checkedAt": "2026-11-21T13:00:27.427Z"
       },
       "createdAt": "2026-11-20T17:43:03.644Z"
     },
@@ -102,6 +114,12 @@
       "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
+      "livePrice": {
+        "source": "store",
+        "url": "https://sportoutlet.no/product/01k6a8e52q3qqft3wctntpjht7?c=3283",
+        "amount": 100,
+        "checkedAt": "2026-11-21T13:00:27.427Z"
+      },
       "createdAt": "2026-11-20T16:56:26.314Z"
     },
     {
@@ -116,6 +134,12 @@
       "hidePrisjakt": true,
       "priceMin": null,
       "priceMax": null,
+      "livePrice": {
+        "source": "store",
+        "url": "https://www.bakerenogkokken.no/p/ariete-party-time-sukkerspinn-maskin_44974/?utm_source=google&utm_medium=cpc&utm_campaign=p-no-shopping-low-low_bids&shopping_id_click=1067-21916-44974&gad_source=1&gad_campaignid=1527273590&gbraid=0AAAAADlaFKkgI5LY46-9nPzyWEjYt0zk5&gclid=Cj0KCQiA_P_XBhDvARIsALHjSUXURUhAA5PeQR7hYx74ZaXMXDQiziv1eg7WNQieQKA1VBKjcX3e1xsaAkDVEALw_wcB",
+        "amount": 639,
+        "checkedAt": "2026-11-21T13:00:27.427Z"
+      },
       "createdAt": "2026-11-20T18:13:04.016Z"
     }
   ]

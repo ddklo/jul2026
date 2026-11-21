@@ -61,13 +61,63 @@ export async function fetchText(url) {
 /** Alle JSON-LD-objekter på en side (flatet ut, også @graph). */
 export function jsonLd(html) {
   const out = [];
-  for (const m of html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)) {
+  for (const m of html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/g)) {
+    let j;
     try {
-      const j = JSON.parse(m[1]);
-      for (const node of [].concat(j['@graph'] || j)) if (node) out.push(node);
-    } catch { /* ugyldig JSON-LD – hopp over */ }
+      j = JSON.parse(m[1]);
+    } catch {
+      // Noen butikker har komma til slutt eller linjeskift i tekster: prøv en mildere variant
+      try { j = JSON.parse(m[1].replace(/,(\s*[}\]])/g, '$1').replace(/[\u0000-\u001f]+/g, ' ')); } catch { continue; }
+    }
+    for (const node of [].concat(j['@graph'] || j)) if (node) out.push(node);
   }
   return out;
+}
+
+/**
+ * Prisen på en nettbutikks produktside, i hele kroner, fra JSON-LD (Product,
+ * ProductGroup) eller meta-taggene product:price:amount / og:price:amount.
+ * Bare priser i NOK. Kaster en feil når ingen pris finnes.
+ */
+export async function storePrice(url) {
+  const html = await fetchText(url);
+  const nok = (cur) => !cur || /^NOK$/i.test(String(cur).trim());
+  const fromOffer = (o) => {
+    if (!o || !nok(o.priceCurrency || (o.priceSpecification && o.priceSpecification.priceCurrency))) return 0;
+    const v = o.lowPrice ?? o.price ?? (o.priceSpecification && o.priceSpecification.price);
+    return Math.round(Number(String(v ?? '').replace(',', '.'))) || 0;
+  };
+  const prices = [];
+  for (const node of jsonLd(html)) {
+    const types = [].concat(node['@type'] || []);
+    if (types.includes('Product')) for (const o of [].concat(node.offers || [])) prices.push(fromOffer(o));
+    if (types.includes('ProductGroup')) {
+      for (const v of [].concat(node.hasVariant || [])) for (const o of [].concat(v.offers || [])) prices.push(fromOffer(o));
+    }
+  }
+  const valid = prices.filter((p) => p > 0);
+  if (valid.length) return Math.min(...valid);
+  const meta = (prop) => {
+    const m = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${prop}["'][^>]*>`, 'i'));
+    const c = m && m[0].match(/content=["']([^"']+)["']/i);
+    return c ? c[1] : null;
+  };
+  for (const p of ['product:price', 'og:price']) {
+    const amount = meta(`${p}:amount`);
+    if (amount && nok(meta(`${p}:currency`))) {
+      const v = Math.round(Number(amount.replace(',', '.')));
+      if (v > 0) return v;
+    }
+  }
+  // Mikrodata: første itemprop="price" (hovedproduktet står først), med content eller tall som tekst
+  for (const m of html.matchAll(/<[^>]*itemprop=["']price["'][^>]*>([^<]*)/gi)) {
+    const c = m[0].match(/content=["']([\d.,\s]+)["']/i);
+    const raw = (c ? c[1] : m[1]).replace(/\s/g, '');
+    if (!/^\d+([.,]\d{1,2})?$/.test(raw)) continue;
+    const v = Math.round(Number(raw.replace(',', '.')));
+    if (v > 0) return v;
+  }
+  throw new Error('fant ingen pris på butikksiden');
 }
 
 /**

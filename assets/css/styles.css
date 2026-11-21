@@ -862,6 +862,70 @@ a { color: inherit; }
   to { transform: translate(var(--dx), calc(var(--dy) + 30px)) scale(0.2); opacity: 0; }
 }
 
+/* Morsomme figurer på desktop (effects.js). Bak innholdet, men klikkbare der de synes. */
+.fx-critter { position: fixed; z-index: 0; cursor: pointer; -webkit-user-select: none; user-select: none; }
+.fx-critter svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* Reinsdyr som titter fram fra kanten */
+.fx-reindeer { left: 0; width: 120px; transform: translateX(-105%); animation: peek 7s var(--ease-smooth) forwards; }
+.fx-reindeer.fx-right { left: auto; right: 0; }
+.fx-reindeer.fx-right svg { transform: scaleX(-1); }
+.fx-reindeer.fx-right { animation-name: peekRight; transform: translateX(105%); }
+.fx-reindeer svg { animation: headTilt 2.2s ease-in-out infinite 1s; transform-origin: 20% 90%; }
+.fx-reindeer.fx-right svg { animation-name: headTiltRight; }
+.fx-nose { animation: noseGlow 1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.fx-reindeer.is-poked .fx-nose { animation-duration: 0.25s; }
+@keyframes peek { 0% { transform: translateX(-105%); } 18%, 78% { transform: translateX(-12%); } 100% { transform: translateX(-105%); } }
+@keyframes peekRight { 0% { transform: translateX(105%); } 18%, 78% { transform: translateX(12%); } 100% { transform: translateX(105%); } }
+@keyframes headTilt { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-7deg); } }
+@keyframes headTiltRight { 0%, 100% { transform: scaleX(-1) rotate(0); } 50% { transform: scaleX(-1) rotate(-7deg); } }
+@keyframes noseGlow { 0%, 100% { filter: none; transform: scale(1); } 50% { filter: drop-shadow(0 0 8px #ff3b55) brightness(1.25); transform: scale(1.12); } }
+
+/* Pingvin som aker på magen over snøfonnen */
+.fx-penguin { bottom: 10px; left: 0; width: 112px; animation: slideAcross 9s cubic-bezier(0.3, 0.1, 0.45, 1) forwards; }
+.fx-penguin svg { animation: wobble 0.5s ease-in-out infinite; }
+.fx-penguin.fx-rtl { animation-name: slideBack; }
+.fx-penguin.fx-rtl svg { transform: scaleX(-1); animation-name: wobbleRtl; }
+.fx-penguin.is-poked svg { animation: spinOnce 0.7s ease-in-out; }
+@keyframes slideAcross { from { transform: translateX(-130px); } to { transform: translateX(calc(100vw + 30px)); } }
+@keyframes slideBack { from { transform: translateX(calc(100vw + 30px)); } to { transform: translateX(-130px); } }
+@keyframes wobble { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg) translateY(-1px); } }
+@keyframes wobbleRtl { 0%, 100% { transform: scaleX(-1) rotate(-1.5deg); } 50% { transform: scaleX(-1) rotate(1.5deg) translateY(-1px); } }
+@keyframes spinOnce { to { transform: rotate(360deg); } }
+.fx-spray {
+  position: fixed; z-index: 0; pointer-events: none; width: 5px; height: 5px; border-radius: 50%;
+  background: #f4f1ea; opacity: 0.9; animation: spray 0.9s ease-out forwards;
+}
+@keyframes spray { to { transform: translate(var(--dx), -18px) scale(0.3); opacity: 0; } }
+
+/* Pepperkakemann som løper forbi */
+.fx-ginger { bottom: 12px; left: 0; width: 46px; animation: runAcross 8s linear forwards; }
+.fx-ginger svg { animation: runBob 0.3s ease-in-out infinite alternate; }
+.fx-ginger.fx-rtl { animation-name: runBack; }
+.fx-ginger.fx-rtl svg { transform: scaleX(-1); animation-name: runBobRtl; }
+.fx-leg { transform-box: fill-box; transform-origin: 50% 0; animation: leg 0.3s ease-in-out infinite alternate; }
+.fx-leg--b { animation-direction: alternate-reverse; }
+.fx-ginger.is-poked svg { animation: jump 0.5s ease-out; }
+@keyframes runAcross { 0% { transform: translateX(-60px); } 45%, 55% { transform: translateX(46vw); } 100% { transform: translateX(calc(100vw + 20px)); } }
+@keyframes runBack { 0% { transform: translateX(calc(100vw + 20px)); } 45%, 55% { transform: translateX(50vw); } 100% { transform: translateX(-60px); } }
+@keyframes runBob { from { transform: translateY(0) rotate(-4deg); } to { transform: translateY(-5px) rotate(4deg); } }
+@keyframes runBobRtl { from { transform: scaleX(-1) translateY(0) rotate(-4deg); } to { transform: scaleX(-1) translateY(-5px) rotate(4deg); } }
+@keyframes leg { from { transform: rotate(-22deg); } to { transform: rotate(22deg); } }
+@keyframes jump { 50% { transform: translateY(-30px) rotate(-10deg); } }
+
+/* Nisse som firer seg ned i et tau og vinker */
+.fx-nisse { top: 0; width: 70px; transform: translateY(-120%); animation: abseil 8s var(--ease-smooth) forwards; }
+.fx-rope {
+  position: absolute; left: 50%; bottom: calc(100% - 4px); width: 2px; height: 100vh; margin-left: -1px;
+  background: repeating-linear-gradient(180deg, #c9a46a 0 6px, #a8814a 6px 12px);
+}
+.fx-nisse svg { animation: sway 2.4s ease-in-out infinite; transform-origin: 50% 0; }
+.fx-wave { transform-box: fill-box; transform-origin: 0 100%; animation: wave 0.45s ease-in-out infinite alternate; }
+.fx-nisse.is-poked svg { animation: spinOnce 0.8s ease-in-out; }
+@keyframes abseil { 0% { transform: translateY(-120%); } 22%, 75% { transform: translateY(32vh); } 30% { transform: translateY(30vh); } 100% { transform: translateY(-120%); } }
+@keyframes sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes wave { from { transform: rotate(-12deg); } to { transform: rotate(18deg); } }
+
 /* Snøfonn nederst på siden */
 .footer { position: relative; }
 .footer::before {
@@ -997,6 +1061,53 @@ a { color: inherit; }
 }
 @media (max-width: 360px) {
   .brand__text em { display: none; }
+}
+
+/* ---------------- Kompakt mobil ----------------
+   Første kort skal synes uten å scrolle: tittel og nedtelling på to korte linjer,
+   lavere bilder og strammere kort. Musikkknappen ligger i topplinjen (music.js). */
+@media (max-width: 719px) {
+  .hero { padding: 6px var(--gutter) 12px; }
+  .hero .eyebrow { margin-bottom: 2px; }
+  .hero__lead { display: none; }
+  .hero__title { font-size: clamp(1.4rem, 6.6vw, 1.85rem); margin: 4px 0 10px; white-space: nowrap; }
+  .countdown { margin: 0; padding: 6px 16px 6px 12px; gap: 10px; border-radius: 16px; }
+  .countdown .icon { width: 18px; height: 18px; }
+  .countdown__num { font-size: 1.75rem; }
+  .countdown__text { font-size: 0.64rem; letter-spacing: 0.14em; }
+  .countdown__big { font-size: 1.35rem; }
+  .ph__admin { display: none; } /* håndtaket på kortet er nok */
+  .ph__avatar { width: 46px; height: 46px; }
+  .person-head { margin: 0 0 14px; }
+  .grid { gap: 14px; }
+  .card__media { aspect-ratio: 2 / 1; }
+  .card__body { padding: 12px 16px 14px; gap: 5px; }
+  .card__title { font-size: 1.14rem; }
+  .card__desc { font-size: 0.9rem; line-height: 1.45; -webkit-line-clamp: 3; }
+  .card__bottom { padding-top: 4px; gap: 10px; }
+  .card__price { padding-top: 8px; align-items: center; }
+  .card__price--live small { display: none; } /* kilde og dato står i verktøytipset */
+  .topbar .music-btn { position: static; height: 42px; min-width: 42px; padding: 0 11px; box-shadow: none; }
+}
+@media (max-width: 400px) {
+  /* Plass til musikk, Rediger og Logg ut i topplinjen */
+  .admin-btn span:last-child { display: none; }
+  .admin-btn { width: 42px; padding: 0; }
+}
+
+/* «Nytt» på ønsker som er lagt til siden du var her sist */
+.card__new {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px 3px 8px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #10141e; background: linear-gradient(180deg, #f3d99d, #cf9f52);
+  box-shadow: 0 0 18px -4px rgba(242, 216, 155, 0.7);
+}
+.card__new .icon { width: 12px; height: 12px; }
+/* Gylden prikk ved navnet på fanen til personer med nye ønsker */
+.tab.has-new .tab__name::after {
+  content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 5px; vertical-align: 0.15em;
+  border-radius: 50%; background: var(--gold-2); box-shadow: 0 0 8px rgba(242, 216, 155, 0.9);
 }
 
 /* ---------------- Redusert bevegelse ---------------- */

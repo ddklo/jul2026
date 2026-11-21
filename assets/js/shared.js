@@ -700,11 +700,17 @@
   var df = new Intl.DateTimeFormat('nb-NO', { day: 'numeric', month: 'short' });
   Jul.livePrice = function (w) {
     var lp = w && w.livePrice;
-    if (!lp || w.hidePrisjakt || !(lp.amount > 0)) return null;
-    if (lp.productId !== Jul.prisjaktId(w.prisjaktUrl)) return null;
+    if (!lp || !(lp.amount > 0)) return null;
+    var pid = w.hidePrisjakt ? null : Jul.prisjaktId(w.prisjaktUrl);
+    // Pris fra nettbutikken: bare når ønsket ikke har Prisjakt-produkt, og lenken er den samme
+    var store = lp.source === 'store';
+    if (store ? (pid || lp.url !== w.storeUrl || w.linkLabel) : (!pid || lp.productId !== pid)) return null;
     var t = Date.parse(lp.checkedAt);
     if (!t || Date.now() - t > LIVE_MAX_AGE) return null;
-    return { amount: lp.amount, offers: lp.offers || 0, text: n(lp.amount) + ' kr', date: df.format(t) };
+    return {
+      amount: lp.amount, offers: lp.offers || 0, text: n(lp.amount) + ' kr', date: df.format(t),
+      store: store ? (Jul.storeName(lp.url) || 'nettbutikken') : null
+    };
   };
 
   /** Kort butikknavn fra en lenke: https://www.lekekassen.no/… → «Lekekassen». */
@@ -836,7 +842,7 @@
 
   /* ------------------------------------------------------------------ *
    * Produktkort
-   * opts: { index, personName, accent, editUrl }
+   * opts: { index, personName, accent, editUrl, isNew }
    * Med editUrl får kortet administratorverktøy: dra-håndtak, rediger og slett.
    * ------------------------------------------------------------------ */
   Jul.cardHTML = function (w, opts) {
@@ -894,11 +900,17 @@
       '</div>' +
       '<div class="card__body">' +
       (person ? '<div class="card__meta">' + person + '</div>' : '') +
+      (opts.isNew ? '<span class="card__new" title="Lagt til siden du var her sist">' + Jul.icon('sparkles') + 'Nytt</span>' : '') +
       '<h3 class="card__title">' + (mainUrl ? '<a href="' + e(mainUrl) + '"' + ext + '>' + name + '</a>' : name) + '</h3>' +
       (w.description ? '<p class="card__desc">' + e(w.description) + '</p>' : '') +
       '<div class="card__bottom">' +
-      (live
-        ? '<p class="card__price card__price--live" title="Laveste pris på Prisjakt, sjekket ' + e(live.date) + '">' +
+      (live && live.store
+        ? '<p class="card__price card__price--live" title="Pris hos ' + e(live.store) + ', sjekket ' + e(live.date) + '">' +
+          '<span>Pris hos ' + e(live.store) + '<small>Sjekket ' + e(live.date) + '</small></span>' +
+          '<strong>' + e(live.text) + '</strong></p>'
+        : '') +
+      (live && !live.store
+        ? '<p class="card__price card__price--live" title="Laveste pris på Prisjakt' + (live.offers > 1 ? ' blant ' + live.offers + ' butikker' : '') + ', sjekket ' + e(live.date) + '">' +
           '<span>Laveste pris nå<small>Prisjakt' + (live.offers > 1 ? ' · ' + live.offers + ' butikker' : '') + ' · ' + e(live.date) + '</small></span>' +
           '<strong>' + e(live.text) + '</strong></p>'
         : '') +

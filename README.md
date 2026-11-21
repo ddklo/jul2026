@@ -4,7 +4,8 @@ Juleønskeliste for Dagfinn, Kristin, Ellie og Sidney på GitHub Pages: <https:/
 
 - To lister med de samme personene: `…/bergen` og `…/sorumsand`. Lenke til én person: `…/bergen#ellie`.
 - Statisk side uten backend. Ønskene er JSON-filer i repoet.
-- Laveste pris fra Prisjakt hentes hver natt.
+- Laveste pris fra Prisjakt (eller nettbutikken) hentes hver natt.
+- «Nytt» på ønsker lagt til siden du var her sist (per enhet).
 
 ## Filer
 
@@ -13,7 +14,7 @@ index.html, bergen.html, sorumsand.html   Forside og de to listene (like, bortse
 editor/                                   Redigeringsverktøyet
 assets/js/shared.js                       Innlogging, data, lagring til GitHub, produktkort
 assets/js/app.js                          Listesiden
-assets/js/snow.js, effects.js, music.js   Snø, juleeffekter, musikk
+assets/js/snow.js, effects.js, music.js   Snø, juleeffekter og figurer (desktop), musikk
 data/personer.json                        Listene og personene
 data/<liste>/<person>.json                Ønskene, i visningsrekkefølge
 data/bilder/                              Produktbilder (WebP)
@@ -65,11 +66,11 @@ Gjenta når tokenet utløper eller passordene byttes. Uten token: **Mer → Last
 | `linkLabel` | Egen tekst på butikk-knappen |
 | `hidePrisjakt` | Skjul Prisjakt-knappen |
 | `priceMin`, `priceMax` | Prisantydning i NOK |
-| `livePrice` | Settes av prisjobben |
+| `livePrice` | Settes av prisjobben (Prisjakt, eller `source: "store"` fra nettbutikken) |
 
 ## Jobber (GitHub Actions)
 
-- **Oppdater priser** (natt, eller **Mer → Oppdater priser nå**): laveste pris for ønsker med Prisjakt-produktlenke. Prisen skjules etter 8 dager uten oppdatering.
+- **Oppdater priser** (natt, eller **Mer → Oppdater priser nå**): laveste pris for ønsker med Prisjakt-produktlenke. Uten det: prisen på butikksiden, hvis butikken oppgir den (ikke for ønsker med `linkLabel`). Prisen skjules etter 8 dager uten oppdatering.
 - **Fyll inn manglende** (ved endring og natt): henter manglende bilder og prisantydning, og holder én GitHub-sak med ønsker som mangler Prisjakt-lenke.
 
 Begge publiserer med `tools/publiser.sh`: ved konflikt med en lagring fra nettsiden hentes nyeste versjon og jobben kjøres på nytt.

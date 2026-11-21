@@ -30,7 +30,7 @@
         "productId": "13998527",
         "amount": 776,
         "offers": 3,
-        "checkedAt": "2026-11-21T10:56:01.281Z"
+        "checkedAt": "2026-11-21T13:00:27.427Z"
       },
       "createdAt": "2026-11-19T22:46:25.093Z"
     },
@@ -50,7 +50,7 @@
         "productId": "13023597",
         "amount": 637,
         "offers": 18,
-        "checkedAt": "2026-11-21T10:56:01.281Z"
+        "checkedAt": "2026-11-21T13:00:27.427Z"
       },
       "createdAt": "2026-11-19T22:46:25.093Z"
     },
@@ -66,6 +66,12 @@
       "hidePrisjakt": true,
       "priceMin": 200,
       "priceMax": 600,
+      "livePrice": {
+        "source": "store",
+        "url": "https://lekekassen.no/handholdt-digitalt-mikroskop-for-barn",
+        "amount": 247,
+        "checkedAt": "2026-11-21T13:00:27.427Z"
+      },
       "createdAt": "2026-11-19T22:46:25.093Z"
     }
   ]
