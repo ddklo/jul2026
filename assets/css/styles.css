@@ -416,7 +416,7 @@ a { color: inherit; }
     pointer-events: none; position: relative; z-index: 1;
   }
   .hero > * { pointer-events: auto; }
-  .topbar { min-height: 62px; }
+  .topbar { height: 62px; padding-top: 0; } /* samme høyde og start som tittelflaten, så alt står på én midtlinje */
 }
 
 /* ---------------- Faner ---------------- */
@@ -427,6 +427,12 @@ a { color: inherit; }
   transition: background-color 0.3s, box-shadow 0.3s;
 }
 .tabs__share { flex: none; }
+@media (min-width: 720px) {
+  /* Tre kolonner: tom | faner | Del lenke. Da står fanerekken nøyaktig midt på siden. */
+  .tabs { display: grid; grid-template-columns: 1fr auto 1fr; }
+  .tabs__inner { grid-column: 2; }
+  .tabs__share { grid-column: 3; justify-self: start; }
+}
 .is-scrolled .tabs {
   background: linear-gradient(180deg, rgba(6, 10, 19, 0.92), rgba(6, 10, 19, 0.75));
   -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
@@ -487,15 +493,18 @@ a { color: inherit; }
   .tab__count { transition: background-color 0.25s, color 0.25s, min-width 0.5s var(--ease-smooth), height 0.5s var(--ease-smooth), font-size 0.5s var(--ease-smooth); }
   .tabs__indicator { transition: transform 0.5s var(--ease-smooth), width 0.5s var(--ease-smooth), height 0.5s var(--ease-smooth), box-shadow 0.4s; }
   .tab.is-active { height: 74px; padding: 0 22px 0 8px; gap: 12px; font-size: 1.3rem; font-weight: 700; }
-  .tab.is-active .tab__avatar { width: 60px; height: 60px; transform: none; }
+  .tab.is-active .tab__avatar { width: 52px; height: 52px; transform: none; }
+  /* Litt lavere og mindre lue på den valgte personen, så den holder seg innenfor fanerekken */
+  .tab.is-active .tab__avatar::before { top: -32%; height: 62%; }
   .tab.is-active .tab__count { min-width: 30px; height: 26px; font-size: 0.86rem; }
   /* Når fanelinjen har lagt seg fast øverst, krymper den til middels størrelse */
   .is-stuck .tabs__inner { height: 74px; }
   .is-stuck .tab.is-active { height: 62px; padding: 0 20px 0 8px; gap: 10px; font-size: 1.15rem; }
-  .is-stuck .tab.is-active .tab__avatar { width: 50px; height: 50px; }
+  .is-stuck .tab.is-active .tab__avatar { width: 44px; height: 44px; }
   .is-stuck .tab.is-active .tab__count { min-width: 26px; height: 22px; font-size: 0.78rem; }
   /* Linjen under fanene holder alltid samme høyde */
   .person-head { min-height: 26px; }
+  .tabs { margin-top: 14px; } /* 24 px fra topplinjen til fanerekken */
 }
 /* Dra-hintet holder plass også når det ikke vises (0–1 ønsker) */
 .ph__admin.is-hidden { visibility: hidden; }
@@ -535,7 +544,7 @@ a { color: inherit; }
 .ph__action { flex: none; }
 /* Desktop: navnet og avataren står allerede i fanen. Igjen er én linje med antall, pris og dra-hint. */
 @media (min-width: 720px) {
-  .person-head { margin: 6px 0 22px; }
+  .person-head { margin: -1px 0 22px; } /* 24 px over og under linjen med antall og pris */
   .ph { justify-content: center; text-align: center; }
   .ph__avatar, .ph .eyebrow, .ph__action { display: none; }
   .ph__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -549,6 +558,11 @@ a { color: inherit; }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 268px), 1fr));
   gap: clamp(16px, 2.2vw, 24px);
+}
+/* Desktop: kortene midtstilles når de ikke fyller hele raden */
+@media (min-width: 720px) {
+  /* Kolonnetallet regnes ut fra maksbredden: 272 px gir fire kort i full bredde (1160 px) */
+  .grid { grid-template-columns: repeat(auto-fit, minmax(240px, 272px)); justify-content: center; }
 }
 .card {
   position: relative;
@@ -933,6 +947,7 @@ a { color: inherit; }
   .tabs__share { display: none; } /* på mobil ligger «Del lenke» i overskriften */
   .brand__text { font-size: 1.08rem; }
   .tabs, .is-scrolled .tabs {
+    display: block; margin-top: 0;
     position: fixed; top: auto; left: 0; right: 0; bottom: 0;
     padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
     background: rgba(8, 12, 22, 0.86);
