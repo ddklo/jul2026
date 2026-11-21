@@ -15,7 +15,7 @@
         "productId": "537780",
         "amount": 1069,
         "offers": 6,
-        "checkedAt": "2026-11-20T13:51:27.907Z"
+        "checkedAt": "2026-11-21T09:32:55.116Z"
       },
       "createdAt": "2026-11-19T22:28:29.581Z"
     },
@@ -34,7 +34,7 @@
         "productId": "18706564",
         "amount": 1179,
         "offers": 9,
-        "checkedAt": "2026-11-20T13:51:27.907Z"
+        "checkedAt": "2026-11-21T09:32:55.116Z"
       },
       "createdAt": "2026-11-19T22:42:12.386Z"
     },
@@ -54,9 +54,29 @@
         "productId": "11750545",
         "amount": 834,
         "offers": 5,
-        "checkedAt": "2026-11-20T13:51:27.907Z"
+        "checkedAt": "2026-11-21T09:32:55.116Z"
       },
       "createdAt": "2026-11-20T13:51:27.790Z"
+    },
+    {
+      "id": "wmwq7mjw61gmai",
+      "title": "Beats Powerbeats Pro 2",
+      "description": "Trådløse treningsøreplugger med ørekrok, støydemping og pulsmåler. Farge Jet Black (svart – heter «Sonisk svart» hos Power).",
+      "image": "data/bilder/wmwq7mjw61gmai.webp",
+      "imageFit": "contain",
+      "storeUrl": "https://www.power.no/tv-og-lyd/hodetelefoner/true-wireless-hodetelefoner/beats-powerbeats-pro-2-true-wireless-oerepropper-sonisk-svart/p-3927993/",
+      "linkLabel": "",
+      "prisjaktUrl": "https://www.prisjakt.no/product.php?p=13841794&a-116257=Jet+Black",
+      "hidePrisjakt": false,
+      "priceMin": 2200,
+      "priceMax": 2800,
+      "livePrice": {
+        "productId": "13841794",
+        "amount": 2190,
+        "offers": 3,
+        "checkedAt": "2026-11-21T09:32:55.116Z"
+      },
+      "createdAt": "2026-11-21T09:32:55.018Z"
     }
   ]
 }

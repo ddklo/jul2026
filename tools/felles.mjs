@@ -77,6 +77,22 @@ export function jsonLd(html) {
 export async function prisjaktProduct(id) {
   const html = await fetchText(`https://www.prisjakt.no/product.php?p=${id}`);
   for (const node of jsonLd(html)) {
+    // Produkter med varianter (f.eks. farger) ligger som ProductGroup med pris per variant.
+    // Bruk laveste pris på tvers av variantene, og flest butikker for én variant.
+    if (node['@type'] === 'ProductGroup' && Array.isArray(node.hasVariant)) {
+      const offers = node.hasVariant.map((v) => [].concat(v.offers || [])[0]).filter(Boolean);
+      const lows = offers.map((o) => Math.round(Number(o.lowPrice ?? o.price))).filter((n) => n > 0);
+      if (lows.length) {
+        const highs = offers.map((o) => Math.round(Number(o.highPrice ?? o.lowPrice ?? o.price))).filter((n) => n > 0);
+        return {
+          name: node.name,
+          amount: Math.min(...lows),
+          high: Math.max(...highs),
+          offers: Math.max(...offers.map((o) => Number(o.offerCount) || 0)) || null,
+          image: [].concat(node.image || [])[0] || null
+        };
+      }
+    }
     if (node['@type'] !== 'Product' || !node.offers) continue;
     const o = [].concat(node.offers)[0];
     const amount = Math.round(Number(o.lowPrice ?? o.price));
