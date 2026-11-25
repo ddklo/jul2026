@@ -28,9 +28,9 @@
       "priceMax": 1050,
       "livePrice": {
         "productId": "6010111",
-        "amount": 1039,
+        "amount": 1079,
         "offers": 1,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-20T21:57:39.054Z"
     },
@@ -50,7 +50,7 @@
         "productId": "14680350",
         "amount": 374,
         "offers": 1,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-20T22:53:45.927Z"
     },
@@ -70,7 +70,7 @@
         "productId": "20330614",
         "amount": 777,
         "offers": 6,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-20T22:33:00.746Z"
     },
@@ -110,7 +110,7 @@
         "source": "store",
         "url": "https://www.ikea.com/no/no/p/nattjasmin-laken-fasongsydd-mork-gra-10442677/",
         "amount": 399,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-20T22:14:17.753Z"
     },
@@ -130,7 +130,7 @@
         "productId": "5899600",
         "amount": 2499,
         "offers": 1,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-20T22:20:20.826Z"
     }

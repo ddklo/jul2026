@@ -15,7 +15,7 @@
         "productId": "18706564",
         "amount": 1179,
         "offers": 8,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-19T22:42:12.386Z"
     },
@@ -32,9 +32,9 @@
       "priceMax": 1550,
       "livePrice": {
         "productId": "537780",
-        "amount": 1072,
+        "amount": 1005,
         "offers": 6,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-19T22:28:29.581Z"
     },
@@ -54,7 +54,7 @@
         "productId": "11750545",
         "amount": 1043,
         "offers": 3,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-20T13:51:27.790Z"
     },
@@ -72,7 +72,7 @@
         "productId": "15876661",
         "amount": 1596,
         "offers": 3,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-21T17:56:46.593Z"
     },
@@ -92,7 +92,7 @@
         "productId": "13841794",
         "amount": 2190,
         "offers": 3,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-21T09:32:55.018Z"
     },
@@ -110,7 +110,7 @@
         "productId": "13866739",
         "amount": 798,
         "offers": 7,
-        "checkedAt": "2026-11-24T13:37:03.830Z"
+        "checkedAt": "2026-11-25T12:45:28.813Z"
       },
       "createdAt": "2026-11-21T17:44:07.810Z"
     }
