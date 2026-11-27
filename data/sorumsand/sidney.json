@@ -16,7 +16,7 @@
         "productId": "12315576",
         "amount": 1566,
         "offers": 1,
-        "checkedAt": "2026-11-26T12:22:50.720Z"
+        "checkedAt": "2026-11-27T12:09:10.725Z"
       },
       "createdAt": "2026-11-20T17:02:59.579Z"
     },
@@ -36,7 +36,7 @@
         "productId": "12578120",
         "amount": 857,
         "offers": 3,
-        "checkedAt": "2026-11-26T12:22:50.720Z"
+        "checkedAt": "2026-11-27T12:09:10.725Z"
       },
       "createdAt": "2026-11-20T17:20:10.034Z"
     },
@@ -54,9 +54,9 @@
       "priceMax": 550,
       "livePrice": {
         "productId": "15883655",
-        "amount": 269,
+        "amount": 320,
         "offers": 17,
-        "checkedAt": "2026-11-26T12:22:50.720Z"
+        "checkedAt": "2026-11-27T12:09:10.725Z"
       },
       "createdAt": "2026-11-20T17:23:35.681Z"
     },
@@ -75,8 +75,8 @@
       "livePrice": {
         "productId": "16561364",
         "amount": 369,
-        "offers": 16,
-        "checkedAt": "2026-11-26T12:22:50.720Z"
+        "offers": 14,
+        "checkedAt": "2026-11-27T12:09:10.725Z"
       },
       "createdAt": "2026-11-20T17:27:16.588Z"
     },
@@ -96,7 +96,7 @@
         "source": "store",
         "url": "https://sportoutlet.no/product/01k6a8e52q3qqft3wctntpjht7?c=3283",
         "amount": 100,
-        "checkedAt": "2026-11-26T12:22:50.720Z"
+        "checkedAt": "2026-11-27T12:09:10.725Z"
       },
       "createdAt": "2026-11-20T17:04:14.492Z"
     },
@@ -116,7 +116,7 @@
         "source": "store",
         "url": "https://www.ikea.com/no/no/p/sportslig-sengesett-fotballmonster-30491327/",
         "amount": 249,
-        "checkedAt": "2026-11-26T12:22:50.720Z"
+        "checkedAt": "2026-11-27T12:09:10.725Z"
       },
       "createdAt": "2026-11-20T17:15:09.168Z"
     },
@@ -136,7 +136,7 @@
         "source": "store",
         "url": "https://www.ikea.com/no/no/p/pelarboj-led-bordlampe-flerfarget-20401515/",
         "amount": 399,
-        "checkedAt": "2026-11-26T12:22:50.720Z"
+        "checkedAt": "2026-11-27T12:09:10.725Z"
       },
       "createdAt": "2026-11-20T17:17:36.636Z"
     },
@@ -156,7 +156,7 @@
         "productId": "16154111",
         "amount": 100,
         "offers": 9,
-        "checkedAt": "2026-11-26T12:22:50.720Z"
+        "checkedAt": "2026-11-27T12:09:10.725Z"
       },
       "createdAt": "2026-11-20T17:10:50.792Z"
     },
@@ -176,7 +176,7 @@
         "productId": "15852769",
         "amount": 113,
         "offers": 7,
-        "checkedAt": "2026-11-26T12:22:50.720Z"
+        "checkedAt": "2026-11-27T12:09:10.725Z"
       },
       "createdAt": "2026-11-20T17:13:05.813Z"
     },
